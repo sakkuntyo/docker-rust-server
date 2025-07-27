@@ -1,4 +1,6 @@
 #!/bin/bash
+if [ ! -f "./seed" ] then date +%Y%m%d%H%M%S > ./seed
+seed=$(cat ./seed)
 
 #update rustdedicated
 steamcmd +login anonymous +force_install_dir /root/rustserver +app_update 258550 validate +quit
@@ -19,7 +21,7 @@ tailscale status && {
         +server.description "Welcome!\n---\ndiscord: https://discord.gg/nAyqFErqV4\n---\nこのサーバーは現在、運用テスト中です。\n詳細は Discord から確認してください。\n最大チーム人数:未定\nマップサイズ:未定\nワイプ予定日:未定" \
         +server.logoimage "https://github.com/user-attachments/assets/9cb873a1-b0c8-4d01-9dfc-df41bb2468e5" \
         +server.url "https://discord.gg/Wr6yunTY" \
-        +server.seed "${ENV_SEED:=$(date +%Y%m%d%H%M%S)}" \
+        +server.seed "${seed}" \
         +server.worldsize ${ENV_WORLDSIZE:=3000} \
         +server.maxplayers 100 \
         +server.maxconnectionsperip 500 \
