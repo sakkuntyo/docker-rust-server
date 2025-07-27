@@ -1,4 +1,8 @@
 #!/bin/bash
+
+#update rustdedicated
+steamcmd +login anonymous +force_install_dir /root/rustserver +app_update 258550 validate +quit
+
 tailscaled -verbose 1 &
 tailscale status && {
   tailscale up --exit-node="${ENV_TS_EXITNODE_IP}" --hostname=${ENV_TS_HOSTNAME}
