@@ -2,7 +2,7 @@ FROM "steamcmd/steamcmd:ubuntu-24"
 
 RUN ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
 
-RUN apt update;apt install wget curl -y;
+RUN apt update;apt install wget curl net-tools -y;
 RUN curl -fsSL https://tailscale.com/install.sh | sh
 RUN rm -rf /var/lib/apt/lists/*
 
