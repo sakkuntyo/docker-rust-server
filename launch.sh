@@ -15,8 +15,8 @@ tailscale status && {
 
 ./RustDedicated -batchmode \
         +server.identity "serverdata1" \
-        +server.hostname "nomarust Test | JP | Vanilla | Monthly" \
-        +server.description "Welcome to nomarust!\n---\ndiscord: https://discord.gg/nAyqFErqV4\n---\nこのサーバーは現在、運用テスト中です。\n詳細は Discord から確認してください。\n最大チーム人数:24 (同盟を許可しません)\nマップサイズ:3500\nワイプ予定日:2025/8/7 18:00 UTC\n---\nThis server is currently undergoing operational testing.\n Please check Discord for more details.\nTeam limit:24 (not allowed alliance)\nMap size:3500\nNext wipe schedule: 2025/8/7 18:00 UTC" \
+        +server.hostname "Test | JP | Vanilla | Monthly" \
+        +server.description "Welcome!\n---\ndiscord: https://discord.gg/nAyqFErqV4\n---\nこのサーバーは現在、運用テスト中です。\n詳細は Discord から確認してください。\n最大チーム人数:未定\nマップサイズ:未定\nワイプ予定日:未定" \
         +server.logoimage "https://github.com/user-attachments/assets/9cb873a1-b0c8-4d01-9dfc-df41bb2468e5" \
         +server.url "https://discord.gg/Wr6yunTY" \
         +server.seed "${ENV_SEED:=$(date +%Y%m%d%H%M%S)}" \
@@ -34,9 +34,9 @@ tailscale status && {
         +server.tags "PVP,Vanilla" &
 
 # 5分後に死活監視を開始
-for ((i = 1; i <= 300; i++))
+for ((i = 1; i <= 600; i++))
 do
-  echo "$(date):$(((300 - i))) 秒後に死活監視を開始します。。。"
+  echo "$(date):$(((600 - i))) 秒後に死活監視を開始します。。。"
   sleep 1
 done
 
