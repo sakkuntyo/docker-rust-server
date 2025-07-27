@@ -2,9 +2,10 @@
 tailscaled -verbose 1 &
 tailscale status && {
   tailscale up --exit-node="${ENV_TS_EXITNODE_IP}" --hostname=${ENV_TS_HOSTNAME}
-}
-|| {
+  :
+} || {
   tailscale up --auth-key=${ENV_TS_AUTHKEY} --exit-node="${ENV_TS_EXITNODE_IP}" --hostname=${ENV_TS_HOSTNAME}
+  :
 }
 
 
