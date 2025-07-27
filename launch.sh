@@ -1,9 +1,15 @@
 #!/bin/bash
 tailscaled -verbose 1 &
-tailscale up --auth-key=${ENV_TSAUTHKEY} --exit-node="${ENV_TSEXITNODE_IP}" --hostname=${ENV_TSHOSTNAME}
+tailscale status && {
+  tailscale up --exit-node="${ENV_TS_EXITNODE_IP}" --hostname=${ENV_TS_HOSTNAME}
+}
+|| {
+  tailscale up --auth-key=${ENV_TS_AUTHKEY} --exit-node="${ENV_TS_EXITNODE_IP}" --hostname=${ENV_TS_HOSTNAME}
+}
+
 
 ./RustDedicated -batchmode \
-        +server.identity "server3500.20250722-2" \
+        +server.identity "serverdata1" \
         +server.hostname "nomarust Test | JP | Vanilla | Monthly" \
         +server.description "Welcome to nomarust!\n---\ndiscord: https://discord.gg/nAyqFErqV4\n---\nこのサーバーは現在、運用テスト中です。\n詳細は Discord から確認してください。\n最大チーム人数:24 (同盟を許可しません)\nマップサイズ:3500\nワイプ予定日:2025/8/7 18:00 UTC\n---\nThis server is currently undergoing operational testing.\n Please check Discord for more details.\nTeam limit:24 (not allowed alliance)\nMap size:3500\nNext wipe schedule: 2025/8/7 18:00 UTC" \
         +server.logoimage "https://github.com/user-attachments/assets/9cb873a1-b0c8-4d01-9dfc-df41bb2468e5" \
