@@ -29,3 +29,24 @@
 - +sv.secure +sv.EAC が有効である必要アリ(なので明示的に有効指定しています)
 - 初回の RustDedicated 起動時に steam へ報告されたグローバルIP と プレイヤーがアクセスするIPが一致しなければいけない
   - ポートフォワードやリバースプロキシによるサーバーの発信IPとは別のグローバルIPからのアクセスは恐らく不可
+
+## .env サンプル
+
+```
+ENV_SERVERNAME="TEST SERVER"
+ENV_SERVERDESCRIPTION="Welcome!\n---\n---\nこのサーバーは現在テスト中です。"
+ENV_SERVERURL="https://github.com/sakkuntyo/docker-rust-server"
+ENV_SERVERLOGOIMG="https://github.com/user-attachments/assets/9cb873a1-b0c8-4d01-9dfc-df41bb2468e5"
+ENV_SERVERTAGS="Vanilla"
+ENV_WORLDSIZE=3000
+ENV_MAXPLAYERS=100
+ENV_MAXTEAMSIZE=8
+ENV_WIPE_CYCLE="monthly"
+ENV_SERVER_PORT=28015
+ENV_RCON_PORT=28016
+ENV_QUERY_PORT=28017
+ENV_RCON_PASSWD="StrongPasswd123456"
+#ENV_TS_EXITNODE_IP=
+#ENV_TS_HOSTNAME=
+#ENV_TS_AUTHKEY=
+```
