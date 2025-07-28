@@ -72,16 +72,16 @@ fi
 
 ./RustDedicated -batchmode \
         +server.identity "serverdata1" \
-        +server.hostname "Test | JP | Vanilla | Monthly" \
-        +server.description "Welcome!\n---\ndiscord: https://discord.gg/nAyqFErqV4\n---\nこのサーバーは現在、運用テスト中です。\n詳細は Discord から確認してください。\n最大チーム人数:未定\nマップサイズ:未定\nワイプ予定日:未定" \
-        +server.logoimage "https://github.com/user-attachments/assets/9cb873a1-b0c8-4d01-9dfc-df41bb2468e5" \
-        +server.url "https://discord.gg/Wr6yunTY" \
+        +server.hostname "${ENV_SERVERNAME:=TEST SERVER}" \
+        +server.description "${ENV_SERVERDESCRIPTION:=Welcome!\n---\n---\nこのサーバーは現在テスト中です。}\nワイプ予定日:$(date -d "@$(cat ./wipeunixtime)" "+%Y/%m/%d %T")" \
+        +server.logoimage "${ENV_SERVERLOGOIMG:=https://github.com/user-attachments/assets/9cb873a1-b0c8-4d01-9dfc-df41bb2468e5}" \
+        +server.url "${ENV_SERVERURL:=https://github.com/sakkuntyo/docker-rust-server" \
         +server.seed "${seed}" \
         +server.worldsize ${ENV_WORLDSIZE:=3000} \
         +server.maxplayers 100 \
         +server.maxconnectionsperip 500 \
         +app.maxconnectionsperip 500 \
-        +relationshipmanager.maxteamsize 24 \
+        +relationshipmanager.maxteamsize ${ENV_MAXTEAMSIZE:=8} \
         +sv.secure 1 \
         +sv.EAC 1 \
         +rcon.password "${ENV_RCON_PASSWD:=StrongPasswd123456}" \
