@@ -3,12 +3,18 @@
 
 |変数名|既定値|概要|
 |:-:|:-:|:-:|
+|ENV_SERVERNAME|TEST SERVER|サーバーリストに表示される|
+|ENV_SERVERDESCRIPTION|Welcome!\n---\n---\nこのサーバーは現在テスト中です。|ここで指定した文字の末尾にワイプ予定日が書かれる|
+|ENV_SERVERURL|https://github.com/sakkuntyo/docker-rust-server| Discord のリンクやHPに置き換える |
+|ENV_SERVERLOGOIMG|https://github.com/user-attachments/assets/9cb873a1-b0c8-4d01-9dfc-df41bb2468e5||
+|ENV_WORLDSIZE|3000|3000 - 6000|
+|ENV_MAXTEAMSIZE|8|パーティ最大人数|
+|ENV_WIPE_CYCLE|monthly|monthly<br>bi-weekly<br>weekly<br>daily|
 |ENV_SERVER_PORT|28015||
 |ENV_RCON_PORT|28016||
 |ENV_QUERY_PORT|28017||
 |ENV_RCON_PASSWD|StrongPasswd123456|既定値は非推奨|
-|ENV_WIPE_CYCLE|monthly|monthly<br>bi-weekly<br>weekly<br>daily|
-|ENV_WORLDSIZE|3000|3000 - 6000|
+
  
 以下は tailscale exitnode を使用する場合に必要
 
