@@ -75,7 +75,7 @@ fi
         +server.hostname "${ENV_SERVERNAME:=TEST SERVER}" \
         +server.description "${ENV_SERVERDESCRIPTION:=Welcome!\n---\n---\nこのサーバーは現在テスト中です。}\nワイプ予定日:$(date -d "@$(cat ./wipeunixtime)" "+%Y/%m/%d %T")" \
         +server.logoimage "${ENV_SERVERLOGOIMG:=https://github.com/user-attachments/assets/9cb873a1-b0c8-4d01-9dfc-df41bb2468e5}" \
-        +server.url "${ENV_SERVERURL:=https://github.com/sakkuntyo/docker-rust-server" \
+        +server.url "${ENV_SERVERURL:=https://github.com/sakkuntyo/docker-rust-server}" \
         +server.seed "${seed}" \
         +server.worldsize ${ENV_WORLDSIZE:=3000} \
         +server.maxplayers ${ENV_MAXPLAYERS:=100} \
