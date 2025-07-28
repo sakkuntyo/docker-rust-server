@@ -117,8 +117,8 @@ while true; do
     echo "ERROR: RustDedicated が起動していません。コンテナを停止します (必要に応じて自動起動オプションを使用してください)。"
     kill 1
   # 3. ポート28015がリッスンされていない場合 (両プロセスがOKの場合)
-  elif ! netstat -tuln | grep "28015" > /dev/null; then
-    echo "ERROR: ポート28015 のリッスンがありません。コンテナを停止します (必要に応じて自動起動オプションを使用してください)。"
+  elif ! netstat -tuln | grep "${ENV_SERVER_PORT:=28015}" > /dev/null; then
+    echo "ERROR: ポート ${ENV_SERVER_PORT:=28015} のリッスンがありません。コンテナを停止します (必要に応じて自動起動オプションを使用してください)。"
     kill 1
   # 4. 全てのチェックがOKの場合
   else
