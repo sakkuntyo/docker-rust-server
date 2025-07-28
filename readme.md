@@ -1,5 +1,13 @@
-# 環境変数
-以下の環境変数をコンテナ作成時に指定できます。指定しない場合はデフォルト値が指定されます。
+# 使い方
+
+```
+docker run sakkuntyo/rust-server:latest -e ENV_SERVERNAME="サーバー名" -e ENV_SERVERDESCRIPTION=welcome!
+```
+
+DockerHub: https://hub.docker.com/r/sakkuntyo/rust-server
+
+## 環境変数
+RustDedicated のオプションを環境変数でコンテナ作成時に指定できます。指定しない場合はデフォルト値が指定されます。
 
 |変数名|既定値|概要|
 |:-|:-|:-:|
