@@ -35,6 +35,7 @@ RustDedicated のオプションを環境変数で指定できます。指定し
 |ENV_RCON_PORT|28016||
 |ENV_QUERY_PORT|28017||
 |ENV_RCON_PASSWD|StrongPasswd123456|既定値は非推奨|
+|ENV_STOP_TIME||20:00 を指定すると毎日 20:00 に停止(コンテナの自動起動オプションと合わせて再起動)|
 
 以下は tailscale exitnode を使用する場合に必要です。
 
@@ -75,6 +76,7 @@ ENV_SERVER_PORT=28015
 ENV_RCON_PORT=28016
 ENV_QUERY_PORT=28017
 ENV_RCON_PASSWD=StrongPasswd123456
+#ENV_STOP_TIME=
 #ENV_TS_EXITNODE_IP=
 #ENV_TS_HOSTNAME=
 #ENV_TS_AUTHKEY=
