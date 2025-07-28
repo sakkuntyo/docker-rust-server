@@ -8,18 +8,19 @@ rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPa
 
 # ワイプ周期が来ている場合は ./seed ファイルを消してリセットする
 if [ -f "./wipeunixtime" ]; then 
+  echo "現在の時刻　　 -> "$(date "+%Y/%m/%d %T")"
+  echo "ワイプ予定時刻 -> $(date -d "@$(cat ./wipeunixtime)" "+%Y/%m/%d %T")"
   if [[ "$(date +%s)" -gt "$(cat ./wipeunixtime)" ]]; then
     echo "ワイプを行います。"
     rm ./seed
-    rm ./createdunixtime
     rm ./wipeunixtime
+    echo "ワイプ処理を完了しました"
   fi
 fi
 
 # 初回起動時に現在時刻(unixtime)のseed値と作成日時
 if [ ! -f "./seed" ] && [ ! -z "${ENV_SEED}" ] ; then echo "${ENV_SEED}" > ./seed; fi
 if [ ! -f "./seed" ]; then date +%s > ./seed; fi
-if [ ! -f "./createdunixtime" ]; then date +%s > ./createdunixtime; fi
 if [ ! -f "./wipeunixtime" ]; then
   if [ "${ENV_WIPE_CYCLE}" == "daily" ]; then 
     echo "ENV_WIPE_CYCLE:daily"
@@ -31,30 +32,27 @@ if [ ! -f "./wipeunixtime" ]; then
     echo "ENV_WIPE_CYCLE:weekly"
     echo "ワイプ周期を1週間に設定します。"
     date -d "+1 week -30 min" +%s > ./wipeunixtime;
-    echo "ワイプ予定時刻 -> $(date -d "@$(cat ./wipeunixtime)" "+%Y/%m/%d %T")"
+    echo "次のワイプ予定時刻 -> $(date -d "@$(cat ./wipeunixtime)" "+%Y/%m/%d %T")"
   fi
   if [ "${ENV_WIPE_CYCLE}" == "bi-weekly" ]; then 
     echo "ENV_WIPE_CYCLE:bi-weekly"
     echo "ワイプ周期を2週間に設定します。"
     date -d "+2 week -30 min" +%s > ./wipeunixtime;
-    echo "ワイプ予定時刻 -> $(date -d "@$(cat ./wipeunixtime)" "+%Y/%m/%d %T")"
+    echo "次のワイプ予定時刻 -> $(date -d "@$(cat ./wipeunixtime)" "+%Y/%m/%d %T")"
   fi
   if [ "${ENV_WIPE_CYCLE}" == "monthly" ]; then 
     echo "ENV_WIPE_CYCLE:monthly"
     echo "ワイプ周期を1か月に設定します。"
     date -d "+1 month -30 min" +%s > ./wipeunixtime;
-    echo "ワイプ予定時刻 -> $(date -d "@$(cat ./wipeunixtime)" "+%Y/%m/%d %T")"
+    echo "次のワイプ予定時刻 -> $(date -d "@$(cat ./wipeunixtime)" "+%Y/%m/%d %T")"
   fi
   if [ ! -f "./wipeunixtime" ]; then
     echo "ENV_WIPE_CYCLE:未指定または未定義の値"
     echo "ワイプ周期を1か月に設定します。"
     date -d "+1 month -30 min" +%s > ./wipeunixtime;
-    echo "ワイプ予定時刻 -> $(date -d "@$(cat ./wipeunixtime)" "+%Y/%m/%d %T")"
+    echo "次のワイプ予定時刻 -> $(date -d "@$(cat ./wipeunixtime)" "+%Y/%m/%d %T")"
   fi
 fi
-
-# ENV_SEEDがある(ユーザーがシード指定してる)ならそのシード、未指定ならcreatedunixtime を シード値にする
-if [ ! -z "${ENV_SEED}" ]; then seed="${ENV_SEED}"; else seed=$(cat ./createdunixtime) fi
 
 # update rustdedicated
 steamcmd +login anonymous +force_install_dir /root/rustserver +app_update 258550 validate +quit
