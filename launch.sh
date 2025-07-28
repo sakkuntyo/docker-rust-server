@@ -1,4 +1,11 @@
 #!/bin/bash
+
+# docker stop 時の保存処理、最終的にはパスワードは変数化した方がいい
+trap '
+rcon -t web -a 127.0.0.1:28016 -p "StrongPasswd123456" "save";
+rcon -t web -a 127.0.0.1:28016 -p "StrongPasswd123456" "quit";
+' SIGTERM
+
 if [ ! -f "./seed" ] then date +%Y%m%d%H%M%S > ./seed
 seed=$(cat ./seed)
 
