@@ -18,6 +18,18 @@ if [ -f "./wipeunixtime" ]; then
   fi
 fi
 
+
+# STOP TIME が設定されている場合だけ停止時間を決定
+if [ ! -z "${ENV_STOP_TIME}" ];then
+  if [[ "$(date +%s)" -lt $(date -d "${ENV_STOP_TIME}" +%s) ]];then 
+    TARGET_STOP_UNIXTIME=$(date -d "${ENV_STOP_TIME}" +%s);
+  else
+    TARGET_STOP_UNIXTIME=$(date -d "tomorrow ${ENV_STOP_TIME}" +%s);
+  fi
+  echo "定期停止時刻: ${ENV_STOP_TIME}"
+  echo "次の停止時刻: $(date -d "@${TARGET_STOP_UNIXTIME}" +%Y-%m-%dT%TZ)"
+fi
+
 # 初回起動時に現在時刻(unixtime)のseed値と作成日時
 if [ ! -f "./seed" ] && [ ! -z "${ENV_SEED}" ] ; then echo "${ENV_SEED}" > ./seed; fi
 if [ ! -f "./seed" ]; then date +%s > ./seed; fi
@@ -124,6 +136,29 @@ while true; do
   else
     echo "INFO: Health Check: 全てのサービスは正常に稼働中です。"
   fi
+  
+  ## STOP TIME が設定されている場合だけ停止時間チェック
+  if [ ! -z "${ENV_STOP_TIME}" ];then
+    # 停止する時刻を過ぎたなら停止
+    if [[ "$(date +%s)" -gt "${TARGET_STOP_UNIXTIME}" ]]; then
+      echo "停止時刻となったため停止します。"
+      rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say 再起動します";
+      sleep 10
+      kill 1
+    # 1 時間前ならアナウンス
+    elif [ -z ${REBOOTMSG1_SENT_FLG} ] && [[ "$(date +%s)" -gt "$(date -d "@${TARGET_STOP_UNIXTIME}" -d "-1 hour" )" ]]; then
+      rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say 1時間後に再起動します。/ Server will restart in an hour.";
+      REBOOTMSG1_SENT_FLG=true
+    # 30分前ならアナウンス
+    elif [ -z ${REBOOTMSG2_SENT_FLG} ] && [[ "$(date +%s)" -gt "$(date -d "@${TARGET_STOP_UNIXTIME}" -d "-30 minutes" )" ]]; then
+      rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say 30分後に再起動します。/ Server will restart in 30 minutes.";
+      REBOOTMSG2_SENT_FLG=true
+    # 15分前ならアナウンス
+    elif [ -z ${REBOOTMSG3_SENT_FLG} ] && [[ "$(date +%s)" -gt "$(date -d "@${TARGET_STOP_UNIXTIME}" -d "-15 minutes" )" ]]; then
+      rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say 15分後に再起動します。/ Server will restart in 15 minutes.";
+      REBOOTMSG3_SENT_FLG=true
+    fi
+  fi
 
-  sleep 30 # 次のチェックまで待機
+  sleep 60 # 次のチェックまで待機
 done
