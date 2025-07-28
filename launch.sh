@@ -8,13 +8,13 @@ rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPa
 
 # ワイプ周期が来ている場合は ./seed ファイルを消してリセットする
 if [ -f "./wipeunixtime" ]; then 
-  echo "現在の時刻　　 -> "$(date "+%Y/%m/%d %T")"
-  echo "ワイプ予定時刻 -> $(date -d "@$(cat ./wipeunixtime)" "+%Y/%m/%d %T")"
+  echo "INFO: 現在の時刻　　 -> $(date "+%Y/%m/%d %T")"
+  echo "INFO: ワイプ予定時刻 -> $(date -d "@$(cat ./wipeunixtime)" "+%Y/%m/%d %T")"
   if [[ "$(date +%s)" -gt "$(cat ./wipeunixtime)" ]]; then
-    echo "ワイプを行います。"
+    echo "INFO: ワイプを行います。"
     rm ./seed
     rm ./wipeunixtime
-    echo "ワイプ処理を完了しました"
+    echo "INFO: ワイプ処理を完了しました"
   fi
 fi
 
@@ -24,33 +24,33 @@ if [ ! -f "./seed" ]; then date +%s > ./seed; fi
 if [ ! -f "./wipeunixtime" ]; then
   if [ "${ENV_WIPE_CYCLE}" == "daily" ]; then 
     echo "ENV_WIPE_CYCLE:daily"
-    echo "ワイプ周期を1日に設定します。"
+    echo "INFO: ワイプ周期を1日に設定します。"
     date -d "+1 day -30 min" +%s > ./wipeunixtime;
-    echo "ワイプ予定時刻 -> $(date -d "@$(cat ./wipeunixtime)" "+%Y/%m/%d %T")"
+    echo "INFO: ワイプ予定時刻 -> $(date -d "@$(cat ./wipeunixtime)" "+%Y/%m/%d %T")"
   fi
   if [ "${ENV_WIPE_CYCLE}" == "weekly" ]; then 
     echo "ENV_WIPE_CYCLE:weekly"
-    echo "ワイプ周期を1週間に設定します。"
+    echo "INFO: ワイプ周期を1週間に設定します。"
     date -d "+1 week -30 min" +%s > ./wipeunixtime;
-    echo "次のワイプ予定時刻 -> $(date -d "@$(cat ./wipeunixtime)" "+%Y/%m/%d %T")"
+    echo "INFO: 次のワイプ予定時刻 -> $(date -d "@$(cat ./wipeunixtime)" "+%Y/%m/%d %T")"
   fi
   if [ "${ENV_WIPE_CYCLE}" == "bi-weekly" ]; then 
     echo "ENV_WIPE_CYCLE:bi-weekly"
-    echo "ワイプ周期を2週間に設定します。"
+    echo "INFO: ワイプ周期を2週間に設定します。"
     date -d "+2 week -30 min" +%s > ./wipeunixtime;
-    echo "次のワイプ予定時刻 -> $(date -d "@$(cat ./wipeunixtime)" "+%Y/%m/%d %T")"
+    echo "INFO: 次のワイプ予定時刻 -> $(date -d "@$(cat ./wipeunixtime)" "+%Y/%m/%d %T")"
   fi
   if [ "${ENV_WIPE_CYCLE}" == "monthly" ]; then 
     echo "ENV_WIPE_CYCLE:monthly"
-    echo "ワイプ周期を1か月に設定します。"
+    echo "INFO: ワイプ周期を1か月に設定します。"
     date -d "+1 month -30 min" +%s > ./wipeunixtime;
-    echo "次のワイプ予定時刻 -> $(date -d "@$(cat ./wipeunixtime)" "+%Y/%m/%d %T")"
+    echo "INFO: 次のワイプ予定時刻 -> $(date -d "@$(cat ./wipeunixtime)" "+%Y/%m/%d %T")"
   fi
   if [ ! -f "./wipeunixtime" ]; then
     echo "ENV_WIPE_CYCLE:未指定または未定義の値"
-    echo "ワイプ周期を1か月に設定します。"
+    echo "INFO: ワイプ周期を1か月に設定します。"
     date -d "+1 month -30 min" +%s > ./wipeunixtime;
-    echo "次のワイプ予定時刻 -> $(date -d "@$(cat ./wipeunixtime)" "+%Y/%m/%d %T")"
+    echo "INFO: 次のワイプ予定時刻 -> $(date -d "@$(cat ./wipeunixtime)" "+%Y/%m/%d %T")"
   fi
 fi
 
@@ -110,19 +110,19 @@ while true; do
   # --- ヘルスチェックの実施 ---
   # 1. tailscaled のチェックが必要であり、かつ tailscaled が起動していない場合
   if [[ "${SHOULD_CHECK_TAILSCALED}" == "true" && ! pgrep tailscaled > /dev/null ]]; then
-    echo "${TIMESTAMP}: ERROR: tailscaled が起動していません。コンテナを停止します (必要に応じて自動起動オプションを使用してください)。"
+    echo "ERROR: tailscaled が起動していません。コンテナを停止します (必要に応じて自動起動オプションを使用してください)。"
     kill 1
   # 2. RustDedicated プロセスが存在しない場合 (tailscaled のチェックがOKか、スキップされた場合)
   elif ! pgrep RustDedicated > /dev/null; then
-    echo "${TIMESTAMP}: ERROR: RustDedicated が起動していません。コンテナを停止します (必要に応じて自動起動オプションを使用してください)。"
+    echo "ERROR: RustDedicated が起動していません。コンテナを停止します (必要に応じて自動起動オプションを使用してください)。"
     kill 1
   # 3. ポート28015がリッスンされていない場合 (両プロセスがOKの場合)
   elif ! netstat -tuln | grep "28015" > /dev/null; then
-    echo "${TIMESTAMP}: ERROR: ポート28015 のリッスンがありません。コンテナを停止します (必要に応じて自動起動オプションを使用してください)。"
+    echo "ERROR: ポート28015 のリッスンがありません。コンテナを停止します (必要に応じて自動起動オプションを使用してください)。"
     kill 1
   # 4. 全てのチェックがOKの場合
   else
-    echo "${TIMESTAMP}: Health Check: 全てのサービスは正常に稼働中です。"
+    echo "INFO: Health Check: 全てのサービスは正常に稼働中です。"
   fi
 
   sleep 30 # 次のチェックまで待機
