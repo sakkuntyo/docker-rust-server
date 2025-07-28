@@ -1,21 +1,13 @@
 # 環境変数
 以下の環境変数をコンテナ作成時に指定できます。指定しない場合はデフォルト値が指定されます。
 
-- ENV_SERVER_PORT
-  - 既定値 28015
-- ENV_RCON_PORT
-  - 既定値 28016
-- ENV_RCON_PASSWD
-  - 既定値(非推奨) StrongPasswd123456
-- ENV_WIPE_CYCLE
-  - monthly
-  - bi-weekly
-  - weekly
-  - daily
-  - 既定値 monthly
-- ENV_WORLDSIZE
-  - 既定値 3000
-  - 3000 - 6000
+|変数名|既定値|概要|
+|:-:|:-:|:-:|
+|ENV_SERVER_PORT|28015||
+|ENV_RCON_PORT|28016||
+|ENV_RCON_PASSWD|StrongPasswd123456|既定値は非推奨|
+|ENV_WIPE_CYCLE|monthly|monthly<br>bi-weekly<br>weekly<br>daily|
+|ENV_WORLDSIZE|3000|3000 - 6000|
  
 以下は tailscale exitnode を使用する場合に必要
 - ENV_TS_EXITNODE_IP
