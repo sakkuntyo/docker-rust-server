@@ -78,7 +78,7 @@ fi
         +server.url "${ENV_SERVERURL:=https://github.com/sakkuntyo/docker-rust-server" \
         +server.seed "${seed}" \
         +server.worldsize ${ENV_WORLDSIZE:=3000} \
-        +server.maxplayers 100 \
+        +server.maxplayers ${ENV_MAXPLAYERS:=100} \
         +server.maxconnectionsperip 500 \
         +app.maxconnectionsperip 500 \
         +relationshipmanager.maxteamsize ${ENV_MAXTEAMSIZE:=8} \
@@ -88,7 +88,7 @@ fi
         +server.port ${ENV_SERVER_PORT:=28015} \
         +rcon.port ${ENV_RCON_PORT:=28016} \
         +server.queryport ${ENV_QUERY_PORT:=28017} \
-        +server.tags "PVP,Vanilla" &
+        +server.tags "${ENV_SERVERTAGS:=Vanilla}" &
 
 # 5分後に死活監視を開始
 for ((i = 1; i <= 600; i++))
