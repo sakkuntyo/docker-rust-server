@@ -1,6 +1,6 @@
 FROM "steamcmd/steamcmd:ubuntu-24"
 
-RUN echo "docker build 番号(キャッシュ回避用): 1.0.8.$(date +%s)"
+RUN echo "docker build 番号(キャッシュ回避用): 1.0.9.$(date +%s)"
 RUN ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
 
 RUN apt update;apt install wget curl net-tools tini -y;
