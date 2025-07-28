@@ -4,8 +4,8 @@ Rust サーバーを管理するために生まれたコンテナです。
 以下がこのコンテナ一つで出来ます。
 
 - 再起動時にワイプ期間が過ぎていればはワイプを実行
-- ポートやプロセス監視によるヘルスチェック
-- docker stop 時の自動セーブ
+- netstat によるポート、pgrep によるプロセス監視によるヘルスチェック
+- tini, trap, rcon-cli による docker stop 時の自動セーブ
 - tailscale exitnode の使用(Privileged モードが必要です)
 
 # 使い方
