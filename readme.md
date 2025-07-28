@@ -1,11 +1,12 @@
 # 概要
 
 Rust サーバーを管理するために生まれたコンテナです。
-以下がコンテナ一つで出来る様にしました。
+以下がこのコンテナ一つで出来ます。
 
 - 再起動時にワイプ期間が過ぎていればはワイプを実行
 - ポートやプロセス監視によるヘルスチェック
 - docker stop 時の自動セーブ
+- tailscale exitnode の使用(Privileged モードが必要です)
 
 # 使い方
 
@@ -16,7 +17,7 @@ docker run sakkuntyo/rust-server:latest -e ENV_SERVERNAME="サーバー名" -e E
 DockerHub: https://hub.docker.com/r/sakkuntyo/rust-server
 
 ## 環境変数
-RustDedicated のオプションを環境変数でコンテナ作成時に指定できます。指定しない場合はデフォルト値が指定されます。
+RustDedicated のオプションを環境変数で指定できます。指定しない場合はデフォルト値が指定されます。
 
 |変数名|既定値|概要|
 |:-|:-|:-:|
