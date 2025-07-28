@@ -1,6 +1,6 @@
 FROM "steamcmd/steamcmd:ubuntu-24"
 
-RUN echo "バージョン(キャッシュ回避用に変更): 1.0.11.$(date +%s)"
+RUN echo "バージョン(キャッシュ回避用に変更): 1.0.12.$(date +%s)-2"
 RUN ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
 
 RUN apt update;apt install wget curl net-tools tini -y;
