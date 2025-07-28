@@ -109,7 +109,7 @@ while true; do
 
   # --- ヘルスチェックの実施 ---
   # 1. tailscaled のチェックが必要であり、かつ tailscaled が起動していない場合
-  if [[ "${SHOULD_CHECK_TAILSCALED}" == "true" && -z "$(pgrep command)" ]]; then
+  if [[ "${SHOULD_CHECK_TAILSCALED}" == "true" && -z "$(pgrep tailscaled)" ]]; then
     echo "ERROR: tailscaled が起動していません。コンテナを停止します (必要に応じて自動起動オプションを使用してください)。"
     kill 1
   # 2. RustDedicated プロセスが存在しない場合 (tailscaled のチェックがOKか、スキップされた場合)
