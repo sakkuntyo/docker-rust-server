@@ -5,6 +5,7 @@
 |:-:|:-:|:-:|
 |ENV_SERVER_PORT|28015||
 |ENV_RCON_PORT|28016||
+|ENV_QUERY_PORT|28017||
 |ENV_RCON_PASSWD|StrongPasswd123456|既定値は非推奨|
 |ENV_WIPE_CYCLE|monthly|monthly<br>bi-weekly<br>weekly<br>daily|
 |ENV_WORLDSIZE|3000|3000 - 6000|
