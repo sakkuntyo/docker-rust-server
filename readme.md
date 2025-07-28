@@ -9,6 +9,7 @@
 |ENV_SERVERLOGOIMG|https://github.com/user-attachments/assets/9cb873a1-b0c8-4d01-9dfc-df41bb2468e5||
 |ENV_SERVERTAGS|Vanilla|https://wiki.facepunch.com/rust/server-browser-tags|
 |ENV_WORLDSIZE|3000|3000 - 6000|
+|ENV_SEED||未指定では初回起動時のunixtime|
 |ENV_MAXPLAYERS|100|サーバー最大人数|
 |ENV_MAXTEAMSIZE|8|パーティ最大人数|
 |ENV_WIPE_CYCLE|monthly|monthly<br>bi-weekly<br>weekly<br>daily|
@@ -39,6 +40,7 @@ ENV_SERVERURL="https://github.com/sakkuntyo/docker-rust-server"
 ENV_SERVERLOGOIMG="https://github.com/user-attachments/assets/9cb873a1-b0c8-4d01-9dfc-df41bb2468e5"
 ENV_SERVERTAGS="Vanilla"
 ENV_WORLDSIZE=3000
+#ENV_SEED=
 ENV_MAXPLAYERS=100
 ENV_MAXTEAMSIZE=8
 ENV_WIPE_CYCLE="monthly"
