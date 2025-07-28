@@ -57,14 +57,17 @@ fi
 # update rustdedicated
 steamcmd +login anonymous +force_install_dir /root/rustserver +app_update 258550 validate +quit
 
-tailscaled -verbose 1 &
-tailscale status && {
-  tailscale up --exit-node="${ENV_TS_EXITNODE_IP}" --hostname=${ENV_TS_HOSTNAME}
-  :
-} || {
-  tailscale up --auth-key=${ENV_TS_AUTHKEY} --exit-node="${ENV_TS_EXITNODE_IP}" --hostname=${ENV_TS_HOSTNAME}
-  :
-}
+# exitnode 指定があるなら tailscale を起動 (特権モードが必要)
+if [ ! -z "${ENV_TS_EXITNODE_IP}" ]; then
+  tailscaled -verbose 1 &
+  tailscale status && {
+    tailscale up --exit-node="${ENV_TS_EXITNODE_IP}" --hostname=${ENV_TS_HOSTNAME}
+    :
+  } || {
+    tailscale up --auth-key=${ENV_TS_AUTHKEY} --exit-node="${ENV_TS_EXITNODE_IP}" --hostname=${ENV_TS_HOSTNAME}
+    :
+  }
+fi
 
 
 ./RustDedicated -batchmode \
@@ -95,34 +98,32 @@ do
 done
 
 while true; do
-  echo "chacking pgrep tailscaled..."
-  pgrep tailscaled > /dev/null && {
-    echo "-> ok"
-    echo "chacking pgrep RustDedicated..."
-    pgrep RustDedicated > /dev/null && {
-      echo "-> ok"
-      echo "chacking netstat -tuln | grep 28015..."
-      netstat -tuln | grep 28015 > /dev/null && {
-        echo "-> ok"
-        # ポートのリッスンもされてるのでもんだいなし！
-        :
-      } || {
-        # ポートがリッスンされてないのでコンテナ停止(コンテナ自動起動オプションで再起動させたい)
-        echo "$(date):ポート28015 のリッスンがないためコンテナを停止します(必要に応じてコンテナ自動起動オプションを使用してください)"
-        kill 1
-        :
-      }
-    } || {
-      #Rust自体起動してないのでコンテナ停止(コンテナ自動起動オプションで再起動させたい)
-      echo "$(date):RustDedicate が起動していないのでコンテナを停止します(必要に応じてコンテナ自動起動オプションを使用してください。)"
-      kill 1
-      :
-    } || {
-      #tailscaled が起動してないのでコンテナ停止(コンテナ自動起動オプションで再起動させたい)
-      echo "$(date):tailscaled が起動していないのでコンテナを停止します(必要に応じてコンテナ自動起動オプションを使用してください。)"
-      kill 1
-      :
-    }
-  };
-  sleep 30
+  TIMESTAMP=$(date)
+
+  # Tailscaleのチェックが必要かどうかを判断するフラグ
+  # ENV_TS_EXITNODE_IP が空でなければ (設定されていれば)、true に設定
+  SHOULD_CHECK_TAILSCALED=false
+  if [[ -n "${ENV_TS_EXITNODE_IP}" ]]; then
+    SHOULD_CHECK_TAILSCALED=true
+  fi
+
+  # --- ヘルスチェックの実施 ---
+  # 1. tailscaled のチェックが必要であり、かつ tailscaled が起動していない場合
+  if [[ "${SHOULD_CHECK_TAILSCALED}" == "true" && ! pgrep tailscaled > /dev/null ]]; then
+    echo "${TIMESTAMP}: ERROR: tailscaled が起動していません。コンテナを停止します (必要に応じて自動起動オプションを使用してください)。"
+    kill 1
+  # 2. RustDedicated プロセスが存在しない場合 (tailscaled のチェックがOKか、スキップされた場合)
+  elif ! pgrep RustDedicated > /dev/null; then
+    echo "${TIMESTAMP}: ERROR: RustDedicated が起動していません。コンテナを停止します (必要に応じて自動起動オプションを使用してください)。"
+    kill 1
+  # 3. ポート28015がリッスンされていない場合 (両プロセスがOKの場合)
+  elif ! netstat -tuln | grep "28015" > /dev/null; then
+    echo "${TIMESTAMP}: ERROR: ポート28015 のリッスンがありません。コンテナを停止します (必要に応じて自動起動オプションを使用してください)。"
+    kill 1
+  # 4. 全てのチェックがOKの場合
+  else
+    echo "${TIMESTAMP}: Health Check: 全てのサービスは正常に稼働中です。"
+  fi
+
+  sleep 30 # 次のチェックまで待機
 done
