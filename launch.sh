@@ -1,13 +1,54 @@
 #!/bin/bash
 
-# docker stop 時の保存処理、最終的にはパスワードは変数化した方がいい
+# docker stop 時の保存処理
 trap '
-rcon -t web -a 127.0.0.1:28016 -p "StrongPasswd123456" "save";
-rcon -t web -a 127.0.0.1:28016 -p "StrongPasswd123456" "quit";
+rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD}" "save";
+rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD}" "quit";
 ' SIGTERM
 
-if [ ! -f "./seed" ] then date +%Y%m%d%H%M%S > ./seed
-seed=$(cat ./seed)
+# ワイプ周期が来ている場合は ./seed ファイルを消してリセットする
+if [ -f "./wipeunixtime" ]; then 
+  if [[ "$(date +%s)" -gt "$(cat ./wipeunixtime)" ]]; then
+    echo "ワイプを行います。"
+    rm ./seed
+    rm ./createdunixtime
+    rm ./wipeunixtime
+  fi
+fi
+
+# 初回起動時に現在時刻(unixtime)のseed値と作成日時
+if [ ! -f "./seed" ] && [ ! -z "${ENV_SEED}" ] ; then echo "${ENV_SEED}" > ./seed; fi
+if [ ! -f "./seed" ]; then date +%s > ./seed; fi
+if [ ! -f "./createdunixtime" ]; then date +%s > ./createdunixtime; fi
+if [ ! -f "./wipeunixtime" ]; then 
+  if [ "${ENV_WIPE_CYCLE}" == "weekly" ]; then 
+    echo "ENV_WIPE_CYCLE:weekly"
+    echo "ワイプ周期を1週間に設定します。"
+    date -d "+1 week -30 min" +%s > ./wipeunixtime;
+    echo "ワイプ予定の unixtime -> $(cat ./wipeunixtime)"
+  fi
+  if [ "${ENV_WIPE_CYCLE}" == "bi-weekly" ]; then 
+    echo "ENV_WIPE_CYCLE:bi-weekly"
+    echo "ワイプ周期を2週間に設定します。"
+    date -d "+2 week -30 min" +%s > ./wipeunixtime;
+    echo "ワイプ予定の unixtime -> $(cat ./wipeunixtime)"
+  fi
+  if [ "${ENV_WIPE_CYCLE}" == "monthly" ]; then 
+    echo "ENV_WIPE_CYCLE:monthly"
+    echo "ワイプ周期を1か月に設定します。"
+    date -d "+1 month -30 min" +%s > ./wipeunixtime;
+    echo "ワイプ予定の unixtime -> $(cat ./wipeunixtime)"
+  fi
+  if [ ! -f "./wipeunixtime" ]; then
+    echo "ENV_WIPE_CYCLE:未指定または未定義の値"
+    echo "ワイプ周期を1か月に設定します。"
+    date -d "+1 month -30 min" +%s > ./wipeunixtime;
+    echo "ワイプ予定の unixtime -> $(cat ./wipeunixtime)"
+  fi
+fi
+
+# ENV_SEEDがある(ユーザーがシード指定してる)ならそのシード、未指定ならcreatedunixtime を シード値にする
+if [ ! -z "${ENV_SEED}" ]; then seed="${ENV_SEED}"; else seed=$(cat ./createdunixtime) fi
 
 #update rustdedicated
 steamcmd +login anonymous +force_install_dir /root/rustserver +app_update 258550 validate +quit
