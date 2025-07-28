@@ -146,15 +146,15 @@ while true; do
       sleep 10
       kill 1
     # 1 時間前ならアナウンス
-    elif [ -z ${REBOOTMSG1_SENT_FLG} ] && [[ "$(date +%s)" -gt "$(date -d "@${TARGET_STOP_UNIXTIME}" -d "-1 hour" )" ]]; then
+    elif [ -z ${REBOOTMSG1_SENT_FLG} ] && [[ "$(date +%s)" -gt "$(date -d "@${TARGET_STOP_UNIXTIME}" -d "-1 hour" +%s)" ]]; then
       rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say 1時間後に再起動します。/ Server will restart in an hour.";
       REBOOTMSG1_SENT_FLG=true
     # 30分前ならアナウンス
-    elif [ -z ${REBOOTMSG2_SENT_FLG} ] && [[ "$(date +%s)" -gt "$(date -d "@${TARGET_STOP_UNIXTIME}" -d "-30 minutes" )" ]]; then
+    elif [ -z ${REBOOTMSG2_SENT_FLG} ] && [[ "$(date +%s)" -gt "$(date -d "@${TARGET_STOP_UNIXTIME}" -d "-30 minutes" +%s)" ]]; then
       rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say 30分後に再起動します。/ Server will restart in 30 minutes.";
       REBOOTMSG2_SENT_FLG=true
     # 15分前ならアナウンス
-    elif [ -z ${REBOOTMSG3_SENT_FLG} ] && [[ "$(date +%s)" -gt "$(date -d "@${TARGET_STOP_UNIXTIME}" -d "-15 minutes" )" ]]; then
+    elif [ -z ${REBOOTMSG3_SENT_FLG} ] && [[ "$(date +%s)" -gt "$(date -d "@${TARGET_STOP_UNIXTIME}" -d "-15 minutes" +%s)" ]]; then
       rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say 15分後に再起動します。/ Server will restart in 15 minutes.";
       REBOOTMSG3_SENT_FLG=true
     fi
