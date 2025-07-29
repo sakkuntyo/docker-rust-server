@@ -2,7 +2,7 @@
 
 # docker stop 時の保存処理
 trap '
-rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say サーバーを停止中.....";
+rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say サーバーを停止中...../Shutting down server.....";
 rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "save";
 rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "quit";
 sleep 10
@@ -154,22 +154,22 @@ while true; do
     # 1 時間前ならアナウンス
     elif [ -z ${REBOOTMSG_1HOUR_SENT_FLG} ] && [[ "$(date +%s)" -gt "$(date -d "@${TARGET_STOP_UNIXTIME} -1 hour" +%s)" ]]; then
       echo "INFO: 再起動/停止の1時間前になりました。"
-      rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say サーバーは1時間後に停止/再起動されます。/ Server will restart in an hour.";
+      rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say サーバーは1時間後に停止/再起動されます。/ Server will restart or stop in an hour.";
       REBOOTMSG_1HOUR_SENT_FLG=true
     # 30分前ならアナウンス
     elif [ -z ${REBOOTMSG_30MIN_SENT_FLG} ] && [[ "$(date +%s)" -gt "$(date -d "@${TARGET_STOP_UNIXTIME} -30 minutes" +%s)" ]]; then
       echo "INFO: 再起動/停止の30分前になりました。"
-      rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say サーバーは30分後に停止/再起動されます。/ Server will restart in 30 minutes.";
+      rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say サーバーは30分後に停止/再起動されます。/ Server will restart or stop in 30 minutes.";
       REBOOTMSG_30MIN_SENT_FLG=true
     # 15分前ならアナウンス
     elif [ -z ${REBOOTMSG_15MIN_SENT_FLG} ] && [[ "$(date +%s)" -gt "$(date -d "@${TARGET_STOP_UNIXTIME} -15 minutes" +%s)" ]]; then
       echo "INFO: 再起動/停止の15分前になりました。"
-      rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say サーバーは15分後に停止/再起動されます。/ Server will restart in 15 minutes.";
+      rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say サーバーは15分後に停止/再起動されます。/ Server will restart or stop in 15 minutes.";
       REBOOTMSG_15MIN_SENT_FLG=true
     # 5分前ならアナウンス
     elif [ -z ${REBOOTMSG_5MIN_SENT_FLG} ] && [[ "$(date +%s)" -gt "$(date -d "@${TARGET_STOP_UNIXTIME} -5 minutes" +%s)" ]]; then
       echo "INFO: 再起動/停止の5分前になりました。"
-      rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say サーバーは5分後に停止/再起動されます。/ Server will restart in 15 minutes.";
+      rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say サーバーは5分後に停止/再起動されます。/ Server will restart or stop in 15 minutes.";
       REBOOTMSG_5MIN_SENT_FLG=true
     fi
   fi
