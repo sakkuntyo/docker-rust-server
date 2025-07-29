@@ -73,7 +73,9 @@ steamcmd +login anonymous +force_install_dir /root/rustserver +app_update 258550
 
 # exitnode 指定があるなら tailscale を起動 (特権モードが必要)
 if [ ! -z "${ENV_TS_EXITNODE_IP}" ]; then
-  tailscaled -verbose 1 &
+  # デバッグログを出させるが、docker logs -t で時刻を表示できるので時刻部分は sed で削除
+  tailscaled -verbose 1 | \
+    sed -u 's/^[0-9]\{4\}\/[0-9]\{2\}\/[0-9]\{2\} [0-9]\{2\}:[0-9]\{2\}:[0-9]\{2\} //g' &
   # そろそろここも if then 形式に変えたいけど、ちゃんと動いてる。。。。
   tailscale status && {
     tailscale up --exit-node="${ENV_TS_EXITNODE_IP}" --hostname=${ENV_TS_HOSTNAME}
