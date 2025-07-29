@@ -70,6 +70,7 @@ fi
 steamcmd +login anonymous +force_install_dir /root/rustserver +app_update 258550 validate +quit
 
 # exitnode 指定があるなら tailscale を起動 (特権モードが必要)
+# そろそろここも if then 形式に変えたいけど、ちゃんと動いてる。。。。
 if [ ! -z "${ENV_TS_EXITNODE_IP}" ]; then
   tailscaled -verbose 1 &
   tailscale status && {
