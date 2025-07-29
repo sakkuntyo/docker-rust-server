@@ -59,25 +59,26 @@ RustDedicated のオプションを環境変数で指定できます。指定し
    - Rust サーバーマシン <= 中継サーバー <= プレイヤー (IP B.B.B.B に接続... 接続成功!)
 
 
-## .env サンプル
+## .env サンプルとイメージ
 
 ```
-ENV_SERVERNAME=TEST SERVER
-ENV_SERVERDESCRIPTION="Welcome!\n---\n---\nこのサーバーは現在テスト中です。"
-ENV_SERVERURL="https://github.com/sakkuntyo/docker-rust-server"
-ENV_SERVERLOGOIMG="https://github.com/user-attachments/assets/9cb873a1-b0c8-4d01-9dfc-df41bb2468e5"
-ENV_SERVERTAGS=Vanilla
-ENV_WORLDSIZE=3000
-#ENV_SEED=
+ENV_SERVERNAME=nomarust Rapid | JP | Vanilla | Daily
+ENV_SERVERDESCRIPTION=Welcome! nomarust server!
+ENV_SERVERURL="https://discord.gg/C8kSMRNS"
+ENV_SERVERLOGOIMG="https://github.com/user-attachments/assets/e118e9d5-8bdc-489c-837b-f516def3f55c"
+ENV_SERVERTAGS=Vanilla,daily,EA
+ENV_WORLDSIZE=2700
 ENV_MAXPLAYERS=100
-ENV_MAXTEAMSIZE=8
-ENV_WIPE_CYCLE=monthly
-ENV_SERVER_PORT=28015
-ENV_RCON_PORT=28016
-ENV_QUERY_PORT=28017
+ENV_MAXTEAMSIZE=4
+ENV_WIPE_CYCLE=daily
+ENV_SERVER_PORT=29015
+ENV_RCON_PORT=29016
+ENV_QUERY_PORT=29017
 ENV_RCON_PASSWD=StrongPasswd123456
-#ENV_STOP_TIME=
-#ENV_TS_EXITNODE_IP=
-#ENV_TS_HOSTNAME=
-#ENV_TS_AUTHKEY=
+ENV_TS_EXITNODE_IP=100.92.165.28
+ENV_TS_HOSTNAME=docker-rust-rapid
+ENV_TS_AUTHKEY=tskey-auth-kgPTACYnNU11CNTRL-vvUdb8fY5Niid8piTFWnNidoo41codGsE
+ENV_STOP_TIME=09:00
 ```
+
+
