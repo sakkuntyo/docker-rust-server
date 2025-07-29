@@ -22,7 +22,7 @@ RustDedicated のオプションを環境変数で指定できます。指定し
 |変数名|既定値|概要|
 |:-|:-|:-:|
 |ENV_SERVERNAME|TEST SERVER|サーバーリストに表示される|
-|ENV_SERVERDESCRIPTION|Welcome!\n---\nこのサーバーは現在テスト中です。|ここで指定した内容の後にサーバー設定が記載されます。|
+|ENV_SERVERDESCRIPTION|Welcome!\n---\nこのサーバーは現在テスト中です。|ここで指定した内容の後にサーバー設定が記載される|
 |ENV_SERVERURL|https://github.com/sakkuntyo/docker-rust-server| Discord のリンクやHPに置き換える |
 |ENV_SERVERLOGOIMG|https://github.com/user-attachments/assets/9cb873a1-b0c8-4d01-9dfc-df41bb2468e5||
 |ENV_SERVERTAGS|Vanilla|https://wiki.facepunch.com/rust/server-browser-tags|
