@@ -45,7 +45,7 @@ RustDedicated のオプションを環境変数で指定できます。指定し
 |ENV_TS_HOSTNAME||tailscale ネットワーク上で表示される名前、未指定だとコンテナIDになる|
 |ENV_TS_AUTHKEY||非対話で進めたい場合に指定する|
 
-## なぜ tailscale exitnode のオプションがあるのか
+## tailscale exitnode オプションの用途
 リバースプロキシ環境を挟んだ時の以下 3 の問題を解決するために tailscale exitnode を使う事にしました。
 ただ、ほとんどの人には不要なオプションかもしれません。
 
