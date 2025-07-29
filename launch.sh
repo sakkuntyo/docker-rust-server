@@ -84,7 +84,7 @@ fi
 ./RustDedicated -batchmode \
         +server.identity "serverdata1" \
         +server.hostname "${ENV_SERVERNAME:=TEST SERVER}" \
-        +server.description "${ENV_SERVERDESCRIPTION:=Welcome!}\n---\nMax team size:${ENV_MAXTEAMSIZE:=8}\nMax players:${ENV_MAXPLAYERS:=100}\nWorld size:${ENV_WORLDSIZE:=3000}\nWipe schedule:${ENV_WIPE_CYCLE:=Monthly}\nNext wipe:$(date -d "@$(cat ./wipeunixtime)" '+%Y/%m/%d %T')" \
+        +server.description "${ENV_SERVERDESCRIPTION:=Welcome!}\n---\nMax team size:${ENV_MAXTEAMSIZE:=8}\nMax players:${ENV_MAXPLAYERS:=100}\nWorld size:${ENV_WORLDSIZE:=3000}\nWipe schedule:${ENV_WIPE_CYCLE:=Monthly}\nNext wipe:$(date -d "@$(cat ./wipeunixtime)" '+%Y-%m-%d_%T(%Z)')" \
         +server.logoimage "${ENV_SERVERLOGOIMG:=https://github.com/user-attachments/assets/9cb873a1-b0c8-4d01-9dfc-df41bb2468e5}" \
         +server.url "${ENV_SERVERURL:=https://github.com/sakkuntyo/docker-rust-server}" \
         +server.seed "$(cat ./seed)" \
