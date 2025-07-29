@@ -26,7 +26,7 @@ if [ ! -z "${ENV_STOP_TIME}" ];then
     TARGET_STOP_UNIXTIME=$(date -d "tomorrow ${ENV_STOP_TIME}" +%s);
   fi
   echo "定期停止時刻: ${ENV_STOP_TIME}"
-  echo "次の停止時刻: $(date -d "@${TARGET_STOP_UNIXTIME}" +%Y-%m-%dT%TZ)"
+  echo "次の停止時刻: $(date -d "@${TARGET_STOP_UNIXTIME}" '+%Y/%m/%d %T')"
 fi
 
 # 初回起動時に現在時刻(unixtime)のseed値と作成日時
@@ -103,7 +103,7 @@ fi
 # 10分後に死活監視を開始
 for ((i = 1; i <= 10; i++))
 do
-  echo "$(date):$(((10 - i))) 分後に死活監視を開始します。。。"
+  echo "$(date):$(((10 - i))) 分後にヘルスチェックを開始します。。。"
   sleep 60
 done
 
@@ -137,6 +137,8 @@ while true; do
   
   ## STOP TIME が設定されている場合だけ停止時間チェック
   if [ ! -z "${ENV_STOP_TIME}" ];then
+    echo "現在時刻: $(date '+%Y/%m/%d %T')"
+    echo "停止時刻: $(date -d @${TARGET_STOP_UNIXTIME} '+%Y/%m/%d %T')"
     # 停止する時刻を過ぎたなら停止
     if [[ "$(date +%s)" -gt "${TARGET_STOP_UNIXTIME}" ]]; then
       echo "停止時刻となったため停止します。"
@@ -166,5 +168,5 @@ while true; do
     fi
   fi
 
-  sleep 60 # 次のチェックまで待機
+  sleep 60
 done
