@@ -1,9 +1,9 @@
 FROM "steamcmd/steamcmd:ubuntu-24"
 
-RUN echo "バージョン(キャッシュ回避用に変更): 1.0.12.$(date +%s)-5"
+RUN echo "バージョン(キャッシュ回避用に変更): 1.0.12.$(date +%s)-6"
 RUN ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
 
-RUN apt update;apt install wget curl net-tools tini -y;
+RUN apt update;apt install wget curl net-tools tini tzdata -y;
 RUN curl -fsSL https://tailscale.com/install.sh | sh
 RUN rm -rf /var/lib/apt/lists/*
 RUN wget https://github.com/gorcon/rcon-cli/releases/download/v0.10.3/rcon-0.10.3-amd64_linux.tar.gz -O rcon.tar.gz && tar -zxf rcon.tar.gz -C /tmp/ --wildcards rcon*/rcon && cp /tmp/rcon*/rcon /usr/local/bin/ && rm rcon.tar.gz && rm -r /tmp/rcon*
