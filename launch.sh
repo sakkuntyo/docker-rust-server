@@ -140,7 +140,7 @@ while true; do
     echo "DEBUG: --------------------"
     echo "DEBUG: 現在時刻: $(date '+%Y/%m/%d %T')"
     echo "DEBUG: 停止時刻: $(date -d @${TARGET_STOP_UNIXTIME} '+%Y/%m/%d %T')"
-    echo "DEBUG: 現在時刻 > 停止時刻 = $(if [[ $(date '+%Y/%m/%d %T') -gt "$(date -d @${TARGET_STOP_UNIXTIME} '+%Y/%m/%d %T')" ]] ; then echo true; else echo false; fi)"
+    echo "DEBUG: 現在時刻 > 停止時刻 = $(if [[ $(date '+%s') -gt "$(date -d @${TARGET_STOP_UNIXTIME} '+%s')" ]] ; then echo true; else echo false; fi)"
     echo "DEBUG: --------------------"
 
     # 停止する時刻を過ぎたなら停止
