@@ -2,8 +2,10 @@
 
 # docker stop 時の保存処理
 trap '
+rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say サーバーを停止中.....";
 rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "save";
 rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "quit";
+sleep 10
 exit 0;
 ' SIGTERM
 
@@ -85,7 +87,7 @@ fi
 ./RustDedicated -batchmode \
         +server.identity "serverdata1" \
         +server.hostname "${ENV_SERVERNAME:=TEST SERVER}" \
-        +server.description "${ENV_SERVERDESCRIPTION:=Welcome!}\n---\nMax team size:${ENV_MAXTEAMSIZE:=8}\nMax players:${ENV_MAXPLAYERS:=100}\nWorld size:${ENV_WORLDSIZE:=3000}\nWipe schedule:${ENV_WIPE_CYCLE:=Monthly}\nNext wipe:$(date -d "@$(cat ./wipeunixtime)" '+%Y-%m-%d_%T(%Z)')" \
+        +server.description "${ENV_SERVERDESCRIPTION:=Welcome!}\n---\nMax team size:${ENV_MAXTEAMSIZE:=8}\nMax players:${ENV_MAXPLAYERS:=100}\nWorld size:${ENV_WORLDSIZE:=3000}\nWipe schedule:${ENV_WIPE_CYCLE:=Monthly}\nNext wipe:$(date -d "@$(cat ./wipeunixtime)" '+%Y-%m-%d_%T(%Z)')\nNext restart/stop time:$(date -d "@${TARGET_STOP_UNIXTIME}" '+%Y-%m-%d_%T(%Z)')" \
         +server.logoimage "${ENV_SERVERLOGOIMG:=https://github.com/user-attachments/assets/9cb873a1-b0c8-4d01-9dfc-df41bb2468e5}" \
         +server.url "${ENV_SERVERURL:=https://github.com/sakkuntyo/docker-rust-server}" \
         +server.seed "$(cat ./seed)" \
@@ -148,28 +150,26 @@ while true; do
     # 停止する時刻を過ぎたなら停止
     if [[ "$(date +%s)" -gt "${TARGET_STOP_UNIXTIME}" ]]; then
       echo "INFO: 停止時刻となったため停止します。"
-      rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say 再起動します";
-      sleep 10
       kill 1
     # 1 時間前ならアナウンス
     elif [ -z ${REBOOTMSG_1HOUR_SENT_FLG} ] && [[ "$(date +%s)" -gt "$(date -d "@${TARGET_STOP_UNIXTIME} -1 hour" +%s)" ]]; then
-      echo "INFO: 停止時刻1時間前になりました。"
-      rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say 1時間後に再起動します。/ Server will restart in an hour.";
+      echo "INFO: 再起動/停止の1時間前になりました。"
+      rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say サーバーは1時間後に停止/再起動されます。/ Server will restart in an hour.";
       REBOOTMSG_1HOUR_SENT_FLG=true
     # 30分前ならアナウンス
     elif [ -z ${REBOOTMSG_30MIN_SENT_FLG} ] && [[ "$(date +%s)" -gt "$(date -d "@${TARGET_STOP_UNIXTIME} -30 minutes" +%s)" ]]; then
-      echo "INFO: 停止時刻30分前になりました。"
-      rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say 30分後に再起動します。/ Server will restart in 30 minutes.";
+      echo "INFO: 再起動/停止の30分前になりました。"
+      rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say サーバーは30分後に停止/再起動されます。/ Server will restart in 30 minutes.";
       REBOOTMSG_30MIN_SENT_FLG=true
     # 15分前ならアナウンス
     elif [ -z ${REBOOTMSG_15MIN_SENT_FLG} ] && [[ "$(date +%s)" -gt "$(date -d "@${TARGET_STOP_UNIXTIME} -15 minutes" +%s)" ]]; then
-      echo "INFO: 停止時刻15分前になりました。"
-      rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say 15分後に再起動します。/ Server will restart in 15 minutes.";
+      echo "INFO: 再起動/停止の15分前になりました。"
+      rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say サーバーは15分後に停止/再起動されます。/ Server will restart in 15 minutes.";
       REBOOTMSG_15MIN_SENT_FLG=true
     # 5分前ならアナウンス
     elif [ -z ${REBOOTMSG_5MIN_SENT_FLG} ] && [[ "$(date +%s)" -gt "$(date -d "@${TARGET_STOP_UNIXTIME} -5 minutes" +%s)" ]]; then
-      echo "INFO: 停止時刻5分前になりました。"
-      rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say 5分後に再起動します。/ Server will restart in 15 minutes.";
+      echo "INFO: 再起動/停止の5分前になりました。"
+      rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say サーバーは5分後に停止/再起動されます。/ Server will restart in 15 minutes.";
       REBOOTMSG_5MIN_SENT_FLG=true
     fi
   fi
