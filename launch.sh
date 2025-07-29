@@ -152,22 +152,22 @@ while true; do
       sleep 10
       kill 1
     # 1 時間前ならアナウンス
-    elif [ -z ${REBOOTMSG_1HOUR_SENT_FLG} ] && [[ "$(date +%s)" -gt "$(date -d "@${TARGET_STOP_UNIXTIME}" -d "-1 hour" +%s)" ]]; then
+    elif [ -z ${REBOOTMSG_1HOUR_SENT_FLG} ] && [[ "$(date +%s)" -gt "$(date -d "@${TARGET_STOP_UNIXTIME} -1 hour" +%s)" ]]; then
       echo "INFO: 停止時刻1時間前になりました。"
       rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say 1時間後に再起動します。/ Server will restart in an hour.";
       REBOOTMSG_1HOUR_SENT_FLG=true
     # 30分前ならアナウンス
-    elif [ -z ${REBOOTMSG_30MIN_SENT_FLG} ] && [[ "$(date +%s)" -gt "$(date -d "@${TARGET_STOP_UNIXTIME}" -d "-30 minutes" +%s)" ]]; then
+    elif [ -z ${REBOOTMSG_30MIN_SENT_FLG} ] && [[ "$(date +%s)" -gt "$(date -d "@${TARGET_STOP_UNIXTIME} -30 minutes" +%s)" ]]; then
       echo "INFO: 停止時刻30分前になりました。"
       rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say 30分後に再起動します。/ Server will restart in 30 minutes.";
       REBOOTMSG_30MIN_SENT_FLG=true
     # 15分前ならアナウンス
-    elif [ -z ${REBOOTMSG_15MIN_SENT_FLG} ] && [[ "$(date +%s)" -gt "$(date -d "@${TARGET_STOP_UNIXTIME}" -d "-15 minutes" +%s)" ]]; then
+    elif [ -z ${REBOOTMSG_15MIN_SENT_FLG} ] && [[ "$(date +%s)" -gt "$(date -d "@${TARGET_STOP_UNIXTIME} -15 minutes" +%s)" ]]; then
       echo "INFO: 停止時刻15分前になりました。"
       rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say 15分後に再起動します。/ Server will restart in 15 minutes.";
       REBOOTMSG_15MIN_SENT_FLG=true
     # 5分前ならアナウンス
-    elif [ -z ${REBOOTMSG_5MIN_SENT_FLG} ] && [[ "$(date +%s)" -gt "$(date -d "@${TARGET_STOP_UNIXTIME}" -d "-5 minutes" +%s)" ]]; then
+    elif [ -z ${REBOOTMSG_5MIN_SENT_FLG} ] && [[ "$(date +%s)" -gt "$(date -d "@${TARGET_STOP_UNIXTIME} -5 minutes" +%s)" ]]; then
       echo "INFO: 停止時刻5分前になりました。"
       rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say 5分後に再起動します。/ Server will restart in 15 minutes.";
       REBOOTMSG_5MIN_SENT_FLG=true
