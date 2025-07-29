@@ -74,11 +74,13 @@ ENV_WIPE_CYCLE=daily
 ENV_SERVER_PORT=29015
 ENV_RCON_PORT=29016
 ENV_QUERY_PORT=29017
-ENV_RCON_PASSWD=StrongPasswd123456
-ENV_TS_EXITNODE_IP=100.92.165.28
+ENV_RCON_PASSWD=秘密
+ENV_TS_EXITNODE_IP=秘密
 ENV_TS_HOSTNAME=docker-rust-rapid
-ENV_TS_AUTHKEY=tskey-auth-kgPTACYnNU11CNTRL-vvUdb8fY5Niid8piTFWnNidoo41codGsE
+ENV_TS_AUTHKEY=秘密
 ENV_STOP_TIME=09:00
 ```
+
+<img width="813" height="770" alt="image" src="https://github.com/user-attachments/assets/c4f9e2b2-0b43-438d-8b05-62069f34f33e" />
 
 
