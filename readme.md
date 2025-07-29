@@ -6,7 +6,7 @@ Rust サーバーを管理するために生まれたコンテナです。
 - 指定した停止時刻に停止(コンテナを unless-stopped にすることで再起動されます)
 - 再起動時にワイプ期間が過ぎていればワイプを実行
 - 再起動時にRustDedicatedのアップデート
-- netstat によるポートと、pgrep によるプロセスのヘルスチェック
+- netstat によるポートと pgrep によるプロセスのヘルスチェック
 - tini, trap, rcon-cli による docker stop 時の自動セーブ
 - tailscale exitnode の使用(Privileged モードが必要です)
 
