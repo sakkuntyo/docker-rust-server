@@ -102,7 +102,7 @@ fi
         +server.queryport ${ENV_QUERY_PORT:=28017} \
         +server.tags "${ENV_SERVERTAGS:=Vanilla}" &
 
-# 5分後に死活監視を開始
+# 10分後に死活監視を開始
 for ((i = 1; i <= 10; i++))
 do
   echo "$(date):$(((10 - i))) 分後に死活監視を開始します。。。"
