@@ -4,6 +4,7 @@
 trap '
 rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "save";
 rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "quit";
+exit 0;
 ' SIGTERM
 
 # ワイプ周期が来ている場合は ./seed ファイルを消してリセットする
