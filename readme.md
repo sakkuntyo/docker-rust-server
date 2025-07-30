@@ -3,7 +3,7 @@
 Rust サーバーを管理するために生まれたコンテナです。
 以下がこのコンテナ一つで出来ます。
 
-- 指定した停止時刻に停止(コンテナを unless-stopped にすることで再起動されます)
+- 指定したワイプ時刻(例:09:00)に日次停止(コンテナを unless-stopped にすることで再起動されます)
 - 再起動時にワイプ期間が過ぎていればワイプを実行
 - 再起動時にRustDedicatedのアップデート
 - netstat によるポートと pgrep によるプロセスのヘルスチェック
@@ -32,12 +32,13 @@ RustDedicated のオプションを環境変数で指定できます。指定し
 |ENV_SEED||未指定では初回起動時のunixtime|
 |ENV_MAXPLAYERS|100|サーバー最大人数|
 |ENV_MAXTEAMSIZE|8|パーティ最大人数|
-|ENV_WIPE_CYCLE|monthly|monthly<br>bi-weekly<br>weekly<br>daily|
+|ENV_WIPE_CYCLE|monthly|monthly<br>bi-weekly<br>weekly<br>daily<br>monthlyは5週間|
+|ENV_WIPE_DAY_OF_WEEK||sunday<br>monday<br>tuesday<br>wednesday<br>thursday<br>friday<br>saturday|
+|ENV_WIPE_TIME|09:00|20:00 を指定すると、ワイプ時刻が 20:00 になります。<br>それと並行し毎日 20:00 に停止する様になります。(コンテナの自動起動オプションと合わせて再起動)|
 |ENV_SERVER_PORT|28015||
 |ENV_RCON_PORT|28016||
 |ENV_QUERY_PORT|28017||
 |ENV_RCON_PASSWD|StrongPasswd123456|既定値は非推奨|
-|ENV_STOP_TIME||20:00 を指定すると毎日 20:00 に停止(コンテナの自動起動オプションと合わせて再起動)|
 
 以下は tailscale exitnode を使用する場合に必要です。
 
@@ -64,23 +65,24 @@ RustDedicated のオプションを環境変数で指定できます。指定し
 ## .env サンプルとイメージ
 
 ```
-ENV_SERVERNAME=nomarust Rapid | JP | Vanilla | Daily
+ENV_SERVERNAME=nomarust Med | JP | Vanilla | Bi-weekly
 ENV_SERVERDESCRIPTION=Welcome! nomarust server!
 ENV_SERVERURL="https://discord.gg/C8kSMRNS"
 ENV_SERVERLOGOIMG="https://github.com/user-attachments/assets/e118e9d5-8bdc-489c-837b-f516def3f55c"
-ENV_SERVERTAGS=Vanilla,daily,EA
-ENV_WORLDSIZE=2700
-ENV_MAXPLAYERS=100
+ENV_SERVERTAGS=Vanilla,bi-weekly,EA
+ENV_WORLDSIZE=3900
+ENV_MAXPLAYERS=150
 ENV_MAXTEAMSIZE=4
-ENV_WIPE_CYCLE=daily
-ENV_SERVER_PORT=29015
-ENV_RCON_PORT=29016
-ENV_QUERY_PORT=29017
+ENV_WIPE_CYCLE=bi-weekly
+ENV_WIPE_TIME=09:00
+ENV_WIPE_DAY_OF_WEEK=monday
+ENV_SERVER_PORT=30015
+ENV_RCON_PORT=30016
+ENV_QUERY_PORT=30017
 ENV_RCON_PASSWD=秘密
 ENV_TS_EXITNODE_IP=秘密
 ENV_TS_HOSTNAME=docker-rust-rapid
 ENV_TS_AUTHKEY=秘密
-ENV_STOP_TIME=09:00
 ```
 
 <img width="813" height="770" alt="image" src="https://github.com/user-attachments/assets/c4f9e2b2-0b43-438d-8b05-62069f34f33e" />
