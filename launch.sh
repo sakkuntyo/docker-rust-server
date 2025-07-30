@@ -21,51 +21,38 @@ if [ -f "./wipeunixtime" ]; then
   fi
 fi
 
-# STOP TIME が設定されている場合だけ停止時間を決定
-if [ ! -z "${ENV_STOP_TIME}" ];then
-  if [[ "$(date +%s)" -lt $(date -d "${ENV_STOP_TIME}" +%s) ]];then 
-    TARGET_STOP_UNIXTIME=$(date -d "${ENV_STOP_TIME}" +%s);
-  else
-    TARGET_STOP_UNIXTIME=$(date -d "tomorrow ${ENV_STOP_TIME}" +%s);
-  fi
-  echo "INFO: 定期停止時刻: ${ENV_STOP_TIME}"
-  echo "INFO: 次の停止時刻: $(date -d "@${TARGET_STOP_UNIXTIME}" '+%Y/%m/%d %T')"
+# WIPE TIME から停止時間を決定
+if [[ "$(date +%s)" -lt $(date -d "${ENV_WIPE_TIME:=09:00}" +%s) ]];then 
+  TARGET_STOP_UNIXTIME=$(date -d "${ENV_WIPE_TIME:=09:00}" +%s);
+else
+  TARGET_STOP_UNIXTIME=$(date -d "tomorrow ${ENV_WIPE_TIME:=09:00}" +%s);
 fi
+echo "INFO: 定期停止時刻: ${ENV_WIPE_TIME:=09:00}"
+echo "INFO: 次の停止時刻: $(date -d "@${TARGET_STOP_UNIXTIME}" '+%Y/%m/%d %T')"
 
 # 初回起動時に現在時刻(unixtime)のseed値と作成日時
 if [ ! -f "./seed" ] && [ ! -z "${ENV_SEED}" ] ; then echo "${ENV_SEED}" > ./seed; fi
 if [ ! -f "./seed" ]; then date +%s > ./seed; fi
 if [ ! -f "./wipeunixtime" ]; then
-  if [ "${ENV_WIPE_CYCLE}" == "daily" ]; then 
-    echo "INFO: ENV_WIPE_CYCLE:daily"
-    echo "INFO: ワイプ周期を1日に設定します。"
-    date -d "+1 day -30 min" +%s > ./wipeunixtime;
-    echo "INFO: ワイプ予定時刻 -> $(date -d "@$(cat ./wipeunixtime)" "+%Y/%m/%d %T")"
-  fi
-  if [ "${ENV_WIPE_CYCLE}" == "weekly" ]; then 
-    echo "INFO: ENV_WIPE_CYCLE:weekly"
-    echo "INFO: ワイプ周期を1週間に設定します。"
-    date -d "+1 week -30 min" +%s > ./wipeunixtime;
-    echo "INFO: 次のワイプ予定時刻 -> $(date -d "@$(cat ./wipeunixtime)" "+%Y/%m/%d %T")"
-  fi
-  if [ "${ENV_WIPE_CYCLE}" == "bi-weekly" ]; then 
-    echo "INFO: ENV_WIPE_CYCLE:bi-weekly"
-    echo "INFO: ワイプ周期を2週間に設定します。"
-    date -d "+2 week -30 min" +%s > ./wipeunixtime;
-    echo "INFO: 次のワイプ予定時刻 -> $(date -d "@$(cat ./wipeunixtime)" "+%Y/%m/%d %T")"
-  fi
-  if [ "${ENV_WIPE_CYCLE}" == "monthly" ]; then 
-    echo "INFO: ENV_WIPE_CYCLE:monthly"
-    echo "INFO: ワイプ周期を1か月に設定します。"
-    date -d "+1 month -30 min" +%s > ./wipeunixtime;
-    echo "INFO: 次のワイプ予定時刻 -> $(date -d "@$(cat ./wipeunixtime)" "+%Y/%m/%d %T")"
-  fi
-  if [ ! -f "./wipeunixtime" ]; then
-    echo "INFO: ENV_WIPE_CYCLE:未指定または未定義の値"
-    echo "INFO: ワイプ周期を1か月に設定します。"
-    date -d "+1 month -30 min" +%s > ./wipeunixtime;
-    echo "INFO: 次のワイプ予定時刻 -> $(date -d "@$(cat ./wipeunixtime)" "+%Y/%m/%d %T")"
-  fi
+  # ENV_WIPE_CYCLE を date -d に指定する文字列へ変換した変数を作成
+  case ${ENV_WIPE_CYCLE:=monthly} in
+  "monthly")
+    ENV_WIPE_CYCLE_DATED="5 week"
+    ;;
+  "bi-weekly")
+    ENV_WIPE_CYCLE_DATED="2 week"
+    ;;
+  "weekly")
+    ENV_WIPE_CYCLE_DATED="1 week"
+    ;;
+  "daily")
+    ENV_WIPE_CYCLE_DATED="1 daily"
+    ;;
+  esac
+  
+  echo "INFO: ENV_WIPE_CYCLE:${ENV_WIPE_CYCLE}"
+  date -d "$(echo "${ENV_WIPE_DAY_OF_WEEK} ${ENV_WIPE_CYCLE_DATED} ${ENV_WIPE_TIME}" | sed "s/.* 1 days/1 days/g" | sed "s/day 1 week/day 0 week/g" | sed "s/day 2 week/day 1 week/g" | sed "s/day 5 week/day 4 week/g")" +%s > ./wipeunixtime;
+  echo "INFO: ワイプ予定時刻 -> $(date -d "@$(cat ./wipeunixtime)" "+%Y/%m/%d %T")"
 fi
 
 # update rustdedicated
@@ -141,39 +128,36 @@ while true; do
     echo "INFO: Health Check: 全てのサービスは正常に稼働中です。"
   fi
   
-  ## STOP TIME が設定されている場合だけ停止時間チェック
-  if [ ! -z "${ENV_STOP_TIME}" ];then
-    echo "DEBUG: --------------------"
-    echo "DEBUG: 現在時刻: $(date '+%Y/%m/%d %T')"
-    echo "DEBUG: 停止時刻: $(date -d @${TARGET_STOP_UNIXTIME} '+%Y/%m/%d %T')"
-    echo "DEBUG: 現在時刻 > 停止時刻 = $(if [[ $(date '+%s') -gt "$(date -d @${TARGET_STOP_UNIXTIME} '+%s')" ]] ; then echo true; else echo false; fi)"
-    echo "DEBUG: --------------------"
+  echo "DEBUG: --------------------"
+  echo "DEBUG: 現在時刻: $(date '+%Y/%m/%d %T')"
+  echo "DEBUG: 停止時刻: $(date -d @${TARGET_STOP_UNIXTIME} '+%Y/%m/%d %T')"
+  echo "DEBUG: 現在時刻 > 停止時刻 = $(if [[ $(date '+%s') -gt "$(date -d @${TARGET_STOP_UNIXTIME} '+%s')" ]] ; then echo true; else echo false; fi)"
+  echo "DEBUG: --------------------"
 
-    # 停止する時刻を過ぎたなら停止
-    if [[ "$(date +%s)" -gt "${TARGET_STOP_UNIXTIME}" ]]; then
-      echo "INFO: 停止時刻となったため停止します。"
-      kill 1
-    # 1 時間前ならアナウンス
-    elif [ -z ${REBOOTMSG_1HOUR_SENT_FLG} ] && [[ "$(date +%s)" -gt "$(date -d "$(date -d @${TARGET_STOP_UNIXTIME}) -1 hour" +%s)" ]]; then
-      echo "INFO: 再起動/停止の1時間前になりました。"
-      rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say サーバーは1時間後に停止/再起動されます。/ Server will restart or stop in an hour.";
-      REBOOTMSG_1HOUR_SENT_FLG=true
-    # 30分前ならアナウンス
-    elif [ -z ${REBOOTMSG_30MIN_SENT_FLG} ] && [[ "$(date +%s)" -gt "$(date -d "$(date -d @${TARGET_STOP_UNIXTIME}) -30 minutes" +%s)" ]]; then
-      echo "INFO: 再起動/停止の30分前になりました。"
-      rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say サーバーは30分後に停止/再起動されます。/ Server will restart or stop in 30 minutes.";
-      REBOOTMSG_30MIN_SENT_FLG=true
-    # 15分前ならアナウンス
-    elif [ -z ${REBOOTMSG_15MIN_SENT_FLG} ] && [[ "$(date +%s)" -gt "$(date -d "$(date -d @${TARGET_STOP_UNIXTIME}) -15 minutes" +%s)" ]]; then
-      echo "INFO: 再起動/停止の15分前になりました。"
-      rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say サーバーは15分後に停止/再起動されます。/ Server will restart or stop in 15 minutes.";
-      REBOOTMSG_15MIN_SENT_FLG=true
-    # 5分前ならアナウンス
-    elif [ -z ${REBOOTMSG_5MIN_SENT_FLG} ] && [[ "$(date +%s)" -gt "$(date -d "$(date -d @${TARGET_STOP_UNIXTIME}) -5 minutes" +%s)" ]]; then
-      echo "INFO: 再起動/停止の5分前になりました。"
-      rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say サーバーは5分後に停止/再起動されます。/ Server will restart or stop in 15 minutes.";
-      REBOOTMSG_5MIN_SENT_FLG=true
-    fi
+  # 停止する時刻を過ぎたなら停止
+  if [[ "$(date +%s)" -gt "${TARGET_STOP_UNIXTIME}" ]]; then
+    echo "INFO: 停止時刻となったため停止します。"
+    kill 1
+  # 1 時間前ならアナウンス
+  elif [ -z ${REBOOTMSG_1HOUR_SENT_FLG} ] && [[ "$(date +%s)" -gt "$(date -d "$(date -d @${TARGET_STOP_UNIXTIME}) -1 hour" +%s)" ]]; then
+    echo "INFO: 再起動/停止の1時間前になりました。"
+    rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say サーバーは1時間後に停止/再起動されます。/ Server will restart or stop in an hour.";
+    REBOOTMSG_1HOUR_SENT_FLG=true
+  # 30分前ならアナウンス
+  elif [ -z ${REBOOTMSG_30MIN_SENT_FLG} ] && [[ "$(date +%s)" -gt "$(date -d "$(date -d @${TARGET_STOP_UNIXTIME}) -30 minutes" +%s)" ]]; then
+    echo "INFO: 再起動/停止の30分前になりました。"
+    rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say サーバーは30分後に停止/再起動されます。/ Server will restart or stop in 30 minutes.";
+    REBOOTMSG_30MIN_SENT_FLG=true
+  # 15分前ならアナウンス
+  elif [ -z ${REBOOTMSG_15MIN_SENT_FLG} ] && [[ "$(date +%s)" -gt "$(date -d "$(date -d @${TARGET_STOP_UNIXTIME}) -15 minutes" +%s)" ]]; then
+    echo "INFO: 再起動/停止の15分前になりました。"
+    rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say サーバーは15分後に停止/再起動されます。/ Server will restart or stop in 15 minutes.";
+    REBOOTMSG_15MIN_SENT_FLG=true
+  # 5分前ならアナウンス
+  elif [ -z ${REBOOTMSG_5MIN_SENT_FLG} ] && [[ "$(date +%s)" -gt "$(date -d "$(date -d @${TARGET_STOP_UNIXTIME}) -5 minutes" +%s)" ]]; then
+    echo "INFO: 再起動/停止の5分前になりました。"
+    rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say サーバーは5分後に停止/再起動されます。/ Server will restart or stop in 15 minutes.";
+    REBOOTMSG_5MIN_SENT_FLG=true
   fi
 
   sleep 60
