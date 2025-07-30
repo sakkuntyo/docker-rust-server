@@ -85,7 +85,8 @@ ENV_TS_HOSTNAME=docker-rust-med
 ENV_TS_AUTHKEY=秘密
 ```
 
-<img width="811" height="848" alt="image" src="https://github.com/user-attachments/assets/58595213-b5ef-4218-80a5-fbe87fd10bcc" />
+<img width="803" height="384" alt="image" src="https://github.com/user-attachments/assets/9a42d07e-2c67-4f7a-9f77-d1e0fd1ef87f" />
+
 
 
 
