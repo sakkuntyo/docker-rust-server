@@ -46,7 +46,7 @@ if [ ! -f "./wipeunixtime" ]; then
     ENV_WIPE_CYCLE_DATED="1 week"
     ;;
   "daily")
-    ENV_WIPE_CYCLE_DATED="1 daily"
+    ENV_WIPE_CYCLE_DATED="1 days"
     ;;
   esac
   
@@ -96,7 +96,7 @@ fi
 # 10分後に死活監視を開始
 for ((i = 1; i <= 10; i++))
 do
-  echo "INFO: $(((10 - i))) 分後にヘルスチェックを開始します。。。"
+  echo "INFO: $(((11 - i))) 分後にヘルスチェックを開始します。。。"
   sleep 60
 done
 
