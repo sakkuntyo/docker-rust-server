@@ -98,9 +98,9 @@ fi
         +server.tags "${ENV_SERVERTAGS:=Vanilla}" &
 
 # 10分後に死活監視を開始
-for ((i = 1; i <= 10; i++))
+for ((i = 1; i <= 20; i++))
 do
-  echo "INFO: $(((11 - i))) 分後にヘルスチェックを開始します。。。"
+  echo "INFO: $(((21 - i))) 分後にヘルスチェックを開始します。。。"
   sleep 60
 done
 
