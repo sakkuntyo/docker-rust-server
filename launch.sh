@@ -13,10 +13,14 @@ exit 0;
 if [ -f "./server/wipeunixtime" ]; then 
   echo "INFO: 現在の時刻　　 -> $(date "+%Y/%m/%d %T")"
   echo "INFO: ワイプ予定時刻 -> $(date -d "@$(cat ./server/wipeunixtime)" "+%Y/%m/%d %T")"
+  echo "INFO: ${ENV_WIPE_TYPE:=FULL}"
   if [[ "$(date +%s)" -gt "$(cat ./server/wipeunixtime)" ]]; then
     echo "INFO: ワイプを行います。"
     rm ./server/seed
     rm ./server/wipeunixtime
+    if [ "${ENV_WIPE_TYPE:=FULL}" == "FULL" ]; then
+      rm -r ./server/*
+    fi
     echo "INFO: ワイプ処理を完了しました"
   fi
 fi
@@ -76,7 +80,7 @@ fi
 ./RustDedicated -batchmode \
         +server.identity "serverdata1" \
         +server.hostname "${ENV_SERVERNAME:=TEST SERVER}" \
-        +server.description "${ENV_SERVERDESCRIPTION:=Welcome!}\n---\nMax team size:${ENV_MAXTEAMSIZE:=8}\nMax players:${ENV_MAXPLAYERS:=100}\nWorld size:${ENV_WORLDSIZE:=3000}\nWipe schedule:${ENV_WIPE_CYCLE:=Monthly}\nNext wipe:$(date -d "@$(cat ./server/wipeunixtime)" '+%Y-%m-%d_%T(%Z)')\nNext restart/stop time:$(date -d "@${TARGET_STOP_UNIXTIME}" '+%Y-%m-%d_%T(%Z)')" \
+        +server.description "${ENV_SERVERDESCRIPTION:=Welcome!}\n---\nMax team size:${ENV_MAXTEAMSIZE:=8}\nMax players:${ENV_MAXPLAYERS:=100}\nWorld size:${ENV_WORLDSIZE:=3000}\nWipe schedule:${ENV_WIPE_CYCLE:=Monthly}\nWipe Type: ${ENV_WIPE_TYPE:=FULL}\nNext wipe:$(date -d "@$(cat ./server/wipeunixtime)" '+%Y-%m-%d_%T(%Z)')\nNext restart/stop time:$(date -d "@${TARGET_STOP_UNIXTIME}" '+%Y-%m-%d_%T(%Z)')" \
         +server.logoimage "${ENV_SERVERLOGOIMG:=https://github.com/user-attachments/assets/9cb873a1-b0c8-4d01-9dfc-df41bb2468e5}" \
         +server.url "${ENV_SERVERURL:=https://github.com/sakkuntyo/docker-rust-server}" \
         +server.seed "$(cat ./server/seed)" \
