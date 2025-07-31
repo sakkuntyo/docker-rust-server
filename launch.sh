@@ -55,7 +55,7 @@ if [ ! -f "./server/wipeunixtime" ]; then
   esac
   
   echo "INFO: ENV_WIPE_CYCLE:${ENV_WIPE_CYCLE}"
-  date -d "$(echo "${ENV_WIPE_DAY_OF_WEEK} ${ENV_WIPE_CYCLE_DATED} ${ENV_WIPE_TIME}" | sed "s/.* 1 days/1 days/g" | sed "s/day 1 week/day 0 week/g" | sed "s/day 2 week/day 1 week/g" | sed "s/day 5 week/day 4 week/g")" +%s > ./server/wipeunixtime;
+  date -d "$(echo "${ENV_WIPE_DAY_OF_WEEK} ${ENV_WIPE_CYCLE_DATED} ${ENV_WIPE_TIME}" | sed "s/.* 1 days/1 days/g")" +%s > ./server/wipeunixtime;
   echo "INFO: ワイプ予定時刻 -> $(date -d "@$(cat ./server/wipeunixtime)" "+%Y/%m/%d %T")"
 fi
 
