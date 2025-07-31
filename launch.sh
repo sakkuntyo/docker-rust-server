@@ -13,7 +13,7 @@ exit 0;
 if [ -f "./server/wipeunixtime" ]; then 
   echo "INFO: 現在の時刻　　 -> $(date "+%Y/%m/%d %T")"
   echo "INFO: ワイプ予定時刻 -> $(date -d "@$(cat ./server/wipeunixtime)" "+%Y/%m/%d %T")"
-  echo "INFO: ${ENV_WIPE_TYPE:=FULL}"
+  echo "INFO: ワイプの種類   -> ${ENV_WIPE_TYPE:=FULL}"
   if [[ "$(date +%s)" -gt "$(cat ./server/wipeunixtime)" ]]; then
     echo "INFO: ワイプを行います。"
     rm ./server/seed
