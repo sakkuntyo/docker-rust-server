@@ -32,6 +32,7 @@ RustDedicated のオプションを環境変数で指定できます。指定し
 |ENV_SEED||未指定では初回起動時のunixtime|
 |ENV_MAXPLAYERS|100|サーバー最大人数|
 |ENV_MAXTEAMSIZE|8|パーティ最大人数|
+|ENV_WIPE_TYPE|FULL|monthly<br>FULL または MAP&ITEM WIPE|
 |ENV_WIPE_CYCLE|monthly|monthly<br>bi-weekly<br>weekly<br>daily<br>* monthlyは5週間|
 |ENV_WIPE_DAY_OF_WEEK||sunday<br>monday<br>tuesday<br>wednesday<br>thursday<br>friday<br>saturday|
 |ENV_WIPE_TIME|09:00|20:00 を指定すると、ワイプ時刻が 20:00 になります。<br>それと並行し毎日 20:00 に停止する様になります。(コンテナの自動起動オプションと合わせて再起動)|
