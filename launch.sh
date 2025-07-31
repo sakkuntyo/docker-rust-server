@@ -9,14 +9,14 @@ sleep 10
 exit 0;
 ' SIGTERM
 
-# ワイプ周期が来ている場合は ./seed ファイルを消してリセットする
-if [ -f "./wipeunixtime" ]; then 
+# ワイプ周期が来ている場合は ./server/seed ファイルを消してリセットする
+if [ -f "./server/wipeunixtime" ]; then 
   echo "INFO: 現在の時刻　　 -> $(date "+%Y/%m/%d %T")"
-  echo "INFO: ワイプ予定時刻 -> $(date -d "@$(cat ./wipeunixtime)" "+%Y/%m/%d %T")"
-  if [[ "$(date +%s)" -gt "$(cat ./wipeunixtime)" ]]; then
+  echo "INFO: ワイプ予定時刻 -> $(date -d "@$(cat ./server/wipeunixtime)" "+%Y/%m/%d %T")"
+  if [[ "$(date +%s)" -gt "$(cat ./server/wipeunixtime)" ]]; then
     echo "INFO: ワイプを行います。"
-    rm ./seed
-    rm ./wipeunixtime
+    rm ./server/seed
+    rm ./server/wipeunixtime
     echo "INFO: ワイプ処理を完了しました"
   fi
 fi
@@ -31,9 +31,9 @@ echo "INFO: 定期停止時刻: ${ENV_WIPE_TIME:=09:00}"
 echo "INFO: 次の停止時刻: $(date -d "@${TARGET_STOP_UNIXTIME}" '+%Y/%m/%d %T')"
 
 # 初回起動時に現在時刻(unixtime)のseed値と作成日時
-if [ ! -f "./seed" ] && [ ! -z "${ENV_SEED}" ] ; then echo "${ENV_SEED}" > ./seed; fi
-if [ ! -f "./seed" ]; then date +%s > ./seed; fi
-if [ ! -f "./wipeunixtime" ]; then
+if [ ! -f "./server/seed" ] && [ ! -z "${ENV_SEED}" ] ; then echo "${ENV_SEED}" > ./server/seed; fi
+if [ ! -f "./server/seed" ]; then date +%s > ./server/seed; fi
+if [ ! -f "./server/wipeunixtime" ]; then
   # ENV_WIPE_CYCLE を date -d に指定する文字列へ変換した変数を作成
   case ${ENV_WIPE_CYCLE:=monthly} in
   "monthly")
@@ -51,8 +51,8 @@ if [ ! -f "./wipeunixtime" ]; then
   esac
   
   echo "INFO: ENV_WIPE_CYCLE:${ENV_WIPE_CYCLE}"
-  date -d "$(echo "${ENV_WIPE_DAY_OF_WEEK} ${ENV_WIPE_CYCLE_DATED} ${ENV_WIPE_TIME}" | sed "s/.* 1 days/1 days/g" | sed "s/day 1 week/day 0 week/g" | sed "s/day 2 week/day 1 week/g" | sed "s/day 5 week/day 4 week/g")" +%s > ./wipeunixtime;
-  echo "INFO: ワイプ予定時刻 -> $(date -d "@$(cat ./wipeunixtime)" "+%Y/%m/%d %T")"
+  date -d "$(echo "${ENV_WIPE_DAY_OF_WEEK} ${ENV_WIPE_CYCLE_DATED} ${ENV_WIPE_TIME}" | sed "s/.* 1 days/1 days/g" | sed "s/day 1 week/day 0 week/g" | sed "s/day 2 week/day 1 week/g" | sed "s/day 5 week/day 4 week/g")" +%s > ./server/wipeunixtime;
+  echo "INFO: ワイプ予定時刻 -> $(date -d "@$(cat ./server/wipeunixtime)" "+%Y/%m/%d %T")"
 fi
 
 # update rustdedicated
@@ -76,10 +76,10 @@ fi
 ./RustDedicated -batchmode \
         +server.identity "serverdata1" \
         +server.hostname "${ENV_SERVERNAME:=TEST SERVER}" \
-        +server.description "${ENV_SERVERDESCRIPTION:=Welcome!}\n---\nMax team size:${ENV_MAXTEAMSIZE:=8}\nMax players:${ENV_MAXPLAYERS:=100}\nWorld size:${ENV_WORLDSIZE:=3000}\nWipe schedule:${ENV_WIPE_CYCLE:=Monthly}\nNext wipe:$(date -d "@$(cat ./wipeunixtime)" '+%Y-%m-%d_%T(%Z)')\nNext restart/stop time:$(date -d "@${TARGET_STOP_UNIXTIME}" '+%Y-%m-%d_%T(%Z)')" \
+        +server.description "${ENV_SERVERDESCRIPTION:=Welcome!}\n---\nMax team size:${ENV_MAXTEAMSIZE:=8}\nMax players:${ENV_MAXPLAYERS:=100}\nWorld size:${ENV_WORLDSIZE:=3000}\nWipe schedule:${ENV_WIPE_CYCLE:=Monthly}\nNext wipe:$(date -d "@$(cat ./server/wipeunixtime)" '+%Y-%m-%d_%T(%Z)')\nNext restart/stop time:$(date -d "@${TARGET_STOP_UNIXTIME}" '+%Y-%m-%d_%T(%Z)')" \
         +server.logoimage "${ENV_SERVERLOGOIMG:=https://github.com/user-attachments/assets/9cb873a1-b0c8-4d01-9dfc-df41bb2468e5}" \
         +server.url "${ENV_SERVERURL:=https://github.com/sakkuntyo/docker-rust-server}" \
-        +server.seed "$(cat ./seed)" \
+        +server.seed "$(cat ./server/seed)" \
         +server.worldsize ${ENV_WORLDSIZE:=3000} \
         +server.maxplayers ${ENV_MAXPLAYERS:=100} \
         +server.maxconnectionsperip 500 \
