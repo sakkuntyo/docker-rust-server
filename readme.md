@@ -40,6 +40,7 @@ RustDedicated のオプションを環境変数で指定できます。指定し
 |ENV_RCON_PORT|28016||
 |ENV_QUERY_PORT|28017||
 |ENV_RCON_PASSWD|StrongPasswd123456|既定値は非推奨|
+|ENV_LIVE_STREAM_POLICY|OK|ライブ配信の可否、この変数の内容はサーバー説明文に記載されます|
 
 以下は tailscale exitnode を使用する場合に必要です。
 
