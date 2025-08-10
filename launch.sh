@@ -38,6 +38,7 @@ echo "INFO: 定期停止時刻: ${ENV_WIPE_TIME:=09:00}"
 echo "INFO: 次の停止時刻: $(date -d "@${TARGET_STOP_UNIXTIME}" '+%Y/%m/%d %T')"
 
 # 初回起動時に現在時刻(unixtime)のseed値と作成日時
+mkdir -p ./server
 if [ ! -f "./server/seed" ] && [ ! -z "${ENV_SEED}" ] ; then echo "${ENV_SEED}" > ./server/seed; fi
 if [ ! -f "./server/seed" ]; then date +%s > ./server/seed; fi
 if [ ! -f "./server/wipeunixtime" ]; then
