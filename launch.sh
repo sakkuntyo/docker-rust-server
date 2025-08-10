@@ -160,7 +160,23 @@ while true; do
   # 4. 全てのチェックがOKの場合
   else
     echo "INFO: Health Check: 全てのサービスは正常に稼働中です。"
-  fi
+    if [ ! -f "./server/createdServerVersion" ]; then 
+      echo "INFO: サーバーデータのシンボリックリンクを作成します。これは初回起動時にのみ行います。"
+      (
+        createdServerVersion=$(find | grep "proceduralmap.${ENV_WORLDSIZE:=3000}.$(cat ./server/seed).*.sav$" | sed -r 's/.*([0-9]{3}|[0-9]{4}).*/\1/g' | sort -u -n | head -n1)
+        cd server/serverdata1/
+        for i in {1..10};do
+          ln -sf "proceduralmap.${ENV_WORLDSIZE:=3000}.$(cat ../seed).${createdServerVersion}.sav" "proceduralmap.${ENV_WORLDSIZE:=3000}.$(cat ../seed).$(((${createdServerVersion} + $i))).sav";
+          ln -sf "player.states.${createdServerVersion}.db" "player.states.$(((${createdServerVersion} + $i))).db";
+          ln -sf "player.states.${createdServerVersion}.db-wal" "player.states.$(((${createdServerVersion} + $i))).db-wal";
+          ln -sf "sv.files.${createdServerVersion}.db" "sv.files.$(((${createdServerVersion} + $i))).db";
+          ln -sf "sv.files.${createdServerVersion}.db-wal" "sv.files.$(((${createdServerVersion} + $i))).db-wal";
+        done
+        echo "INFO: サーバーデータのシンボリックリンクを作成しました。"
+      )
+      echo "${createdServerVersion}" > ./server/createdServerVersion
+      echo "INFO: createdServerVersion -> $(cat ./server/createdServerVersion)"
+    fi
   
   echo "DEBUG: --------------------"
   echo "DEBUG: 現在時刻: $(date '+%Y/%m/%d %T')"
