@@ -8,7 +8,7 @@ Rust サーバーを管理するために生まれたコンテナです。
 - 再起動時にRustDedicatedのアップデート
 - netstat によるポートと pgrep によるプロセスのヘルスチェック
 - tini, trap, rcon-cli による docker stop 時の自動セーブ
-- tailscale exitnode の使用(Privileged モードが必要です)
+- tailscale exitnode の使用(cap-add NET_ADMIN と /dev/net/tun デバイスの追加が必要です)
 
 # 使い方
 
@@ -46,7 +46,7 @@ RustDedicated のオプションを環境変数で指定できます。指定し
 
 |変数名|既定値|概要|
 |:-|:-|:-:|
-|ENV_TS_EXITNODE_IP||指定する場合、コンテナの Privileged モードの有効化が必要|
+|ENV_TS_EXITNODE_IP||指定する場合、コンテナの cap-add や device 追加が必要|
 |ENV_TS_HOSTNAME||tailscale ネットワーク上で表示される名前、未指定だとコンテナIDになる|
 |ENV_TS_AUTHKEY||非対話で進めたい場合に指定する|
 
@@ -62,7 +62,13 @@ RustDedicated のオプションを環境変数で指定できます。指定し
 4. Rust サーバーマシンは、フロントに置いた中継サーバーを exitnode にしていれば、Rust サーバーマシンが中継サーバーのグローバル IP で Steam と通信し、その IP が Steam に登録されるため、プレイヤーは中継サーバーの IP で接続でき、Rust サーバーマシン は IP を知られずに済みます。
    - Rust サーバーマシン => 中継サーバー => Steam (IP は B.B.B.B か... メモメモ)
    - Rust サーバーマシン <= 中継サーバー <= プレイヤー (IP B.B.B.B に接続... 接続成功!)
+  
+### tailscale を使う際の cap-add や device オプション
+以下の設定で動作することを確認しました。
 
+```
+docker run sakkuntyo/rust-server:latest [-eオプション] --cap-add="NET_ADMIN" --device /dev/net/tun
+```
 
 ## .env サンプルとイメージ
 
