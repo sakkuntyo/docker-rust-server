@@ -12,7 +12,6 @@ exit 0;
 # ワイプ周期が来ている場合は ./server/seed ファイルを消してリセットする
 if [ -f "./server/wipeunixtime" ]; then 
   echo "INFO: --------------------ワイプ周期チェック"
-  echo "INFO: date "
   echo "INFO: 現在の時刻　　 -> $(date "+%Y/%m/%d %T")"
   echo "INFO: ワイプ予定時刻 -> $(date -d "@$(cat ./server/wipeunixtime)" "+%Y/%m/%d %T")"
   echo "INFO: ワイプの種類   -> ${ENV_WIPE_TYPE:=FULL}"
