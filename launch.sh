@@ -33,6 +33,7 @@ if [[ "$(date +%s)" -lt $(date -d "${ENV_WIPE_TIME:=09:00}" +%s) ]];then
 else
   TARGET_STOP_UNIXTIME=$(date -d "tomorrow ${ENV_WIPE_TIME:=09:00}" +%s);
 fi
+echo "INFO: --------------------ワイプと停止周期"
 echo "INFO: 定期停止時刻: ${ENV_WIPE_TIME:=09:00}"
 echo "INFO: 次の停止時刻: $(date -d "@${TARGET_STOP_UNIXTIME}" '+%Y/%m/%d %T')"
 
@@ -60,6 +61,7 @@ if [ ! -f "./server/wipeunixtime" ]; then
   date -d "$(echo "${ENV_WIPE_DAY_OF_WEEK} ${ENV_WIPE_CYCLE_DATED} ${ENV_WIPE_TIME}" | sed "s/.* 1 days/1 days/g")" +%s > ./server/wipeunixtime;
   echo "INFO: ワイプ予定時刻 -> $(date -d "@$(cat ./server/wipeunixtime)" "+%Y/%m/%d %T")"
 fi
+echo "INFO: --------------------"
 
 # update rustdedicated
 steamcmd +login anonymous +force_install_dir /root/rustserver +app_update 258550 validate +quit
