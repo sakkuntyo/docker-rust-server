@@ -109,7 +109,7 @@ done
 # サーバーアップデート対策、これがないとサーバーがアップデートされた後に接続できなくなる
 # issue: https://github.com/sakkuntyo/docker-rust-server/issues/7
 if [ ! -f "./server/createdServerVersion" ]; then 
-  echo "INFO: サーバーデータのシンボリックリンクを作成します。これは初回起動時にのみ表示されます。
+  echo "INFO: サーバーデータのシンボリックリンクを作成します。これは初回起動時にのみ行います。"
   while $true; do
     (
       createdServerVersion=$(find | grep "proceduralmap.${ENV_WORLDSIZE:=3000}.$(cat ./server/seed).*.sav$" | sed -r 's/.*([0-9]{3}|[0-9]{4}).*/\1/g' | sort -u -n | head -n1)
