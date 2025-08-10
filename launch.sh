@@ -104,6 +104,35 @@ do
   sleep 60
 done
 
+# サーバーアップデート対策、これがないとサーバーがアップデートされた後に接続できなくなる
+# issue: https://github.com/sakkuntyo/docker-rust-server/issues/7
+if [ ! -f "./server/createdServerVersion" ]; then 
+  while $true; do
+    # シンボリックリンクを作成
+    if [ ! -f "./server/createdServerVersion" ]; then 
+      (
+        createdServerVersion=$(find | grep "proceduralmap.${ENV_WORLDSIZE:=3000}.$(cat ./server/seed).*.sav$" | sed -r 's/.*([0-9]{3}|[0-9]{4}).*/\1/g' | sort -u -n | head -n1)
+
+        # 最初のセーブデータも作成されてないなら最初のチェックからやりなおし
+        if [ ! -f "./server/serverdata1/proceduralmap.${ENV_WORLDSIZE:=3000}.$(cat ./server/seed).${createdServerVersion}.sav" ]; then
+          echo "INFO: サーバーデータのシンボリックリンクを作成しようとしましたが、セーブデータファイルがありませんでした。60秒後に再確認します。"
+          sleep 60;
+          continue
+        fi
+        cd server/serverdata1/
+        for i in {1..10};do
+          ln -sf "proceduralmap.${ENV_WORLDSIZE:=3000}.$(cat ../seed).${createdServerVersion}.sav" "proceduralmap.${ENV_WORLDSIZE:=3000}.$(cat ../seed).$(((${createdServerVersion} + $i))).sav";
+          ln -sf "player.states.${createdServerVersion}.db" "player.states.$(((${createdServerVersion} + $i))).db";
+          ln -sf "player.states.${createdServerVersion}.db-wal" "player.states.$(((${createdServerVersion} + $i))).db-wal";
+          ln -sf "sv.files.${createdServerVersion}.db" "sv.files.$(((${createdServerVersion} + $i))).db";
+          ln -sf "sv.files.${createdServerVersion}.db-wal" "sv.files.$(((${createdServerVersion} + $i))).db-wal";
+        done
+      )
+    fi
+    echo ${createdServerVersion} > ./server/createdServerVersion
+  done
+fi
+
 while true; do
   TIMESTAMP=$(date)
 
