@@ -11,9 +11,12 @@ exit 0;
 
 # ワイプ周期が来ている場合は ./server/seed ファイルを消してリセットする
 if [ -f "./server/wipeunixtime" ]; then 
+  echo "INFO: --------------------ワイプ周期チェック"
+  echo "INFO: date "
   echo "INFO: 現在の時刻　　 -> $(date "+%Y/%m/%d %T")"
   echo "INFO: ワイプ予定時刻 -> $(date -d "@$(cat ./server/wipeunixtime)" "+%Y/%m/%d %T")"
   echo "INFO: ワイプの種類   -> ${ENV_WIPE_TYPE:=FULL}"
+  echo "INFO: --------------------"
   if [[ "$(date +%s)" -gt "$(cat ./server/wipeunixtime)" ]]; then
     echo "INFO: ワイプを行います。"
     rm ./server/seed
@@ -107,28 +110,27 @@ done
 # サーバーアップデート対策、これがないとサーバーがアップデートされた後に接続できなくなる
 # issue: https://github.com/sakkuntyo/docker-rust-server/issues/7
 if [ ! -f "./server/createdServerVersion" ]; then 
+  echo "INFO: サーバーデータのシンボリックリンクを作成します。これは初回起動時にのみ表示されます。
   while $true; do
-    # シンボリックリンクを作成
-    if [ ! -f "./server/createdServerVersion" ]; then 
-      (
-        createdServerVersion=$(find | grep "proceduralmap.${ENV_WORLDSIZE:=3000}.$(cat ./server/seed).*.sav$" | sed -r 's/.*([0-9]{3}|[0-9]{4}).*/\1/g' | sort -u -n | head -n1)
+    (
+      createdServerVersion=$(find | grep "proceduralmap.${ENV_WORLDSIZE:=3000}.$(cat ./server/seed).*.sav$" | sed -r 's/.*([0-9]{3}|[0-9]{4}).*/\1/g' | sort -u -n | head -n1)
 
-        # 最初のセーブデータも作成されてないなら最初のチェックからやりなおし
-        if [ ! -f "./server/serverdata1/proceduralmap.${ENV_WORLDSIZE:=3000}.$(cat ./server/seed).${createdServerVersion}.sav" ]; then
-          echo "INFO: サーバーデータのシンボリックリンクを作成しようとしましたが、セーブデータファイルがありませんでした。60秒後に再確認します。"
-          sleep 60;
-          continue
-        fi
-        cd server/serverdata1/
-        for i in {1..10};do
-          ln -sf "proceduralmap.${ENV_WORLDSIZE:=3000}.$(cat ../seed).${createdServerVersion}.sav" "proceduralmap.${ENV_WORLDSIZE:=3000}.$(cat ../seed).$(((${createdServerVersion} + $i))).sav";
-          ln -sf "player.states.${createdServerVersion}.db" "player.states.$(((${createdServerVersion} + $i))).db";
-          ln -sf "player.states.${createdServerVersion}.db-wal" "player.states.$(((${createdServerVersion} + $i))).db-wal";
-          ln -sf "sv.files.${createdServerVersion}.db" "sv.files.$(((${createdServerVersion} + $i))).db";
-          ln -sf "sv.files.${createdServerVersion}.db-wal" "sv.files.$(((${createdServerVersion} + $i))).db-wal";
-        done
-      )
-    fi
+      sleep 60;
+      # 最初のセーブデータも作成されてないなら最初のチェックからやりなおし
+      if [ ! -f "./server/serverdata1/proceduralmap.${ENV_WORLDSIZE:=3000}.$(cat ./server/seed).${createdServerVersion}.sav" ]; then
+        echo "INFO: サーバーデータのシンボリックリンクを作成しようとしましたが、セーブデータファイルがありませんでした。60秒後に再確認します。"
+        continue
+      fi
+      cd server/serverdata1/
+      for i in {1..10};do
+        ln -sf "proceduralmap.${ENV_WORLDSIZE:=3000}.$(cat ../seed).${createdServerVersion}.sav" "proceduralmap.${ENV_WORLDSIZE:=3000}.$(cat ../seed).$(((${createdServerVersion} + $i))).sav";
+        ln -sf "player.states.${createdServerVersion}.db" "player.states.$(((${createdServerVersion} + $i))).db";
+        ln -sf "player.states.${createdServerVersion}.db-wal" "player.states.$(((${createdServerVersion} + $i))).db-wal";
+        ln -sf "sv.files.${createdServerVersion}.db" "sv.files.$(((${createdServerVersion} + $i))).db";
+        ln -sf "sv.files.${createdServerVersion}.db-wal" "sv.files.$(((${createdServerVersion} + $i))).db-wal";
+      done
+      echo "INFO: サーバーデータのシンボリックリンクを作成しました"
+    )
     echo ${createdServerVersion} > ./server/createdServerVersion
   done
 fi
