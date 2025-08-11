@@ -149,7 +149,7 @@ while true; do
           ln -sf "sv.files.${createdServerVersion}.db-wal" "sv.files.$(((${createdServerVersion} + $i))).db-wal";
         done
         echo "INFO: サーバーデータのシンボリックリンクを作成しました。"
-        touch ../createdServerVersion
+        echo "${createdServerVersion}" > ../createdServerVersion
       )
       echo "INFO: createdServerVersion -> $(cat ./server/createdServerVersion)"
     fi
