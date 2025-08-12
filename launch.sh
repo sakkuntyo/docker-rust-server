@@ -136,6 +136,8 @@ while true; do
   # 4. 全てのチェックがOKの場合
   else
     echo "INFO: Health Check: 全てのサービスは正常に稼働中です。"
+
+    # サーバーバージョンアップデート対策
     if [ ! -f "./server/createdServerVersion" ]; then 
       echo "INFO: サーバーデータのシンボリックリンクを作成します。これは初回起動時にのみ行います。"
       (
@@ -152,6 +154,16 @@ while true; do
         echo "${createdServerVersion}" > ../createdServerVersion
       )
       echo "INFO: createdServerVersion -> $(cat ./server/createdServerVersion)"
+    fi
+
+    # pop 定期
+    if [[ $(date "+%M") -eq "15" || $(date "+%M") -eq "30" || $(date "+%M") -eq "45" || $(date "+%M") -eq "0" ]];then
+      onlinecount=$(rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "playerlist" | jq -c "[ .[] ] | length")
+      rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "playerlist" | jq -c ".[] | {steamid: .SteamID, name: .DisplayName, addunixtimestamp: "$(date +%s)"}" > /tmp/new-playerlist.json             touch ./server/all-playerlist.json
+      cat ./server/all-playerlist.json /tmp/new-playerlist.json | jq -s "group_by(.steamid)[] | min_by(.addunixtimestamp)" > /tmp/all-playerlist.json
+      cp /tmp/all-playerlist.json ./server/all-playerlist.json
+      allcount=$(cat ./server/all-playerlist.json | jq -s "[ .[] ] | length")
+      rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say online: ${onlinecount} / ${ENV_MAXPLAYERS:=100} | sleeping: $(( ${allcount} - ${onlinecount} ))"
     fi
   fi  
   
