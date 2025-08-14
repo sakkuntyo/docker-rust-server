@@ -157,9 +157,10 @@ while true; do
     fi
 
     # pop 定期
-    if [[ $(date "+%M") -eq "15" || $(date "+%M") -eq "30" || $(date "+%M") -eq "45" || $(date "+%M") -eq "0" ]];then
+    if [[ $(date "+%M") -eq "30" || $(date "+%M") -eq "0" ]];then
       onlinecount=$(rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "playerlist" | jq -c "[ .[] ] | length")
-      rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "playerlist" | jq -c ".[] | {steamid: .SteamID, name: .DisplayName, addunixtimestamp: "$(date +%s)"}" > /tmp/new-playerlist.json             touch ./server/all-playerlist.json
+      rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "playerlist" | jq -c ".[] | {steamid: .SteamID, name: .DisplayName, addunixtimestamp: "$(date +%s)"}" > /tmp/new-playerlist.json
+      touch ./server/all-playerlist.json
       cat ./server/all-playerlist.json /tmp/new-playerlist.json | jq -s "group_by(.steamid)[] | min_by(.addunixtimestamp)" > /tmp/all-playerlist.json
       cp /tmp/all-playerlist.json ./server/all-playerlist.json
       allcount=$(cat ./server/all-playerlist.json | jq -s "[ .[] ] | length")
