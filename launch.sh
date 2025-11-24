@@ -166,6 +166,11 @@ while true; do
       allcount=$(cat ./server/all-playerlist.json | jq -s "[ .[] ] | length")
       rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say online: ${onlinecount} / ${ENV_MAXPLAYERS:=100} | sleeping: $(( ${allcount} - ${onlinecount} ))"
     fi
+
+    # admin 自動追加
+    for OWNERID in ${ENV_OWNERIDS//,/ };do
+      rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.ownerid ${OWNERID}" > /dev/null 2>&1
+    done
   fi  
   
   echo "DEBUG: --------------------"
