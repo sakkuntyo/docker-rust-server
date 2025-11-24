@@ -196,7 +196,7 @@ while true; do
   # 5分前ならアナウンス
   elif [ -z ${REBOOTMSG_5MIN_SENT_FLG} ] && [[ "$(date +%s)" -gt "$(date -d "$(date -d @${TARGET_STOP_UNIXTIME}) -5 minutes" +%s)" ]]; then
     echo "INFO: 再起動/停止の5分前になりました。"
-    rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say サーバーは5分後に停止/再起動されます。/ Server will restart or stop in 15 minutes.";
+    rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.say サーバーは5分後に停止/再起動されます。/ Server will restart or stop in 5 minutes.";
     REBOOTMSG_5MIN_SENT_FLG=true
   fi
 
