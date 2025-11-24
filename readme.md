@@ -28,6 +28,7 @@ RustDedicated のオプションを環境変数で指定できます。指定し
 |ENV_SERVERURL|https://github.com/sakkuntyo/docker-rust-server| Discord のリンクやHPに置き換える |
 |ENV_SERVERLOGOIMG|https://github.com/user-attachments/assets/9cb873a1-b0c8-4d01-9dfc-df41bb2468e5||
 |ENV_SERVERTAGS|Vanilla|https://wiki.facepunch.com/rust/server-browser-tags|
+|ENV_OWNERIDS|初期値無し|steamid64を指定、カンマ区切りで複数可能|
 |ENV_WORLDSIZE|3000|3000 - 6000|
 |ENV_SEED||未指定では初回起動時のunixtime|
 |ENV_MAXPLAYERS|100|サーバー最大人数|
