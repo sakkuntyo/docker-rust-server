@@ -141,14 +141,34 @@ while true; do
     if [ ! -f "./server/createdServerVersion" ]; then 
       echo "INFO: サーバーデータのシンボリックリンクを作成します。これは初回起動時にのみ行います。"
       (
-        createdServerVersion=$(find | grep "proceduralmap.${ENV_WORLDSIZE:=3000}.$(cat ./server/seed).*.sav$" | sed -r 's/.*([0-9]{3}|[0-9]{4}).*/\1/g' | sort -u -n | head -n1)
         cd server/serverdata1/
+        createdServerVersion=$(find . -maxdepth 1 -name "proceduralmap.${ENV_WORLDSIZE:=3000}.$(cat ../seed).*.sav" | sed -r 's/.*\.([0-9]{3,4})\.sav/\1/g' | sort -u -n | head -n1)
+        createdBpVersion=$(find . -maxdepth 1 -name "player.blueprints.*.db" | sed -r 's/.*player\.blueprints\.([0-9]+)\.db/\1/g' | sort -u -n | head -n1)
+        createdIdentityVersion=$(find . -maxdepth 1 -name "player.identities.*.db" | sed -r 's/.*player\.identities\.([0-9]+)\.db/\1/g' | sort -u -n | head -n1)
+        createdDeathVersion=$(find . -maxdepth 1 -name "player.deaths.*.db" | sed -r 's/.*player\.deaths\.([0-9]+)\.db/\1/g' | sort -u -n | head -n1)
+        createdRelationshipVersion=$(find . -maxdepth 1 -name "relationship.*.db" | sed -r 's/.*relationship\.([0-9]+)\.db/\1/g' | sort -u -n | head -n1)
         for i in {1..10};do
           ln -sf "proceduralmap.${ENV_WORLDSIZE:=3000}.$(cat ../seed).${createdServerVersion}.sav" "proceduralmap.${ENV_WORLDSIZE:=3000}.$(cat ../seed).$(((${createdServerVersion} + $i))).sav";
           ln -sf "player.states.${createdServerVersion}.db" "player.states.$(((${createdServerVersion} + $i))).db";
           ln -sf "player.states.${createdServerVersion}.db-wal" "player.states.$(((${createdServerVersion} + $i))).db-wal";
           ln -sf "sv.files.${createdServerVersion}.db" "sv.files.$(((${createdServerVersion} + $i))).db";
           ln -sf "sv.files.${createdServerVersion}.db-wal" "sv.files.$(((${createdServerVersion} + $i))).db-wal";
+          if [ ! -z "${createdBpVersion}" ]; then
+            ln -sf "player.blueprints.${createdBpVersion}.db" "player.blueprints.$(((${createdBpVersion} + $i))).db";
+            ln -sf "player.blueprints.${createdBpVersion}.db-wal" "player.blueprints.$(((${createdBpVersion} + $i))).db-wal";
+          fi
+          if [ ! -z "${createdIdentityVersion}" ]; then
+            ln -sf "player.identities.${createdIdentityVersion}.db" "player.identities.$(((${createdIdentityVersion} + $i))).db";
+            ln -sf "player.identities.${createdIdentityVersion}.db-wal" "player.identities.$(((${createdIdentityVersion} + $i))).db-wal";
+          fi
+          if [ ! -z "${createdDeathVersion}" ]; then
+            ln -sf "player.deaths.${createdDeathVersion}.db" "player.deaths.$(((${createdDeathVersion} + $i))).db";
+            ln -sf "player.deaths.${createdDeathVersion}.db-wal" "player.deaths.$(((${createdDeathVersion} + $i))).db-wal";
+          fi
+          if [ ! -z "${createdRelationshipVersion}" ]; then
+            ln -sf "relationship.${createdRelationshipVersion}.db" "relationship.$(((${createdRelationshipVersion} + $i))).db";
+            ln -sf "relationship.${createdRelationshipVersion}.db-wal" "relationship.$(((${createdRelationshipVersion} + $i))).db-wal";
+          fi
         done
         echo "INFO: サーバーデータのシンボリックリンクを作成しました。"
         echo "${createdServerVersion}" > ../createdServerVersion
