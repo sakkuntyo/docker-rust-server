@@ -71,6 +71,33 @@ RustDedicated のオプションを環境変数で指定できます。指定し
 docker run sakkuntyo/rust-server:latest [-eオプション] --cap-add="NET_ADMIN" --device /dev/net/tun
 ```
 
+### tailscale の state を volume に保存する
+tailscale exitnode を使う場合は、`/var/lib/tailscale` をコンテナごとに別 volume として永続化することを推奨します。
+
+volume に保存しないままコンテナを作り直すと、tailscale 上では新しいデバイスとして登録されやすく、以下が起きやすくなります。
+
+- tailscale の IP が変わる
+- `ENV_TS_HOSTNAME` に `-2` `-3` のような連番が付く
+- exitnode 側で設定しているポートフォワード先の更新が必要になる
+
+そのため、Rust のセーブデータ用 volume とは別に、tailscale 専用 volume を追加してください。
+この volume はコンテナ間で共有せず、サーバーごとに分けてください。
+
+例:
+
+```
+docker volume create rust-rapid-ts
+
+docker run sakkuntyo/rust-server:latest \
+  [-eオプション] \
+  --cap-add="NET_ADMIN" \
+  --device /dev/net/tun \
+  -v rust-rapid-ts:/var/lib/tailscale
+```
+
+Portainer を使う場合も同様に、各コンテナへ `/var/lib/tailscale` の volume を 1 つ追加してください。
+例として `rust-rapid` なら `rust-rapid-ts:/var/lib/tailscale` のように設定します。
+
 ## .env サンプルとイメージ
 
 ```
