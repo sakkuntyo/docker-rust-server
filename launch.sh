@@ -68,6 +68,280 @@ echo "INFO: --------------------"
 # update rustdedicated
 steamcmd +login anonymous +force_install_dir /root/rustserver +app_update 258550 validate +quit
 
+install_umod_and_plugins() {
+  local umod_zip="/tmp/Oxide.Rust.zip"
+  local umod_url="${ENV_UMOD_DOWNLOAD_URL:=https://github.com/OxideMod/Oxide.Rust/releases/latest/download/Oxide.Rust-linux.zip}"
+  local oxide_config="/root/rustserver/oxide/oxide.config.json"
+  local umod_modded="${ENV_UMOD_MODDED:=false}"
+
+  if [[ "${umod_modded}" != "true" ]]; then
+    umod_modded="false"
+  fi
+
+  echo "INFO: Installing uMod/Oxide from ${umod_url}"
+  if ! curl -fsSL --retry 3 --retry-delay 5 "${umod_url}" -o "${umod_zip}"; then
+    echo "ERROR: Failed to download uMod/Oxide."
+    exit 1
+  fi
+
+  if ! unzip -oq "${umod_zip}" -d /root/rustserver; then
+    echo "ERROR: Failed to extract uMod/Oxide."
+    exit 1
+  fi
+  rm -f "${umod_zip}"
+
+  mkdir -p /root/rustserver/oxide/plugins
+  if [[ -f "${oxide_config}" ]]; then
+    jq --argjson modded "${umod_modded}" '.Options.Modded = $modded' "${oxide_config}" > "${oxide_config}.tmp" && mv "${oxide_config}.tmp" "${oxide_config}"
+  else
+    cat > "${oxide_config}" <<EOF
+{
+  "Options": {
+    "Modded": ${umod_modded},
+    "PluginWatchers": true,
+    "DefaultGroups": {
+      "Players": "default",
+      "Administrators": "admin"
+    },
+    "WebRequestIP": "0.0.0.0"
+  },
+  "Commands": {
+    "Chat command prefixes": [
+      "/"
+    ]
+  },
+  "Plugin Compiler": {
+    "Shutdown on idle": true,
+    "Seconds before idle": 60,
+    "Preprocessor directives": [],
+    "Enable Publicizer": true,
+    "Ignored Publicizer References": []
+  },
+  "OxideConsole": {
+    "Enabled": true,
+    "MinimalistMode": true,
+    "ShowStatusBar": true
+  },
+  "OxideRcon": {
+    "Enabled": false,
+    "Port": 25580,
+    "Password": "",
+    "ChatPrefix": "[Server Console]"
+  }
+}
+EOF
+  fi
+  echo "INFO: uMod/Oxide Modded flag is ${umod_modded}."
+
+  install_optional_plugin() {
+    local enabled="$1"
+    local plugin_file="$2"
+    local plugin_url="$3"
+    local plugin_name="$4"
+
+    if [[ "${enabled}" != "true" ]]; then
+      return
+    fi
+
+    echo "INFO: Installing ${plugin_name} plugin."
+    if [[ -f "/opt/rustserver/plugins/${plugin_file}" ]]; then
+      cp -f "/opt/rustserver/plugins/${plugin_file}" "/root/rustserver/oxide/plugins/${plugin_file}"
+    elif ! curl -fsSL --retry 3 --retry-delay 5 "${plugin_url}" -o "/root/rustserver/oxide/plugins/${plugin_file}"; then
+      echo "ERROR: Failed to install ${plugin_name} plugin."
+      exit 1
+    fi
+  }
+
+  install_optional_plugin "${ENV_ENABLE_ADMIN_RADAR:=true}" "AdminRadar.cs" "https://umod.org/plugins/AdminRadar.cs" "AdminRadar"
+  install_optional_plugin "${ENV_ENABLE_INVENTORY_VIEWER:=true}" "InventoryViewer.cs" "https://umod.org/plugins/InventoryViewer.cs" "Inventory Viewer"
+  install_optional_plugin "${ENV_ENABLE_PLAYER_ADMINISTRATION:=true}" "PlayerAdministration.cs" "https://umod.org/plugins/PlayerAdministration.cs" "Player Administration"
+  install_optional_plugin "${ENV_ENABLE_ADMIN_LOGGER:=true}" "AdminLogger.cs" "https://umod.org/plugins/AdminLogger.cs" "Admin Logger"
+  install_optional_plugin "${ENV_ENABLE_VANISH:=true}" "Vanish.cs" "https://umod.org/plugins/Vanish.cs" "Vanish"
+}
+
+if [[ "${ENV_ENABLE_UMOD:=true}" == "true" ]]; then
+  install_umod_and_plugins
+fi
+
+OWNER_PERMISSION_STATUS_FILE="/root/rustserver/server/umod-owner-permissions.status"
+OWNER_PERMISSION_STATUS_SCHEMA_VERSION="1"
+
+normalized_ownerids() {
+  printf "%s" "${ENV_OWNERIDS:-}" | tr -d '"' | tr ',' ' ' | xargs
+}
+
+owner_permission_key() {
+  echo "schema_version=${OWNER_PERMISSION_STATUS_SCHEMA_VERSION}"
+  echo "ownerids=$(normalized_ownerids)"
+  echo "enable_umod=${ENV_ENABLE_UMOD:=true}"
+  echo "enable_admin_radar=${ENV_ENABLE_ADMIN_RADAR:=true}"
+  echo "enable_inventory_viewer=${ENV_ENABLE_INVENTORY_VIEWER:=true}"
+  echo "enable_player_administration=${ENV_ENABLE_PLAYER_ADMINISTRATION:=true}"
+  echo "enable_admin_logger=${ENV_ENABLE_ADMIN_LOGGER:=true}"
+  echo "enable_vanish=${ENV_ENABLE_VANISH:=true}"
+}
+
+owner_permissions_list() {
+  if [[ "${ENV_ENABLE_ADMIN_RADAR:=true}" == "true" ]]; then
+    echo "adminradar.allowed"
+    echo "adminradar.auto"
+  fi
+
+  if [[ "${ENV_ENABLE_INVENTORY_VIEWER:=true}" == "true" ]]; then
+    echo "inventoryviewer.allowed"
+    echo "inventoryviewer.unlock"
+  fi
+
+  if [[ "${ENV_ENABLE_VANISH:=true}" == "true" ]]; then
+    echo "vanish.allow"
+    echo "vanish.unlock"
+    echo "vanish.invviewer"
+    echo "vanish.teleport"
+  fi
+
+  if [[ "${ENV_ENABLE_PLAYER_ADMINISTRATION:=true}" == "true" ]]; then
+    for PERMISSION in \
+      playeradministration.access.show \
+      playeradministration.access.kick \
+      playeradministration.access.ban \
+      playeradministration.access.kill \
+      playeradministration.access.clearinventory \
+      playeradministration.access.resetblueprint \
+      playeradministration.access.resetmetabolism \
+      playeradministration.access.recovermetabolism \
+      playeradministration.access.hurt \
+      playeradministration.access.heal \
+      playeradministration.access.mute \
+      playeradministration.access.chatmute \
+      playeradministration.access.voicemute \
+      playeradministration.access.perms \
+      playeradministration.access.allowfreeze \
+      playeradministration.access.teleport \
+      playeradministration.access.spectate \
+      playeradministration.access.detailedinfo \
+      playeradministration.protect.ban \
+      playeradministration.protect.hurt \
+      playeradministration.protect.kick \
+      playeradministration.protect.kill \
+      playeradministration.protect.reset
+    do
+      echo "${PERMISSION}"
+    done
+  fi
+}
+
+owner_permission_status_matches() {
+  if [[ ! -f "${OWNER_PERMISSION_STATUS_FILE}" ]]; then
+    return 1
+  fi
+  grep -qxF "status=applied" "${OWNER_PERMISSION_STATUS_FILE}" || return 1
+  while IFS= read -r EXPECTED_LINE; do
+    grep -qxF "${EXPECTED_LINE}" "${OWNER_PERMISSION_STATUS_FILE}" || return 1
+  done < <(owner_permission_key)
+  cmp -s <(awk '
+    /^permissions_begin$/ { in_permissions = 1; next }
+    /^permissions_end$/ { in_permissions = 0 }
+    in_permissions { print }
+  ' "${OWNER_PERMISSION_STATUS_FILE}") <(owner_permissions_list) || return 1
+}
+
+write_owner_permission_status() {
+  local STATUS="$1"
+  local DETAIL="$2"
+  mkdir -p "$(dirname "${OWNER_PERMISSION_STATUS_FILE}")"
+  {
+    echo "status=${STATUS}"
+    echo "updated_at=$(date -Iseconds)"
+    owner_permission_key
+    echo "detail=${DETAIL}"
+    echo "permissions_begin"
+    owner_permissions_list
+    echo "permissions_end"
+  } > "${OWNER_PERMISSION_STATUS_FILE}.tmp"
+  mv "${OWNER_PERMISSION_STATUS_FILE}.tmp" "${OWNER_PERMISSION_STATUS_FILE}"
+}
+
+grant_owner_permissions() {
+  local OWNER_COUNT=0
+  local OWNERS
+  local RCON_COMMANDS="/tmp/umod-owner-permissions.commands"
+  local RCON_CHUNK="/tmp/umod-owner-permissions.chunk"
+  local RCON_OUTPUT="/tmp/umod-owner-permissions.output"
+  local CHUNK_SIZE=2
+  local CHUNK_COUNT=0
+  local FAILED=0
+
+  OWNERS="$(normalized_ownerids)"
+  : > "${RCON_COMMANDS}"
+  for OWNERID in ${OWNERS}; do
+    if [[ -z "${OWNERID}" ]]; then
+      continue
+    fi
+
+    OWNER_COUNT=$((OWNER_COUNT + 1))
+    echo "global.ownerid ${OWNERID}" >> "${RCON_COMMANDS}"
+    while IFS= read -r PERMISSION; do
+      if [[ -z "${PERMISSION}" ]]; then
+        continue
+      fi
+      echo "oxide.grant user ${OWNERID} ${PERMISSION}" >> "${RCON_COMMANDS}"
+    done < <(owner_permissions_list)
+  done
+
+  if [[ "${OWNER_COUNT}" -eq 0 ]]; then
+    echo "WARN: ENV_OWNERIDS is empty. No owner permissions were granted."
+    rm -f "${RCON_COMMANDS}"
+    return 0
+  fi
+
+  : > "${RCON_CHUNK}"
+  while IFS= read -r RCON_COMMAND; do
+    echo "${RCON_COMMAND}" >> "${RCON_CHUNK}"
+    CHUNK_COUNT=$((CHUNK_COUNT + 1))
+    if [[ "${CHUNK_COUNT}" -ge "${CHUNK_SIZE}" ]]; then
+      rcon -t web -T 30s -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" < "${RCON_CHUNK}" > "${RCON_OUTPUT}" 2>&1 || true
+      if grep -Eqi "connection refused|i/o timeout|invalid value|invalid password|bad password|no such host|Permission .*does not exist|Permission .*doesn't exist|Unknown command|Incorrect Usage" "${RCON_OUTPUT}"; then
+        FAILED=1
+      fi
+      : > "${RCON_CHUNK}"
+      CHUNK_COUNT=0
+      sleep 1
+    fi
+  done < "${RCON_COMMANDS}"
+
+  if [[ "${CHUNK_COUNT}" -gt 0 ]]; then
+    rcon -t web -T 30s -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" < "${RCON_CHUNK}" > "${RCON_OUTPUT}" 2>&1 || true
+    if grep -Eqi "connection refused|i/o timeout|invalid value|invalid password|bad password|no such host|Permission .*does not exist|Permission .*doesn't exist|Unknown command|Incorrect Usage" "${RCON_OUTPUT}"; then
+      FAILED=1
+    fi
+  fi
+
+  rm -f "${RCON_COMMANDS}" "${RCON_CHUNK}" "${RCON_OUTPUT}"
+  return "${FAILED}"
+}
+
+ensure_owner_permissions_applied() {
+  if [[ "${ENV_ENABLE_UMOD:=true}" != "true" ]]; then
+    write_owner_permission_status "skipped" "uMod is disabled"
+    return 0
+  fi
+
+  if owner_permission_status_matches; then
+    return 0
+  fi
+
+  echo "INFO: Applying owner permissions for uMod admin tools."
+  if grant_owner_permissions; then
+    write_owner_permission_status "applied" "owner permissions applied successfully"
+    echo "INFO: Owner permissions status written to ${OWNER_PERMISSION_STATUS_FILE}."
+    return 0
+  fi
+
+  write_owner_permission_status "failed" "owner permission application failed; will retry on next health check"
+  echo "WARN: Failed to apply all owner permissions. Will retry on next health check."
+  return 1
+}
+
 # exitnode 指定があるなら tailscale を起動 (特権モードが必要)
 if [ ! -z "${ENV_TS_EXITNODE_IP}" ]; then
   # デバッグログを出させるが、docker logs -t で時刻を表示できるので時刻部分は sed で削除
@@ -108,6 +382,7 @@ for ((i = 1; i <= 20; i++))
 do
   echo "INFO: $(((21 - i))) 分後にヘルスチェックを開始します。。。"
   sleep 60
+  ensure_owner_permissions_applied
 done
 
 while true; do
@@ -188,9 +463,7 @@ while true; do
     fi
 
     # admin 自動追加
-    for OWNERID in ${ENV_OWNERIDS//,/ };do
-      rcon -t web -a 127.0.0.1:${ENV_RCON_PORT:=28016} -p "${ENV_RCON_PASSWD:=StrongPasswd123456}" "global.ownerid ${OWNERID}" > /dev/null 2>&1
-    done
+    ensure_owner_permissions_applied
   fi  
   
   echo "DEBUG: --------------------"
