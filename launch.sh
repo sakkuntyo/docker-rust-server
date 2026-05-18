@@ -212,8 +212,6 @@ owner_permissions_list() {
       playeradministration.access.hurt \
       playeradministration.access.heal \
       playeradministration.access.mute \
-      playeradministration.access.chatmute \
-      playeradministration.access.voicemute \
       playeradministration.access.perms \
       playeradministration.access.allowfreeze \
       playeradministration.access.teleport \
