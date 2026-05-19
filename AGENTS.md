@@ -10,7 +10,7 @@
 - main に変更を入れたら、必要に応じて GitHub Release を更新する。
 - コンテナ内の起動スクリプトは [sakkuntyo/docker-rust-server](https://github.com/sakkuntyo/docker-rust-server) にある。
 - コンテナリポジトリは [sakkuntyo/rust-server](https://hub.docker.com/repository/docker/sakkuntyo/rust-server) にある。
-- コミットするたびに新しいバージョン Tag と Release を作成する。
+- dockerfile や launch.sh の更新を含むコミットをするたびに新しいバージョン Tag と Release を作成する。
 - Tag は w.x.y 形式で、y だけを更新する。
 - w.x はユーザー操作で更新する。
 - Docker Hub digest を Release note に追記する。
