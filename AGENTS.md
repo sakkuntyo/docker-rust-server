@@ -2,7 +2,8 @@
 
 ## Local files
 
-- `AGENTS.local.md` はローカル運用メモ用のファイルであり、リポジトリには含めない。
+- `AGENTS.local.md` はローカル運用メモ用のファイルであり、この公開リポジトリには含めない。
+- コードオーナー向けの運用メモは、private repository の [AGENTS.local.md](https://github.com/sakkuntyo/docker-rust-server-ops/blob/main/AGENTS.local.md) を参照する。
 - ローカル環境固有の本番コンテナ名、Docker push 手順、個人環境のパス、削除してよいボリュームの判断は `AGENTS.local.md` に書く。
 
 ## Release運用
