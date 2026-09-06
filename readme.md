@@ -42,6 +42,8 @@ RustDedicated のオプションを環境変数で指定できます。指定し
 |ENV_QUERY_PORT|28017||
 |ENV_RCON_PASSWD|StrongPasswd123456|既定値は非推奨|
 |ENV_LIVE_STREAM_POLICY|OK|ライブ配信の可否、この変数の内容はサーバー説明文に記載されます|
+|ENV_DISCORD_URL|未設定（通知しない）|ワイプ時のマップ画像通知先。Discord Webhook URLを1つ指定|
+|ENV_NOTIFY_MSG|サーバー名・ワイプ周期・次回ワイプ日時・画像URLを含む既定文面|通知メッセージのテンプレート。下記参照|
 
 以下は tailscale exitnode を使用する場合に必要です。
 
@@ -50,6 +52,72 @@ RustDedicated のオプションを環境変数で指定できます。指定し
 |ENV_TS_EXITNODE_IP||指定する場合、コンテナの cap-add や device 追加が必要|
 |ENV_TS_HOSTNAME||tailscale ネットワーク上で表示される名前、未指定だとコンテナIDになる|
 |ENV_TS_AUTHKEY||非対話で進めたい場合に指定する|
+
+## ワイプ時のDiscordマップ画像通知（1.1.6以降）
+
+`ENV_DISCORD_URL` に、DiscordでコピーしたWebhook URLを指定します。
+形式は `https://discord.com/api/webhooks/<id>/<token>` で、クエリ文字列は付けません。
+未設定・空欄なら通知しません。URLには秘密のトークンが含まれるため、リポジトリへコミットしないでください。
+
+`ENV_NOTIFY_MSG` に指定する値の例:
+
+```text
+${ENV_SERVERNAME}がワイプされました。
+ワイプスケジュール: ${ENV_WIPE_CYCLE} / ${ENV_WIPE_DAY_OF_WEEK} ${ENV_WIPE_TIME}
+次回ワイプ: ${NEXT_WIPE}
+${MAP_IMAGE_URL}
+```
+
+実際の改行と、文字列の `\n` の両方を使えます。未設定・空欄なら既定文面になります。
+対応する `${変数名}` は以下の8種類です。
+
+|変数名|埋め込まれる内容|
+|:-|:-|
+|ENV_SERVERNAME|サーバー名|
+|ENV_WIPE_CYCLE|ワイプ周期|
+|ENV_WIPE_DAY_OF_WEEK|ワイプ曜日|
+|ENV_WIPE_TIME|ワイプ時刻|
+|ENV_WIPE_TYPE|ワイプ種別|
+|ENV_WORLDSIZE|マップサイズ|
+|NEXT_WIPE|`server/wipeunixtime` をコンテナのタイムゾーンで整形した次回ワイプ日時|
+|MAP_IMAGE_URL|今回取得したマップ画像URL|
+
+置換は一度だけ行い、シェルのコマンドや式は実行しません。
+未対応の変数は文字列のまま残り、Webhook URLやRCONパスワードは展開しません。
+文面は展開後2000文字以内にしてください。画像は文面とは別にimage embedにも指定します。
+`@everyone` やユーザー・ロールへのメンション通知は無効です。
+
+Docker Compose / StackのYAMLに直接書くときは、Compose側の先行展開を避けて `$${変数名}` にします。
+Portainerの個別環境変数欄へ値を渡す場合は、上記の `${変数名}` を使います。
+
+```yaml
+environment:
+  ENV_NOTIFY_MSG: |-
+    $${ENV_SERVERNAME}がワイプされました。
+    次回ワイプ: $${NEXT_WIPE}
+    $${MAP_IMAGE_URL}
+```
+
+### 通知タイミングと制限
+
+- ログ収集開始時に `server/map-urls.csv` がなかった起動で、最初の画像URL（jpg/jpeg/png）を取得したとき、1回送信を試みます。
+- CSVがある通常再起動では通知しません。既存CSVが空の場合も通知しません。
+- FULLワイプでCSVが削除されれば通知対象になります。CSVを残すワイプでは通知せず、CSVを手動削除した場合は通知対象になります。
+- マップURLだけでは送信せず、画像URLを待ちます。サーバーの起動完了を保証する通知ではありません。
+- CSV作成後、画像取得前に終了した場合、次の起動では通知しません。
+- 送信はバックグラウンドで行い、従来のコンテナログ表示とCSV追記は継続します。
+- 接続待ち5秒・全体20秒で打ち切ります。成否はコンテナログへ出しますが、Webhook URL・トークン・応答本文は出しません。
+- 重複通知を避けるため自動再送はしません。通信失敗・強制終了をまたいだ配送保証はありません。
+
+### 模擬テスト
+
+Bashとjqがある環境で実行できます。RustDedicatedとcurlを模擬実装に置き換えるため、実サーバーを起動せず、Discordへも送信しません。
+
+```bash
+bash tests/discord-wipe.sh
+```
+
+テスト用ファイルは出力された一時ディレクトリに残します。
 
 ## tailscale exitnode オプションの用途
 リバースプロキシ環境を挟んだ時の以下 3 の問題を解決するために tailscale exitnode を使う事にしました。
