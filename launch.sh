@@ -363,6 +363,54 @@ if [ ! -z "${ENV_TS_EXITNODE_IP}" ]; then
   }
 fi
 
+# ENV_NOTIFY_MSG の ${変数名} を安全に置換して、マップ画像をDiscordへ通知する。
+# 対応変数は下記の --arg。未指定時は既定文面、ENV_DISCORD_URL 未指定時は通知しない。
+notify_wipe_map() {
+  local image_url="$1" template="${ENV_NOTIFY_MSG:-}" next_wipe payload
+  [[ -n "${ENV_DISCORD_URL:-}" ]] || return 0
+  # URLの重複貼り付け等を拒否し、トークンを含むURLはログに出さない。
+  if [[ ! "${ENV_DISCORD_URL}" =~ ^https://discord\.com/api/webhooks/[0-9]+/[A-Za-z0-9_-]+$ ]]; then
+    echo "WARN: ENV_DISCORD_URL が不正なため、ワイプ通知を送信しません。" >&2
+    return 0
+  fi
+  if [[ -z "${template}" ]]; then
+    template='${ENV_SERVERNAME}がワイプされました。\nワイプ周期: ${ENV_WIPE_CYCLE}\n次回ワイプ: ${NEXT_WIPE}\n${MAP_IMAGE_URL}'
+  fi
+  next_wipe=$(date -d "@$(cat ./server/wipeunixtime)" '+%Y-%m-%d %H:%M:%S %Z' 2>/dev/null) || next_wipe='不明'
+  # evalは使わない。置換は一度だけ行い、改行・引用符等はjqでJSONエスケープする。
+  if ! payload=$(jq -cn \
+    --arg template "${template}" \
+    --arg ENV_SERVERNAME "${ENV_SERVERNAME:-TEST SERVER}" \
+    --arg ENV_WIPE_CYCLE "${ENV_WIPE_CYCLE:-monthly}" \
+    --arg ENV_WIPE_DAY_OF_WEEK "${ENV_WIPE_DAY_OF_WEEK:-Friday}" \
+    --arg ENV_WIPE_TIME "${ENV_WIPE_TIME:-09:00}" \
+    --arg ENV_WIPE_TYPE "${ENV_WIPE_TYPE:-FULL}" \
+    --arg ENV_WORLDSIZE "${ENV_WORLDSIZE:-3000}" \
+    --arg NEXT_WIPE "${next_wipe}" \
+    --arg MAP_IMAGE_URL "${image_url}" '
+      ($ARGS.named | del(.template)) as $vars
+      | ($template | split("\\n") | join("\n")
+         | gsub("\\$\\{(?<name>[A-Za-z_][A-Za-z0-9_]*)\\}";
+                $vars[.name] // ("${" + .name + "}"))) as $message
+      | if ($message | length) > 2000 then error("message too long") else
+          {content: $message, embeds: [{image: {url: $MAP_IMAGE_URL}}],
+           allowed_mentions: {parse: []}}
+        end
+    ' 2>/dev/null); then
+    echo "WARN: ワイプ通知のJSON作成に失敗しました。文面は展開後2000文字以内にしてください。" >&2
+    return 0
+  fi
+  # 応答本文やcurlのエラーにはURL等が含まれ得るため表示しない。再送による重複も避ける。
+  if printf '%s' "${payload}" | curl --disable --silent --fail --proto '=https' \
+    --connect-timeout 5 --max-time 20 --output /dev/null \
+    --header 'Content-Type: application/json' --data-binary @- \
+    "${ENV_DISCORD_URL}?wait=true" 2>/dev/null; then
+    echo "INFO: Discordへワイプのマップ画像を通知しました。" >&2
+  else
+    echo "WARN: Discordへのワイプ通知に失敗しました。自動再送はしません。" >&2
+  fi
+}
+
 ./RustDedicated -batchmode \
         +server.identity "serverdata1" \
         +server.hostname "${ENV_SERVERNAME:=TEST SERVER}" \
@@ -383,6 +431,9 @@ fi
         +server.queryport ${ENV_QUERY_PORT:=28017} \
         +server.tags "${ENV_SERVERTAGS:=Vanilla}" 2>&1 |
   tee -p >(
+    # >> によってCSVが作成される前に判定する。既存CSVなら通常再起動として通知しない。
+    notify_first_image=false
+    [[ -e ./server/map-urls.csv ]] || notify_first_image=true
     # 前回の強制終了で画像URL待ちの行が残っていたら、空欄で閉じる。
     if [[ -s ./server/map-urls.csv && -n "$(tail -c 1 ./server/map-urls.csv)" ]]; then
       printf ',\n' >> ./server/map-urls.csv
@@ -404,6 +455,11 @@ fi
             fi
             printf ',%s\n' "${url}"
             image_pending=false
+            if [[ "${notify_first_image}" == true ]]; then
+              notify_first_image=false
+              # 通信待ちでログ収集を止めず、出力をCSVへ混入させない。
+              notify_wipe_map "${url}" </dev/null >/dev/null &
+            fi
             ;;
         esac
       done
