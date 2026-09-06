@@ -1,5 +1,4 @@
 #!/bin/bash
-ENV_ENABLE_UMOD=false
 
 rcon_global_say() {
   local message="$1"
