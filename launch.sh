@@ -72,7 +72,9 @@ fi
 echo "INFO: --------------------"
 
 # update rustdedicated
-steamcmd +login anonymous +force_install_dir /root/rustserver +app_update 258550 validate +quit
+#steamcmd +login anonymous +force_install_dir /root/rustserver +app_update 258550 validate +quit
+#steamcmd +login anonymous +force_install_dir /root/rustserver +app_update 258550 -beta last-month validate +quit
+steamcmd +login anonymous +force_install_dir /root/rustserver +app_update 258550 -beta public validate +quit
 
 install_umod_and_plugins() {
   local umod_zip="/tmp/Oxide.Rust.zip"
@@ -379,7 +381,35 @@ fi
         +server.port ${ENV_SERVER_PORT:=28015} \
         +rcon.port ${ENV_RCON_PORT:=28016} \
         +server.queryport ${ENV_QUERY_PORT:=28017} \
-        +server.tags "${ENV_SERVERTAGS:=Vanilla}" &
+        +server.tags "${ENV_SERVERTAGS:=Vanilla}" 2>&1 |
+  tee -p >(
+    # 前回の強制終了で画像URL待ちの行が残っていたら、空欄で閉じる。
+    if [[ -s ./server/map-urls.csv && -n "$(tail -c 1 ./server/map-urls.csv)" ]]; then
+      printf ',\n' >> ./server/map-urls.csv
+    fi
+    grep --line-buffered -oE \
+      'https://files\.facepunch\.com/rust/(maps/[^[:space:]]+\.map|map-images/[^[:space:]]+\.(jpg|jpeg|png))' |
+    {
+      image_pending=false
+      while IFS= read -r url; do
+        case "${url}" in
+          */maps/*)
+            if [[ "${image_pending}" == true ]]; then printf ',\n'; fi
+            printf '%s,%s' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" "${url}"
+            image_pending=true
+            ;;
+          */map-images/*)
+            if [[ "${image_pending}" == false ]]; then
+              printf '%s,' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+            fi
+            printf ',%s\n' "${url}"
+            image_pending=false
+            ;;
+        esac
+      done
+      if [[ "${image_pending}" == true ]]; then printf ',\n'; fi
+    } >> ./server/map-urls.csv
+  ) &
 
 # 10分後に死活監視を開始
 for ((i = 1; i <= 20; i++))
@@ -389,6 +419,7 @@ do
   ensure_owner_permissions_applied
 done
 
+mapCopiesCreated=false
 while true; do
   TIMESTAMP=$(date)
 
@@ -418,8 +449,8 @@ while true; do
 
     # サーバーバージョンアップデート対策
     if [ ! -f "./server/createdServerVersion" ]; then 
-      echo "INFO: サーバーデータのシンボリックリンクを作成します。これは初回起動時にのみ行います。"
       (
+        echo "INFO: サーバーデータのシンボリックリンクを作成します。これは初回起動時にのみ行います。"
         cd server/serverdata1/
         createdServerVersion=$(find . -maxdepth 1 -name "proceduralmap.${ENV_WORLDSIZE:=3000}.$(cat ../seed).*.sav" | sed -r 's/.*\.([0-9]{3,4})\.sav/\1/g' | sort -u -n | head -n1)
         createdBpVersion=$(find . -maxdepth 1 -name "player.blueprints.*.db" | sed -r 's/.*player\.blueprints\.([0-9]+)\.db/\1/g' | sort -u -n | head -n1)
@@ -450,9 +481,39 @@ while true; do
           fi
         done
         echo "INFO: サーバーデータのシンボリックリンクを作成しました。"
+        echo "INFO: 初回起動時のビルド番号を控えます。これは初回起動時にのみ行います。"
+        steamcmd +login anonymous +app_info_update 1 +app_info_print 258550 +quitsteamcmd +login anonymous +app_info_update 1 +app_info_print 258550 +quit | jq -Rrse 'capture("\"branches\"\\s*\\{[\\s\\S]*?\"public\"\\s*\\{[^}]*\"buildid\"\\s*\"(?<buildid>[0-9]+)\"") | .buildid' > ../createdBuildId
+        echo "INFO: 初回起動時のビルド番号を控えました。"
         echo "${createdServerVersion}" > ../createdServerVersion
+        echo "INFO: createdServerVersion -> $(cat ./server/createdServerVersion)"
       )
-      echo "INFO: createdServerVersion -> $(cat ./server/createdServerVersion)"
+    fi
+
+    # 起動ごとに、初回バージョン+1〜+10のマップ実ファイルを作成する。
+    if [[ "${mapCopiesCreated}" == false ]]; then
+      if (
+        cd server/serverdata1/ || exit 1
+        mapSeed=$(cat ../seed) || exit 1
+        createdMapVersion=$(cat ../createdServerVersion) || exit 1
+        if [[ ! "${createdMapVersion}" =~ ^[0-9]+$ ]]; then
+          echo "WARN: createdServerVersion が不正なため、マップのコピーを再試行します。"
+          exit 1
+        fi
+        mapPrefix="proceduralmap.${ENV_WORLDSIZE:=3000}.${mapSeed}"
+        currentMapVersion=$(find . -maxdepth 1 -type f -name "${mapPrefix}.*.map" | sed -nE 's/.*\.([0-9]+)\.map$/\1/p' | sort -n | head -n1)
+        if [[ -z "${currentMapVersion}" || ! -s "${mapPrefix}.${currentMapVersion}.map" ]]; then
+          echo "WARN: 現在のマップが見つからないため、次のヘルスチェックでコピーを再試行します。"
+          exit 1
+        fi
+        for i in {1..10}; do
+          targetMapVersion=$((10#${createdMapVersion} + i))
+          [[ "${targetMapVersion}" -eq "$((10#${currentMapVersion}))" ]] && continue
+          cp --remove-destination -- "${mapPrefix}.${currentMapVersion}.map" "${mapPrefix}.${targetMapVersion}.map" || exit 1
+        done
+        echo "INFO: 初回バージョン ${createdMapVersion} の+1〜+10のマップ実ファイルを用意しました。"
+      ); then
+        mapCopiesCreated=true
+      fi
     fi
 
     # pop 定期
