@@ -1,9 +1,12 @@
 FROM "steamcmd/steamcmd:ubuntu-24"
 
-RUN echo "バージョン(キャッシュ回避用に変更): 1.1.2.$(date +%s)"
+RUN echo "バージョン(キャッシュ回避用に変更): 1.1.4.$(date +%s)"
 RUN ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
 
-RUN apt update;apt install wget curl net-tools tini tzdata jq unzip -y;
+RUN apt update;apt install wget curl net-tools tini tzdata jq unzip python3-venv util-linux -y;
+COPY requirements-map.txt /opt/rustserver/requirements-map.txt
+RUN python3 -m venv /opt/rustserver/map-venv \
+    && /opt/rustserver/map-venv/bin/pip install --no-cache-dir -r /opt/rustserver/requirements-map.txt
 RUN curl -fsSL https://tailscale.com/install.sh | sh
 RUN rm -rf /var/lib/apt/lists/*
 RUN wget https://github.com/gorcon/rcon-cli/releases/download/v0.10.3/rcon-0.10.3-amd64_linux.tar.gz -O rcon.tar.gz && tar -zxf rcon.tar.gz -C /tmp/ --wildcards rcon*/rcon && cp /tmp/rcon*/rcon /usr/local/bin/ && rm rcon.tar.gz && rm -r /tmp/rcon*
@@ -32,6 +35,7 @@ RUN mkdir -p /opt/rustserver/plugins \
     && curl -fsSL "${VANISH_PLUGIN_URL}" -o /opt/rustserver/plugins/Vanish.cs
 
 COPY launch.sh /root/rustserver/launch.sh
+COPY map_state.py /opt/rustserver/map_state.py
 RUN chmod +x /root/rustserver/launch.sh
 
 WORKDIR /root/rustserver

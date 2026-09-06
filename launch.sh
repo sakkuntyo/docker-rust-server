@@ -1,5 +1,12 @@
 #!/bin/bash
 
+MAP_PYTHON=/opt/rustserver/map-venv/bin/python
+MAP_HELPER=/opt/rustserver/map_state.py
+mkdir -p ./server/.map-history || exit 1
+# One launcher per data volume; the lock survives for the launcher's lifetime.
+exec 9>./server/.map-history/launch.lock
+flock -n 9 || { echo "ERROR: Another launcher owns this server volume." >&2; exit 1; }
+
 rcon_global_say() {
   local message="$1"
   echo "INFO: global.say ${message}"
@@ -24,11 +31,7 @@ if [ -f "./server/wipeunixtime" ]; then
   echo "INFO: --------------------"
   if [[ "$(date +%s)" -gt "$(cat ./server/wipeunixtime)" ]]; then
     echo "INFO: ワイプを行います。"
-    rm ./server/seed
-    rm ./server/wipeunixtime
-    if [ "${ENV_WIPE_TYPE:=FULL}" == "FULL" ]; then
-      rm -r ./server/*
-    fi
+    "${MAP_PYTHON}" "${MAP_HELPER}" wipe --mode "${ENV_WIPE_TYPE:=FULL}" || exit 1
     echo "INFO: ワイプ処理を完了しました"
   fi
 fi
@@ -72,7 +75,10 @@ fi
 echo "INFO: --------------------"
 
 # update rustdedicated
-steamcmd +login anonymous +force_install_dir /root/rustserver +app_update 258550 validate +quit
+if ! steamcmd +login anonymous +force_install_dir /root/rustserver +app_update 258550 validate +quit; then
+  echo "ERROR: SteamCMD failed; refusing to install Oxide or start Rust." >&2
+  exit 1
+fi
 
 install_umod_and_plugins() {
   local umod_zip="/tmp/Oxide.Rust.zip"
@@ -361,7 +367,11 @@ if [ ! -z "${ENV_TS_EXITNODE_IP}" ]; then
   }
 fi
 
-./RustDedicated -batchmode \
+MAP_PROTOCOL=$("${MAP_PYTHON}" "${MAP_HELPER}" protocol ./RustDedicated_Data/Managed/Rust.Global.dll) || exit 1
+"${MAP_PYTHON}" "${MAP_HELPER}" prepare \
+  --size "${ENV_WORLDSIZE:=3000}" --seed "$(cat ./server/seed)" --protocol "${MAP_PROTOCOL}" || exit 1
+
+"${MAP_PYTHON}" "${MAP_HELPER}" run --timeout "${ENV_MAP_STARTUP_TIMEOUT:=1800}" -- ./RustDedicated -batchmode \
         +server.identity "serverdata1" \
         +server.hostname "${ENV_SERVERNAME:=TEST SERVER}" \
         +server.description "Next wipe:$(date -d "@$(cat ./server/wipeunixtime)" '+%Y-%m-%d_%T(%Z)')\n---\n${ENV_SERVERDESCRIPTION:=Welcome!}\n---\nMax team size:${ENV_MAXTEAMSIZE:=8}\nMax players:${ENV_MAXPLAYERS:=100}\nWorld size:${ENV_WORLDSIZE:=3000}\nWipe schedule:${ENV_WIPE_CYCLE:=Monthly}\nWipe type: ${ENV_WIPE_TYPE:=FULL}\nNext restart/stop time:$(date -d "@${TARGET_STOP_UNIXTIME}" '+%Y-%m-%d_%T(%Z)')\nLive Streaming:${ENV_LIVE_STREAM_POLICY:=OK}" \
@@ -380,16 +390,19 @@ fi
         +rcon.port ${ENV_RCON_PORT:=28016} \
         +server.queryport ${ENV_QUERY_PORT:=28017} \
         +server.tags "${ENV_SERVERTAGS:=Vanilla}" &
+MAP_RUNNER_PID=$!
 
 # 10分後に死活監視を開始
 for ((i = 1; i <= 20; i++))
 do
   echo "INFO: $(((21 - i))) 分後にヘルスチェックを開始します。。。"
   sleep 60
+  kill -0 "${MAP_RUNNER_PID}" 2>/dev/null || { wait "${MAP_RUNNER_PID}"; exit 1; }
   ensure_owner_permissions_applied
 done
 
 while true; do
+  kill -0 "${MAP_RUNNER_PID}" 2>/dev/null || { wait "${MAP_RUNNER_PID}"; exit 1; }
   TIMESTAMP=$(date)
 
   # Tailscaleのチェックが必要かどうかを判断するフラグ
@@ -415,45 +428,6 @@ while true; do
   # 4. 全てのチェックがOKの場合
   else
     echo "INFO: Health Check: 全てのサービスは正常に稼働中です。"
-
-    # サーバーバージョンアップデート対策
-    if [ ! -f "./server/createdServerVersion" ]; then 
-      echo "INFO: サーバーデータのシンボリックリンクを作成します。これは初回起動時にのみ行います。"
-      (
-        cd server/serverdata1/
-        createdServerVersion=$(find . -maxdepth 1 -name "proceduralmap.${ENV_WORLDSIZE:=3000}.$(cat ../seed).*.sav" | sed -r 's/.*\.([0-9]{3,4})\.sav/\1/g' | sort -u -n | head -n1)
-        createdBpVersion=$(find . -maxdepth 1 -name "player.blueprints.*.db" | sed -r 's/.*player\.blueprints\.([0-9]+)\.db/\1/g' | sort -u -n | head -n1)
-        createdIdentityVersion=$(find . -maxdepth 1 -name "player.identities.*.db" | sed -r 's/.*player\.identities\.([0-9]+)\.db/\1/g' | sort -u -n | head -n1)
-        createdDeathVersion=$(find . -maxdepth 1 -name "player.deaths.*.db" | sed -r 's/.*player\.deaths\.([0-9]+)\.db/\1/g' | sort -u -n | head -n1)
-        createdRelationshipVersion=$(find . -maxdepth 1 -name "relationship.*.db" | sed -r 's/.*relationship\.([0-9]+)\.db/\1/g' | sort -u -n | head -n1)
-        for i in {1..10};do
-          ln -sf "proceduralmap.${ENV_WORLDSIZE:=3000}.$(cat ../seed).${createdServerVersion}.sav" "proceduralmap.${ENV_WORLDSIZE:=3000}.$(cat ../seed).$(((${createdServerVersion} + $i))).sav";
-          ln -sf "player.states.${createdServerVersion}.db" "player.states.$(((${createdServerVersion} + $i))).db";
-          ln -sf "player.states.${createdServerVersion}.db-wal" "player.states.$(((${createdServerVersion} + $i))).db-wal";
-          ln -sf "sv.files.${createdServerVersion}.db" "sv.files.$(((${createdServerVersion} + $i))).db";
-          ln -sf "sv.files.${createdServerVersion}.db-wal" "sv.files.$(((${createdServerVersion} + $i))).db-wal";
-          if [ ! -z "${createdBpVersion}" ]; then
-            ln -sf "player.blueprints.${createdBpVersion}.db" "player.blueprints.$(((${createdBpVersion} + $i))).db";
-            ln -sf "player.blueprints.${createdBpVersion}.db-wal" "player.blueprints.$(((${createdBpVersion} + $i))).db-wal";
-          fi
-          if [ ! -z "${createdIdentityVersion}" ]; then
-            ln -sf "player.identities.${createdIdentityVersion}.db" "player.identities.$(((${createdIdentityVersion} + $i))).db";
-            ln -sf "player.identities.${createdIdentityVersion}.db-wal" "player.identities.$(((${createdIdentityVersion} + $i))).db-wal";
-          fi
-          if [ ! -z "${createdDeathVersion}" ]; then
-            ln -sf "player.deaths.${createdDeathVersion}.db" "player.deaths.$(((${createdDeathVersion} + $i))).db";
-            ln -sf "player.deaths.${createdDeathVersion}.db-wal" "player.deaths.$(((${createdDeathVersion} + $i))).db-wal";
-          fi
-          if [ ! -z "${createdRelationshipVersion}" ]; then
-            ln -sf "relationship.${createdRelationshipVersion}.db" "relationship.$(((${createdRelationshipVersion} + $i))).db";
-            ln -sf "relationship.${createdRelationshipVersion}.db-wal" "relationship.$(((${createdRelationshipVersion} + $i))).db-wal";
-          fi
-        done
-        echo "INFO: サーバーデータのシンボリックリンクを作成しました。"
-        echo "${createdServerVersion}" > ../createdServerVersion
-      )
-      echo "INFO: createdServerVersion -> $(cat ./server/createdServerVersion)"
-    fi
 
     # pop 定期
     if [[ $(date "+%M") -eq "30" || $(date "+%M") -eq "0" ]];then
