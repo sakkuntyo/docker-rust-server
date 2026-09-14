@@ -1,0 +1,57 @@
+<Window x:Class="RustMonitor.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="Rust Monitor" Width="1440" Height="880" MinWidth="1080" MinHeight="700" Background="#101820" FontFamily="Yu Gothic UI, Segoe UI" FontSize="13" WindowStartupLocation="CenterScreen">
+  <Grid Margin="24" Background="#101820">
+    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+    <DockPanel Margin="0,0,0,22">
+      <StackPanel DockPanel.Dock="Left"><TextBlock Text="RUST / MONITOR" FontSize="25" FontWeight="Bold"/><TextBlock Text="サーバーの今と、プレイヤーの記録。" Foreground="{StaticResource Muted}" Margin="0,4,0,0"/></StackPanel>
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+        <Button Content="Docker サーバー一覧" Click="Docker_Click"/>
+        <Button Content="保存済みサーバー" Click="Profiles_Click"/>
+        <Button x:Name="RefreshButton" Content="今すぐ更新" Click="Refresh_Click" IsEnabled="False"/>
+        <Button x:Name="DisconnectButton" Content="更新停止" Click="Disconnect_Click" IsEnabled="False"/>
+      </StackPanel>
+    </DockPanel>
+    <Border Grid.Row="1" Background="{StaticResource Panel}" CornerRadius="8" Padding="16" Margin="0,0,0,18">
+      <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="1.5*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+        <StackPanel Margin="0,0,12,0"><TextBlock Text="SSH 接続先（user@hostname）" Foreground="{StaticResource Muted}" Margin="0,0,0,6"/><TextBox x:Name="TargetBox" ToolTip="Docker ホストの SSH 接続先。Windows OpenSSH の鍵認証を使います。"/></StackPanel>
+        <Button Grid.Column="1" x:Name="ListButton" Content="一覧取得" Click="List_Click" VerticalAlignment="Bottom" Margin="0,0,16,0"/>
+        <StackPanel Grid.Column="2" Margin="0,0,16,0"><TextBlock Text="サーバー / Docker コンテナ" Foreground="{StaticResource Muted}" Margin="0,0,0,6"/><ComboBox x:Name="ContainerBox" Padding="8,7" FontSize="13" MinHeight="34"><ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding DisplayName}" Foreground="#101820" TextTrimming="CharacterEllipsis"/></DataTemplate></ComboBox.ItemTemplate></ComboBox></StackPanel>
+        <Button Grid.Column="3" x:Name="ConnectButton" Content="SSH で接続" Background="#BB633D" Click="Connect_Click" VerticalAlignment="Bottom"/>
+      </Grid>
+    </Border>
+    <DockPanel Grid.Row="2" Margin="0,0,0,14"><TextBlock x:Name="ServerTitle" Text="サーバーを接続してください" FontSize="18" FontWeight="SemiBold"/><TextBlock x:Name="CountsText" DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{StaticResource Muted}"/></DockPanel>
+    <Grid Grid.Row="3"><Grid.ColumnDefinitions><ColumnDefinition Width="280"/><ColumnDefinition Width="16"/><ColumnDefinition Width="*"/><ColumnDefinition Width="16"/><ColumnDefinition Width="340"/></Grid.ColumnDefinitions>
+      <Border Background="{StaticResource Panel}" CornerRadius="8" Padding="16">
+        <DockPanel>
+          <StackPanel DockPanel.Dock="Top"><TextBlock Text="メンバー" FontSize="16" FontWeight="SemiBold"/><TextBox x:Name="SearchBox" Margin="0,14,0,10" TextChanged="Filter_Changed" ToolTip="名前・Steam ID で検索"/><StackPanel Orientation="Horizontal" Margin="0,0,0,14"><CheckBox x:Name="OnlineOnly" Content="オンラインのみ" Checked="Filter_Changed" Unchecked="Filter_Changed"/><TextBlock Text="  名前 / Steam ID で検索" FontSize="10" Foreground="{StaticResource Muted}"/></StackPanel></StackPanel>
+          <TextBlock x:Name="RosterEmpty" DockPanel.Dock="Bottom" Text="接続すると、収集済みのメンバーが表示されます。" TextWrapping="Wrap" Foreground="{StaticResource Muted}" Margin="0,12"/>
+          <ListBox x:Name="PlayerList" SelectionChanged="Player_Selected">
+            <ListBox.ItemTemplate><DataTemplate><StackPanel><DockPanel><TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/><TextBlock Text="{Binding State}" Foreground="{Binding Color}" HorizontalAlignment="Right" FontSize="11" Margin="8,0,0,0"/></DockPanel><TextBlock Text="{Binding SteamId}" FontSize="11" Foreground="{StaticResource Muted}" Margin="0,4,0,0"/><TextBlock Text="{Binding LastSeen}" FontSize="11" Foreground="{StaticResource Muted}" Margin="0,4,0,0"/></StackPanel></DataTemplate></ListBox.ItemTemplate>
+          </ListBox>
+        </DockPanel>
+      </Border>
+      <Border Grid.Column="2" Background="{StaticResource Panel}" CornerRadius="8" Padding="16">
+        <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+          <DockPanel><TextBlock Text="マップ" FontSize="16" FontWeight="SemiBold"/><TextBlock x:Name="MapMeta" HorizontalAlignment="Right" Foreground="{StaticResource Muted}" FontSize="11" VerticalAlignment="Center"/></DockPanel>
+          <WrapPanel Grid.Row="1" Margin="0,12,0,0">
+            <Button x:Name="MapZoomOut" Content="−" Click="MapZoomOut_Click" Padding="10,5" Margin="0,0,4,4" ToolTip="縮小"/>
+            <TextBlock x:Name="MapZoomText" Text="100%" Width="45" TextAlignment="Center" VerticalAlignment="Center" Margin="0,0,4,4"/>
+            <Button x:Name="MapZoomIn" Content="＋" Click="MapZoomIn_Click" Padding="10,5" Margin="0,0,4,4" ToolTip="拡大"/>
+            <Button x:Name="MapReset" Content="全体" Click="MapReset_Click" Padding="10,5" Margin="0,0,4,4"/>
+            <Button x:Name="MapFocus" Content="選択した人へ" Click="MapFocus_Click" Padding="10,5" Margin="0,0,8,4" IsEnabled="False"/>
+            <CheckBox x:Name="MapNames" Content="名前・座標" IsChecked="True" Checked="MapNames_Changed" Unchecked="MapNames_Changed" Margin="0,0,0,4"/>
+          </WrapPanel>
+          <Grid x:Name="MapArea" Grid.Row="2" Margin="0,8,0,12" ClipToBounds="True" Background="#112029" SizeChanged="MapArea_SizeChanged" MouseWheel="MapArea_Wheel" MouseLeftButtonDown="MapArea_Down" MouseLeftButtonUp="MapArea_Up" MouseMove="MapArea_Move" LostMouseCapture="MapArea_LostCapture">
+            <Canvas IsHitTestVisible="False"><Image x:Name="MapImage" Stretch="Fill"/></Canvas>
+            <Canvas x:Name="MapMarkers"/>
+            <StackPanel x:Name="MapEmpty" VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="280"><TextBlock Text="マップはまだありません" FontSize="18" TextAlignment="Center"/><TextBlock x:Name="MapReason" Text="今季のマップ画像を SSH 経由で取得します。" TextWrapping="Wrap" Foreground="{StaticResource Muted}" Margin="0,12,0,0" TextAlignment="Center"/></StackPanel>
+          </Grid>
+          <StackPanel Grid.Row="3"><TextBlock x:Name="MapPositionStatus" Text="座標は最終セーブ時点の記録です。" Foreground="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap"/><TextBlock Text="ホイールで拡大・縮小 / ドラッグで移動&#x0a;● 緑：オンライン　灰：オフライン・未確認　橙：選択" Foreground="{StaticResource Muted}" FontSize="10" TextWrapping="Wrap" Margin="0,5,0,0"/></StackPanel>
+        </Grid>
+      </Border>
+      <Border Grid.Column="4" Background="{StaticResource Panel}" CornerRadius="8" Padding="16">
+        <DockPanel><StackPanel DockPanel.Dock="Top"><TextBlock Text="プレイヤーの持ち物" FontSize="16" FontWeight="SemiBold"/><TextBlock x:Name="InventoryName" Text="メンバーを選択" FontSize="21" FontWeight="SemiBold" Margin="0,18,0,6" TextWrapping="Wrap"/><TextBlock x:Name="PlayerDetails" Foreground="{StaticResource Muted}" TextWrapping="Wrap" FontSize="11"/><Border Background="#253340" CornerRadius="5" Padding="10" Margin="0,14"><TextBlock x:Name="InventoryStatus" Text="インベントリ・ベルト・装備を表示します。" Foreground="#D3DFE7" TextWrapping="Wrap" FontSize="12"/></Border></StackPanel><ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel x:Name="InventoryItems"/></ScrollViewer></DockPanel>
+      </Border>
+    </Grid>
+    <DockPanel Grid.Row="4" Margin="0,16,0,0"><TextBlock x:Name="StatusText" Text="未接続 • 閲覧専用" Foreground="{StaticResource Muted}" TextWrapping="Wrap"/><TextBlock Text="SQLite • ローカル保存" HorizontalAlignment="Right" Foreground="{StaticResource Muted}" FontSize="11"/></DockPanel>
+  </Grid>
+</Window>

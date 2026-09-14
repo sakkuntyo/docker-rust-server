@@ -1,0 +1,2630 @@
+{
+  "3222790": {
+    "Name": "Hide Halterneck",
+    "ShortName": "attire.hide.helterneck"
+  },
+  "3380160": {
+    "Name": "Card Movember Moustache",
+    "ShortName": "movembermoustachecard"
+  },
+  "14241751": {
+    "Name": "Fire Arrow",
+    "ShortName": "arrow.fire"
+  },
+  "15388698": {
+    "Name": "Stone Barricade",
+    "ShortName": "barricade.stone"
+  },
+  "20489901": {
+    "Name": "Purple Sunglasses",
+    "ShortName": "twitchsunglasses"
+  },
+  "21402876": {
+    "Name": "Burlap Gloves",
+    "ShortName": "burlap.gloves.new"
+  },
+  "23352662": {
+    "Name": "Large Banner Hanging",
+    "ShortName": "sign.hanging.banner.large"
+  },
+  "28201841": {
+    "Name": "M39 Rifle",
+    "ShortName": "rifle.m39"
+  },
+  "37122747": {
+    "Name": "Green Keycard",
+    "ShortName": "keycard_green"
+  },
+  "42535890": {
+    "Name": "Medium Animated Neon Sign",
+    "ShortName": "sign.neon.125x215.animated"
+  },
+  "51984655": {
+    "Name": "Incendiary Pistol Bullet",
+    "ShortName": "ammo.pistol.fire"
+  },
+  "60528587": {
+    "Name": "Roadsign Horse Armor",
+    "ShortName": "horse.armor.roadsign"
+  },
+  "62577426": {
+    "Name": "Photograph",
+    "ShortName": "photo"
+  },
+  "69511070": {
+    "Name": "Metal Fragments",
+    "ShortName": "metal.fragments"
+  },
+  "73681876": {
+    "Name": "Tech Trash",
+    "ShortName": "techparts"
+  },
+  "95950017": {
+    "Name": "Metal Pipe",
+    "ShortName": "metalpipe"
+  },
+  "98508942": {
+    "Name": "XXL Picture Frame",
+    "ShortName": "sign.pictureframe.xxl"
+  },
+  "99588025": {
+    "Name": "High External Wooden Wall",
+    "ShortName": "wall.external.high"
+  },
+  "121049755": {
+    "Name": "Tall Picture Frame",
+    "ShortName": "sign.pictureframe.tall"
+  },
+  "122783240": {
+    "Name": "Black Berry Clone",
+    "ShortName": "clone.black.berry"
+  },
+  "143803535": {
+    "Name": "F1 Grenade",
+    "ShortName": "grenade.f1"
+  },
+  "170758448": {
+    "Name": "Cockpit With Engine Vehicle Module",
+    "ShortName": "vehicle.1mod.cockpit.with.engine"
+  },
+  "171931394": {
+    "Name": "Stone Pickaxe",
+    "ShortName": "stone.pickaxe"
+  },
+  "174866732": {
+    "Name": "16x Zoom Scope",
+    "ShortName": "weapon.mod.8x.scope"
+  },
+  "176787552": {
+    "Name": "Rifle Body",
+    "ShortName": "riflebody"
+  },
+  "177226991": {
+    "Name": "Scarecrow",
+    "ShortName": "scarecrow"
+  },
+  "185586769": {
+    "Name": "Inner Tube",
+    "ShortName": "innertube.horse"
+  },
+  "190184021": {
+    "Name": "Kayak",
+    "ShortName": "kayak"
+  },
+  "196700171": {
+    "Name": "Hide Vest",
+    "ShortName": "attire.hide.vest"
+  },
+  "198438816": {
+    "Name": "Vending Machine",
+    "ShortName": "vending.machine"
+  },
+  "200773292": {
+    "Name": "Hammer",
+    "ShortName": "hammer"
+  },
+  "204391461": {
+    "Name": "Coal :(",
+    "ShortName": "coal"
+  },
+  "204970153": {
+    "Name": "Wrapped Gift",
+    "ShortName": "wrappedgift"
+  },
+  "215754713": {
+    "Name": "Bone Arrow",
+    "ShortName": "arrow.bone"
+  },
+  "223891266": {
+    "Name": "T-Shirt",
+    "ShortName": "tshirt"
+  },
+  "237239288": {
+    "Name": "Pants",
+    "ShortName": "pants"
+  },
+  "254522515": {
+    "Name": "Large Medkit",
+    "ShortName": "largemedkit"
+  },
+  "261913429": {
+    "Name": "White Volcano Firework",
+    "ShortName": "firework.volcano"
+  },
+  "263834859": {
+    "Name": "Basic Scrap Tea",
+    "ShortName": "scraptea"
+  },
+  "268565518": {
+    "Name": "Storage Vehicle Module",
+    "ShortName": "vehicle.1mod.storage"
+  },
+  "271048478": {
+    "Name": "Rat Mask",
+    "ShortName": "hat.ratmask"
+  },
+  "273172220": {
+    "Name": "Plumber's Trumpet",
+    "ShortName": "fun.trumpet"
+  },
+  "273951840": {
+    "Name": "Scarecrow Suit",
+    "ShortName": "scarecrow.suit"
+  },
+  "277730763": {
+    "Name": "Mummy Suit",
+    "ShortName": "halloween.mummysuit"
+  },
+  "282103175": {
+    "Name": "Giant Lollipop Decor",
+    "ShortName": "giantlollipops"
+  },
+  "286193827": {
+    "Name": "Pickles",
+    "ShortName": "jar.pickle"
+  },
+  "296519935": {
+    "Name": "Diving Fins",
+    "ShortName": "diving.fins"
+  },
+  "304481038": {
+    "Name": "Flare",
+    "ShortName": "flare"
+  },
+  "317398316": {
+    "Name": "High Quality Metal",
+    "ShortName": "metal.refined"
+  },
+  "349762871": {
+    "Name": "40mm HE Grenade",
+    "ShortName": "ammo.grenadelauncher.he"
+  },
+  "352130972": {
+    "Name": "Rotten Apple",
+    "ShortName": "apple.spoiled"
+  },
+  "352321488": {
+    "Name": "Sunglasses",
+    "ShortName": "sunglasses"
+  },
+  "352499047": {
+    "Name": "Shotgun Trap",
+    "ShortName": "guntrap"
+  },
+  "359723196": {
+    "Name": "Chippy Arcade Game",
+    "ShortName": "arcade.machine.chippy"
+  },
+  "363163265": {
+    "Name": "Hose Tool",
+    "ShortName": "hosetool"
+  },
+  "363467698": {
+    "Name": "Chocolate Bar",
+    "ShortName": "chocholate"
+  },
+  "390728933": {
+    "Name": "Yellow Berry Clone",
+    "ShortName": "clone.yellow.berry"
+  },
+  "418081930": {
+    "Name": "Wood Chestplate",
+    "ShortName": "wood.armor.jacket"
+  },
+  "442289265": {
+    "Name": "Holosight",
+    "ShortName": "weapon.mod.holosight"
+  },
+  "442886268": {
+    "Name": "Rocket Launcher",
+    "ShortName": "rocket.launcher"
+  },
+  "443432036": {
+    "Name": "Fluid Switch & Pump",
+    "ShortName": "fluid.switch"
+  },
+  "479143914": {
+    "Name": "Gears",
+    "ShortName": "gears"
+  },
+  "479292118": {
+    "Name": "Large Loot Bag",
+    "ShortName": "halloween.lootbag.large"
+  },
+  "492357192": {
+    "Name": "RAND Switch",
+    "ShortName": "electric.random.switch"
+  },
+  "524678627": {
+    "Name": "Advanced Scrap Tea",
+    "ShortName": "scraptea.advanced"
+  },
+  "528668503": {
+    "Name": "Flame Turret",
+    "ShortName": "flameturret"
+  },
+  "553270375": {
+    "Name": "Large Rechargable Battery",
+    "ShortName": "electric.battery.rechargable.large"
+  },
+  "553887414": {
+    "Name": "Skull Fire Pit",
+    "ShortName": "skull_fire_pit"
+  },
+  "559147458": {
+    "Name": "Survival Fish Trap",
+    "ShortName": "fishtrap.small"
+  },
+  "567235583": {
+    "Name": "8x Zoom Scope",
+    "ShortName": "weapon.mod.small.scope"
+  },
+  "567871954": {
+    "Name": "Secret Lab Chair",
+    "ShortName": "secretlabchair"
+  },
+  "573676040": {
+    "Name": "Coffin",
+    "ShortName": "coffin.storage"
+  },
+  "573926264": {
+    "Name": "Semi Automatic Body",
+    "ShortName": "semibody"
+  },
+  "588596902": {
+    "Name": "Handmade Shell",
+    "ShortName": "ammo.handmade.shell"
+  },
+  "593465182": {
+    "Name": "Table",
+    "ShortName": "table"
+  },
+  "596469572": {
+    "Name": "RF Transmitter",
+    "ShortName": "rf.detonator"
+  },
+  "602741290": {
+    "Name": "Burlap Shirt",
+    "ShortName": "burlap.shirt"
+  },
+  "603811464": {
+    "Name": "Advanced Max Health Tea",
+    "ShortName": "maxhealthtea.advanced"
+  },
+  "605467368": {
+    "Name": "Incendiary 5.56 Rifle Ammo",
+    "ShortName": "ammo.rifle.incendiary"
+  },
+  "609049394": {
+    "Name": "Battery - Small",
+    "ShortName": "battery.small"
+  },
+  "613961768": {
+    "Name": "Bota Bag",
+    "ShortName": "botabag"
+  },
+  "621915341": {
+    "Name": "Raw Pork",
+    "ShortName": "meat.boar"
+  },
+  "634478325": {
+    "Name": "CCTV Camera",
+    "ShortName": "cctv.camera"
+  },
+  "642482233": {
+    "Name": "Sticks",
+    "ShortName": "sticks"
+  },
+  "649912614": {
+    "Name": "Revolver",
+    "ShortName": "pistol.revolver"
+  },
+  "656371026": {
+    "Name": "High Quality Carburetor",
+    "ShortName": "carburetor3"
+  },
+  "656371027": {
+    "Name": "Medium Quality Carburetor",
+    "ShortName": "carburetor2"
+  },
+  "656371028": {
+    "Name": "Low Quality Carburetor",
+    "ShortName": "carburetor1"
+  },
+  "657352755": {
+    "Name": "Beach Table",
+    "ShortName": "beachtable"
+  },
+  "665332906": {
+    "Name": "Timer",
+    "ShortName": "electric.timer"
+  },
+  "671063303": {
+    "Name": "Riot Helmet",
+    "ShortName": "riot.helmet"
+  },
+  "671706427": {
+    "Name": "Reinforced Glass Window",
+    "ShortName": "wall.window.bars.toptier"
+  },
+  "674734128": {
+    "Name": "Festive Doorway Garland",
+    "ShortName": "xmas.door.garland"
+  },
+  "696029452": {
+    "Name": "Paper Map",
+    "ShortName": "map"
+  },
+  "699075597": {
+    "Name": "Wooden Cross",
+    "ShortName": "woodcross"
+  },
+  "722955039": {
+    "Name": "Water Gun",
+    "ShortName": "gun.water"
+  },
+  "756517185": {
+    "Name": "Medium Present",
+    "ShortName": "xmas.present.medium"
+  },
+  "762289806": {
+    "Name": "Siren Light",
+    "ShortName": "electric.sirenlight"
+  },
+  "785728077": {
+    "Name": "Pistol Bullet",
+    "ShortName": "ammo.pistol"
+  },
+  "794356786": {
+    "Name": "Hide Boots",
+    "ShortName": "attire.hide.boots"
+  },
+  "794443127": {
+    "Name": "Christmas Tree",
+    "ShortName": "xmas.tree"
+  },
+  "795236088": {
+    "Name": "Torch",
+    "ShortName": "torch"
+  },
+  "795371088": {
+    "Name": "Pump Shotgun",
+    "ShortName": "shotgun.pump"
+  },
+  "803222026": {
+    "Name": "Repair Bench",
+    "ShortName": "box.repair.bench"
+  },
+  "803954639": {
+    "Name": "Blue Berry Seed",
+    "ShortName": "seed.blue.berry"
+  },
+  "809199956": {
+    "Name": "Gravestone",
+    "ShortName": "gravestone"
+  },
+  "809942731": {
+    "Name": "Scarecrow Wrap",
+    "ShortName": "scarecrowhead"
+  },
+  "813023040": {
+    "Name": "Cooked Wolf Meat",
+    "ShortName": "wolfmeat.cooked"
+  },
+  "818733919": {
+    "Name": "Industrial Door",
+    "ShortName": "door.hinged.industrial.a"
+  },
+  "818877484": {
+    "Name": "Semi-Automatic Pistol",
+    "ShortName": "pistol.semiauto"
+  },
+  "826309791": {
+    "Name": "Two Sided Town Sign Post",
+    "ShortName": "sign.post.town.roof"
+  },
+  "830839496": {
+    "Name": "Red Berry Seed",
+    "ShortName": "seed.red.berry"
+  },
+  "832133926": {
+    "Name": "Wood Armor Pants",
+    "ShortName": "wood.armor.pants"
+  },
+  "833533164": {
+    "Name": "Large Wood Box",
+    "ShortName": "box.wooden.large"
+  },
+  "838831151": {
+    "Name": "Blue Berry Clone",
+    "ShortName": "clone.blue.berry"
+  },
+  "844440409": {
+    "Name": "Bronze Egg",
+    "ShortName": "easter.bronzeegg"
+  },
+  "850280505": {
+    "Name": "Bucket Helmet",
+    "ShortName": "bucket.helmet"
+  },
+  "854447607": {
+    "Name": "White Berry",
+    "ShortName": "white.berry"
+  },
+  "858486327": {
+    "Name": "Green Berry",
+    "ShortName": "green.berry"
+  },
+  "866332017": {
+    "Name": "Large Neon Sign",
+    "ShortName": "sign.neon.xl"
+  },
+  "866889860": {
+    "Name": "Wooden Barricade",
+    "ShortName": "barricade.wood"
+  },
+  "878301596": {
+    "Name": "Generic vehicle module",
+    "ShortName": "vehicle.module"
+  },
+  "882559853": {
+    "Name": "Spider Webs",
+    "ShortName": "spiderweb"
+  },
+  "884424049": {
+    "Name": "Compound Bow",
+    "ShortName": "bow.compound"
+  },
+  "888415708": {
+    "Name": "RF Receiver",
+    "ShortName": "electric.rf.receiver"
+  },
+  "895374329": {
+    "Name": "Passenger Vehicle Module",
+    "ShortName": "vehicle.2mod.passengers"
+  },
+  "915408809": {
+    "Name": "40mm Smoke Grenade",
+    "ShortName": "ammo.grenadelauncher.smoke"
+  },
+  "926800282": {
+    "Name": "Medium Quality Valves",
+    "ShortName": "valve2"
+  },
+  "935692442": {
+    "Name": "Longsleeve T-Shirt",
+    "ShortName": "tshirt.long"
+  },
+  "936496778": {
+    "Name": "Floor grill",
+    "ShortName": "floor.grill"
+  },
+  "946662961": {
+    "Name": "Car Key",
+    "ShortName": "car.key"
+  },
+  "952603248": {
+    "Name": "Weapon flashlight",
+    "ShortName": "weapon.mod.flashlight"
+  },
+  "963906841": {
+    "Name": "Rock",
+    "ShortName": "rock"
+  },
+  "968019378": {
+    "Name": "Clatter Helmet",
+    "ShortName": "clatter.helmet"
+  },
+  "971362526": {
+    "Name": "Skull Trophy",
+    "ShortName": "skull.trophy.jar"
+  },
+  "980333378": {
+    "Name": "Hide Poncho",
+    "ShortName": "attire.hide.poncho"
+  },
+  "988652725": {
+    "Name": "Smart Switch",
+    "ShortName": "smart.switch"
+  },
+  "989925924": {
+    "Name": "Raw Fish",
+    "ShortName": "fish.raw"
+  },
+  "996293980": {
+    "Name": "Human Skull",
+    "ShortName": "skull.human"
+  },
+  "998894949": {
+    "Name": "Corn Seed",
+    "ShortName": "seed.corn"
+  },
+  "999690781": {
+    "Name": "Geiger Counter",
+    "ShortName": "geiger.counter"
+  },
+  "1052926200": {
+    "Name": "Mining Quarry",
+    "ShortName": "mining.quarry"
+  },
+  "1055319033": {
+    "Name": "40mm Shotgun Round",
+    "ShortName": "ammo.grenadelauncher.buckshot"
+  },
+  "1058261682": {
+    "Name": "Christmas Lights",
+    "ShortName": "xmas.lightstring"
+  },
+  "1072924620": {
+    "Name": "High Quality Spark Plugs",
+    "ShortName": "sparkplug3"
+  },
+  "1079279582": {
+    "Name": "Medical Syringe",
+    "ShortName": "syringe.medical"
+  },
+  "1081315464": {
+    "Name": "Nest Hat",
+    "ShortName": "attire.nesthat"
+  },
+  "1094293920": {
+    "Name": "Wrapping Paper",
+    "ShortName": "wrappingpaper"
+  },
+  "1099314009": {
+    "Name": "Barbeque",
+    "ShortName": "bbq"
+  },
+  "1103488722": {
+    "Name": "Snowball Gun",
+    "ShortName": "snowballgun"
+  },
+  "1104520648": {
+    "Name": "Chainsaw",
+    "ShortName": "chainsaw"
+  },
+  "1110385766": {
+    "Name": "Metal Chest Plate",
+    "ShortName": "metal.plate.torso"
+  },
+  "1112162468": {
+    "Name": "Blue Berry",
+    "ShortName": "blue.berry"
+  },
+  "1121925526": {
+    "Name": "Candy Cane",
+    "ShortName": "candycane"
+  },
+  "1142993169": {
+    "Name": "Ceiling Light",
+    "ShortName": "ceilinglight"
+  },
+  "1149964039": {
+    "Name": "Storage Monitor",
+    "ShortName": "storage.monitor"
+  },
+  "1153652756": {
+    "Name": "Large Wooden Sign",
+    "ShortName": "sign.wooden.large"
+  },
+  "1158340331": {
+    "Name": "Medium Quality Crankshaft",
+    "ShortName": "crankshaft2"
+  },
+  "1158340332": {
+    "Name": "High Quality Crankshaft",
+    "ShortName": "crankshaft3"
+  },
+  "1158340334": {
+    "Name": "Low Quality Crankshaft",
+    "ShortName": "crankshaft1"
+  },
+  "1159991980": {
+    "Name": "Code Lock",
+    "ShortName": "lock.code"
+  },
+  "1160881421": {
+    "Name": "Hitch & Trough",
+    "ShortName": "hitchtroughcombo"
+  },
+  "1171735914": {
+    "Name": "AND Switch",
+    "ShortName": "electric.andswitch"
+  },
+  "1177596584": {
+    "Name": "Elevator",
+    "ShortName": "elevator"
+  },
+  "1181207482": {
+    "Name": "Heavy Plate Helmet",
+    "ShortName": "heavy.plate.helmet"
+  },
+  "1186655046": {
+    "Name": "Fuel Tank Vehicle Module",
+    "ShortName": "vehicle.2mod.fuel.tank"
+  },
+  "1189981699": {
+    "Name": "Crate Costume",
+    "ShortName": "cratecostume"
+  },
+  "1199391518": {
+    "Name": "Road Signs",
+    "ShortName": "roadsigns"
+  },
+  "1205084994": {
+    "Name": "Large Photo Frame",
+    "ShortName": "photoframe.large"
+  },
+  "1205607945": {
+    "Name": "Two Sided Hanging Sign",
+    "ShortName": "sign.hanging"
+  },
+  "1221063409": {
+    "Name": "Armored Double Door",
+    "ShortName": "door.double.hinged.toptier"
+  },
+  "1230323789": {
+    "Name": "SMG Body",
+    "ShortName": "smgbody"
+  },
+  "1234878710": {
+    "Name": "Telephone",
+    "ShortName": "telephone"
+  },
+  "1234880403": {
+    "Name": "Sewing Kit",
+    "ShortName": "sewingkit"
+  },
+  "1242482355": {
+    "Name": "Jack O Lantern Angry",
+    "ShortName": "jackolantern.angry"
+  },
+  "1242522330": {
+    "Name": "Cursed Cauldron",
+    "ShortName": "cursedcauldron"
+  },
+  "1248356124": {
+    "Name": "Timed Explosive Charge",
+    "ShortName": "explosive.timed"
+  },
+  "1258768145": {
+    "Name": "Sunglasses",
+    "ShortName": "sunglasses02black"
+  },
+  "1259919256": {
+    "Name": "Mixing Table",
+    "ShortName": "mixingtable"
+  },
+  "1263920163": {
+    "Name": "Smoke Grenade",
+    "ShortName": "grenade.smoke"
+  },
+  "1266491000": {
+    "Name": "Hazmat Suit",
+    "ShortName": "hazmatsuit"
+  },
+  "1272194103": {
+    "Name": "Red Berry",
+    "ShortName": "red.berry"
+  },
+  "1272430949": {
+    "Name": "Wheelbarrow Piano",
+    "ShortName": "piano"
+  },
+  "1272768630": {
+    "Name": "Spoiled Human Meat",
+    "ShortName": "humanmeat.spoiled"
+  },
+  "1293102274": {
+    "Name": "XOR Switch",
+    "ShortName": "electric.xorswitch"
+  },
+  "1305578813": {
+    "Name": "Small Neon Sign",
+    "ShortName": "sign.neon.125x125"
+  },
+  "1318558775": {
+    "Name": "MP5A4",
+    "ShortName": "smg.mp5"
+  },
+  "1319617282": {
+    "Name": "Small Loot Bag",
+    "ShortName": "halloween.lootbag.small"
+  },
+  "1324203999": {
+    "Name": "Champagne Boomer",
+    "ShortName": "firework.boomer.champagne"
+  },
+  "1326180354": {
+    "Name": "Salvaged Sword",
+    "ShortName": "salvaged.sword"
+  },
+  "1327005675": {
+    "Name": "Short Ice Wall",
+    "ShortName": "wall.ice.wall"
+  },
+  "1330084809": {
+    "Name": "Low Quality Valves",
+    "ShortName": "valve1"
+  },
+  "1353298668": {
+    "Name": "Armored Door",
+    "ShortName": "door.hinged.toptier"
+  },
+  "1358643074": {
+    "Name": "Snow Machine",
+    "ShortName": "snowmachine"
+  },
+  "1366282552": {
+    "Name": "Leather Gloves",
+    "ShortName": "burlap.gloves"
+  },
+  "1367190888": {
+    "Name": "Corn",
+    "ShortName": "corn"
+  },
+  "1371909803": {
+    "Name": "Tesla Coil",
+    "ShortName": "electric.teslacoil"
+  },
+  "1373240771": {
+    "Name": "Wooden Barricade Cover",
+    "ShortName": "barricade.wood.cover"
+  },
+  "1373971859": {
+    "Name": "Python Revolver",
+    "ShortName": "pistol.python"
+  },
+  "1376065505": {
+    "Name": "Rear Seats Vehicle Module",
+    "ShortName": "vehicle.1mod.rear.seats"
+  },
+  "1381010055": {
+    "Name": "Leather",
+    "ShortName": "leather"
+  },
+  "1382263453": {
+    "Name": "Barbed Wooden Barricade",
+    "ShortName": "barricade.woodwire"
+  },
+  "1390353317": {
+    "Name": "Sheet Metal Double Door",
+    "ShortName": "door.double.hinged.metal"
+  },
+  "1391703481": {
+    "Name": "Burnt Pork",
+    "ShortName": "meat.pork.burned"
+  },
+  "1397052267": {
+    "Name": "Supply Signal",
+    "ShortName": "supply.signal"
+  },
+  "1400460850": {
+    "Name": "Saddle bag",
+    "ShortName": "horse.saddlebag"
+  },
+  "1401987718": {
+    "Name": "Duct Tape",
+    "ShortName": "ducttape"
+  },
+  "1409529282": {
+    "Name": "Door Closer",
+    "ShortName": "door.closer"
+  },
+  "1413014235": {
+    "Name": "Fridge",
+    "ShortName": "fridge"
+  },
+  "1414245162": {
+    "Name": "Note",
+    "ShortName": "note"
+  },
+  "1414245522": {
+    "Name": "Rope",
+    "ShortName": "rope"
+  },
+  "1422530437": {
+    "Name": "Raw Deer Meat",
+    "ShortName": "deermeat.raw"
+  },
+  "1424075905": {
+    "Name": "Water Bucket",
+    "ShortName": "bucket.water"
+  },
+  "1426574435": {
+    "Name": "MC repair",
+    "ShortName": "minihelicopter.repair"
+  },
+  "1443579727": {
+    "Name": "Hunting Bow",
+    "ShortName": "bow.hunting"
+  },
+  "1451568081": {
+    "Name": "Chainlink Fence Gate",
+    "ShortName": "wall.frame.fence.gate"
+  },
+  "1478091698": {
+    "Name": "Muzzle Brake",
+    "ShortName": "weapon.mod.muzzlebrake"
+  },
+  "1480022580": {
+    "Name": "Basic Ore Tea",
+    "ShortName": "oretea"
+  },
+  "1488979457": {
+    "Name": "Jackhammer",
+    "ShortName": "jackhammer"
+  },
+  "1491189398": {
+    "Name": "Paddle",
+    "ShortName": "paddle"
+  },
+  "1512054436": {
+    "Name": "Potato Clone",
+    "ShortName": "clone.potato"
+  },
+  "1516985844": {
+    "Name": "Netting",
+    "ShortName": "wall.frame.netting"
+  },
+  "1521286012": {
+    "Name": "Double Sign Post",
+    "ShortName": "sign.post.double"
+  },
+  "1523195708": {
+    "Name": "Targeting Computer",
+    "ShortName": "targeting.computer"
+  },
+  "1524187186": {
+    "Name": "Work Bench Level 1",
+    "ShortName": "workbench1"
+  },
+  "1525520776": {
+    "Name": "Building Plan",
+    "ShortName": "building.planner"
+  },
+  "1533551194": {
+    "Name": "White Berry Clone",
+    "ShortName": "clone.white.berry"
+  },
+  "1534542921": {
+    "Name": "Chair",
+    "ShortName": "chair"
+  },
+  "1536610005": {
+    "Name": "Cooked Human Meat",
+    "ShortName": "humanmeat.cooked"
+  },
+  "1540934679": {
+    "Name": "Wooden Spear",
+    "ShortName": "spear.wooden"
+  },
+  "1542290441": {
+    "Name": "Single Sign Post",
+    "ShortName": "sign.post.single"
+  },
+  "1545779598": {
+    "Name": "Assault Rifle",
+    "ShortName": "rifle.ak"
+  },
+  "1548091822": {
+    "Name": "Apple",
+    "ShortName": "apple"
+  },
+  "1553078977": {
+    "Name": "Bleach",
+    "ShortName": "bleach"
+  },
+  "1557173737": {
+    "Name": "Sunglasses",
+    "ShortName": "sunglasses02red"
+  },
+  "1559779253": {
+    "Name": "Engine Vehicle Module",
+    "ShortName": "vehicle.1mod.engine"
+  },
+  "1568388703": {
+    "Name": "Diesel Fuel",
+    "ShortName": "diesel_barrel"
+  },
+  "1569882109": {
+    "Name": "Handmade Fishing Rod",
+    "ShortName": "fishingrod.handmade"
+  },
+  "1588298435": {
+    "Name": "Bolt Action Rifle",
+    "ShortName": "rifle.bolt"
+  },
+  "1602646136": {
+    "Name": "Stone Spear",
+    "ShortName": "spear.stone"
+  },
+  "1608640313": {
+    "Name": "Tank Top",
+    "ShortName": "shirt.tanktop"
+  },
+  "1629293099": {
+    "Name": "Snowman",
+    "ShortName": "snowman"
+  },
+  "1638322904": {
+    "Name": "Incendiary Rocket",
+    "ShortName": "ammo.rocket.fire"
+  },
+  "1643667218": {
+    "Name": "Large Animated Neon Sign",
+    "ShortName": "sign.neon.xl.animated"
+  },
+  "1655650836": {
+    "Name": "Metal Barricade",
+    "ShortName": "barricade.metal"
+  },
+  "1655979682": {
+    "Name": "Empty Can Of Beans",
+    "ShortName": "can.beans.empty"
+  },
+  "1658229558": {
+    "Name": "Lantern",
+    "ShortName": "lantern"
+  },
+  "1659447559": {
+    "Name": "Wooden Horse Armor",
+    "ShortName": "horse.armor.wood"
+  },
+  "1660145984": {
+    "Name": "Yellow Berry",
+    "ShortName": "yellow.berry"
+  },
+  "1668129151": {
+    "Name": "Cooked Fish",
+    "ShortName": "fish.cooked"
+  },
+  "1668858301": {
+    "Name": "Small Stocking",
+    "ShortName": "stocking.small"
+  },
+  "1675639563": {
+    "Name": "Beenie Hat",
+    "ShortName": "hat.beenie"
+  },
+  "1686524871": {
+    "Name": "Decorative Gingerbread Men",
+    "ShortName": "xmas.decoration.gingerbreadmen"
+  },
+  "1696050067": {
+    "Name": "Modular Car Lift",
+    "ShortName": "modularcarlift"
+  },
+  "1697996440": {
+    "Name": "Landscape Photo Frame",
+    "ShortName": "photoframe.landscape"
+  },
+  "1711033574": {
+    "Name": "Bone Club",
+    "ShortName": "bone.club"
+  },
+  "1712070256": {
+    "Name": "HV 5.56 Rifle Ammo",
+    "ShortName": "ammo.rifle.hv"
+  },
+  "1712261904": {
+    "Name": "Pure Max Health Tea",
+    "ShortName": "maxhealthtea.pure"
+  },
+  "1714496074": {
+    "Name": "Candle Hat",
+    "ShortName": "hat.candle"
+  },
+  "1719978075": {
+    "Name": "Bone Fragments",
+    "ShortName": "bone.fragments"
+  },
+  "1722154847": {
+    "Name": "Hide Pants",
+    "ShortName": "attire.hide.pants"
+  },
+  "1723747470": {
+    "Name": "Tree Lights",
+    "ShortName": "xmas.decoration.lights"
+  },
+  "1729120840": {
+    "Name": "Wooden Door",
+    "ShortName": "door.hinged.wood"
+  },
+  "1729374708": {
+    "Name": "Pure Ore Tea",
+    "ShortName": "oretea.pure"
+  },
+  "1729712564": {
+    "Name": "Portrait Photo Frame",
+    "ShortName": "photoframe.portrait"
+  },
+  "1744298439": {
+    "Name": "Blue Boomer",
+    "ShortName": "firework.boomer.blue"
+  },
+  "1746956556": {
+    "Name": "Bone Armor",
+    "ShortName": "bone.armor.suit"
+  },
+  "1751045826": {
+    "Name": "Hoodie",
+    "ShortName": "hoodie"
+  },
+  "1757265204": {
+    "Name": "Silver Egg",
+    "ShortName": "easter.silveregg"
+  },
+  "1770744540": {
+    "Name": "Generic vehicle chassis",
+    "ShortName": "vehicle.chassis"
+  },
+  "1771755747": {
+    "Name": "Black Berry",
+    "ShortName": "black.berry"
+  },
+  "1776460938": {
+    "Name": "Blood",
+    "ShortName": "blood"
+  },
+  "1783512007": {
+    "Name": "Cactus Flesh",
+    "ShortName": "cactusflesh"
+  },
+  "1784406797": {
+    "Name": "Sousaphone",
+    "ShortName": "fun.tuba"
+  },
+  "1789825282": {
+    "Name": "Candy Cane Club",
+    "ShortName": "candycaneclub"
+  },
+  "1796682209": {
+    "Name": "Custom SMG",
+    "ShortName": "smg.2"
+  },
+  "1803831286": {
+    "Name": "Garry's Mod Tool Gun",
+    "ShortName": "toolgun"
+  },
+  "1814288539": {
+    "Name": "Bone Knife",
+    "ShortName": "knife.bone"
+  },
+  "1827479659": {
+    "Name": "Burnt Wolf Meat",
+    "ShortName": "wolfmeat.burned"
+  },
+  "1835946060": {
+    "Name": "Cable Tunnel",
+    "ShortName": "electric.cabletunnel"
+  },
+  "1840570710": {
+    "Name": "Above Ground Pool",
+    "ShortName": "abovegroundpool"
+  },
+  "1840822026": {
+    "Name": "Beancan Grenade",
+    "ShortName": "grenade.beancan"
+  },
+  "1849887541": {
+    "Name": "Small Generator",
+    "ShortName": "electric.fuelgenerator.small"
+  },
+  "1850456855": {
+    "Name": "Road Sign Kilt",
+    "ShortName": "roadsign.kilt"
+  },
+  "1856217390": {
+    "Name": "Egg Basket",
+    "ShortName": "easterbasket"
+  },
+  "1873897110": {
+    "Name": "Cooked Bear Meat",
+    "ShortName": "bearmeat.cooked"
+  },
+  "1874610722": {
+    "Name": "Armored Cockpit Vehicle Module",
+    "ShortName": "vehicle.1mod.cockpit.armored"
+  },
+  "1877339384": {
+    "Name": "Burlap Headwrap",
+    "ShortName": "burlap.headwrap"
+  },
+  "1882709339": {
+    "Name": "Metal Blade",
+    "ShortName": "metalblade"
+  },
+  "1885488976": {
+    "Name": "Spooky Speaker",
+    "ShortName": "spookyspeaker"
+  },
+  "1898094925": {
+    "Name": "Pumpkin Plant Clone",
+    "ShortName": "clone.pumpkin"
+  },
+  "1899610628": {
+    "Name": "Medium Loot Bag",
+    "ShortName": "halloween.lootbag.medium"
+  },
+  "1911552868": {
+    "Name": "Black Berry Seed",
+    "ShortName": "seed.black.berry"
+  },
+  "1917703890": {
+    "Name": "Burnt Horse Meat",
+    "ShortName": "horsemeat.burned"
+  },
+  "1931713481": {
+    "Name": "Black Raspberries",
+    "ShortName": "black.raspberries"
+  },
+  "1946219319": {
+    "Name": "Camp Fire",
+    "ShortName": "campfire"
+  },
+  "1948067030": {
+    "Name": "Ladder Hatch",
+    "ShortName": "floor.ladder.hatch"
+  },
+  "1950721418": {
+    "Name": "Salvaged Shelves",
+    "ShortName": "shelves"
+  },
+  "1951603367": {
+    "Name": "Switch",
+    "ShortName": "electric.switch"
+  },
+  "1953903201": {
+    "Name": "Nailgun",
+    "ShortName": "pistol.nailgun"
+  },
+  "1965232394": {
+    "Name": "Crossbow",
+    "ShortName": "crossbow"
+  },
+  "1973165031": {
+    "Name": "Birthday Cake",
+    "ShortName": "cakefiveyear"
+  },
+  "1973684065": {
+    "Name": "Burnt Chicken",
+    "ShortName": "chicken.burned"
+  },
+  "1975934948": {
+    "Name": "Survey Charge",
+    "ShortName": "surveycharge"
+  },
+  "1983621560": {
+    "Name": "Floor triangle grill",
+    "ShortName": "floor.triangle.grill"
+  },
+  "1989785143": {
+    "Name": "High Quality Horse Shoes",
+    "ShortName": "horse.shoes.advanced"
+  },
+  "1992974553": {
+    "Name": "Burlap Trousers",
+    "ShortName": "burlap.trousers"
+  },
+  "2009734114": {
+    "Name": "Christmas Door Wreath",
+    "ShortName": "xmasdoorwreath"
+  },
+  "2019042823": {
+    "Name": "Tarp",
+    "ShortName": "tarp"
+  },
+  "2023888403": {
+    "Name": "Medium Rechargable Battery",
+    "ShortName": "electric.battery.rechargable.medium"
+  },
+  "2024467711": {
+    "Name": "Pure Scrap Tea",
+    "ShortName": "scraptea.pure"
+  },
+  "2040726127": {
+    "Name": "Combat Knife",
+    "ShortName": "knife.combat"
+  },
+  "2041899972": {
+    "Name": "Triangle Ladder Hatch",
+    "ShortName": "floor.triangle.ladder.hatch"
+  },
+  "2048317869": {
+    "Name": "Wolf Skull",
+    "ShortName": "skull.wolf"
+  },
+  "2052270186": {
+    "Name": "Inner Tube",
+    "ShortName": "innertube.unicorn"
+  },
+  "2063916636": {
+    "Name": "Advanced Ore Tea",
+    "ShortName": "oretea.advanced"
+  },
+  "2070189026": {
+    "Name": "Large Banner on pole",
+    "ShortName": "sign.pole.banner.large"
+  },
+  "2087678962": {
+    "Name": "Search Light",
+    "ShortName": "searchlight"
+  },
+  "2090395347": {
+    "Name": "Large Solar Panel",
+    "ShortName": "electric.solarpanel.large"
+  },
+  "2100007442": {
+    "Name": "Audio Alarm",
+    "ShortName": "electric.audioalarm"
+  },
+  "2104517339": {
+    "Name": "Strobe Light",
+    "ShortName": "strobelight"
+  },
+  "2106561762": {
+    "Name": "Decorative Tinsel",
+    "ShortName": "xmas.decoration.tinsel"
+  },
+  "2114754781": {
+    "Name": "Water Purifier",
+    "ShortName": "water.purifier"
+  },
+  "2126889441": {
+    "Name": "Santa Beard",
+    "ShortName": "santabeard"
+  },
+  "2133269020": {
+    "Name": "Red Berry Clone",
+    "ShortName": "clone.red.berry"
+  },
+  "-2097376851": {
+    "Name": "Nailgun Nails",
+    "ShortName": "ammo.nailgun.nails"
+  },
+  "-1691396643": {
+    "Name": "HV Pistol Ammo",
+    "ShortName": "ammo.pistol.hv"
+  },
+  "-1211166256": {
+    "Name": "5.56 Rifle Ammo",
+    "ShortName": "ammo.rifle"
+  },
+  "-1321651331": {
+    "Name": "Explosive 5.56 Rifle Ammo",
+    "ShortName": "ammo.rifle.explosive"
+  },
+  "-742865266": {
+    "Name": "Rocket",
+    "ShortName": "ammo.rocket.basic"
+  },
+  "-1841918730": {
+    "Name": "High Velocity Rocket",
+    "ShortName": "ammo.rocket.hv"
+  },
+  "-384243979": {
+    "Name": "SAM Ammo",
+    "ShortName": "ammo.rocket.sam"
+  },
+  "-17123659": {
+    "Name": "Smoke Rocket WIP!!!!",
+    "ShortName": "ammo.rocket.smoke"
+  },
+  "-1685290200": {
+    "Name": "12 Gauge Buckshot",
+    "ShortName": "ammo.shotgun"
+  },
+  "-1036635990": {
+    "Name": "12 Gauge Incendiary Shell",
+    "ShortName": "ammo.shotgun.fire"
+  },
+  "-727717969": {
+    "Name": "12 Gauge Slug",
+    "ShortName": "ammo.shotgun.slug"
+  },
+  "-1432674913": {
+    "Name": "Anti-Radiation Pills",
+    "ShortName": "antiradpills"
+  },
+  "-1023065463": {
+    "Name": "High Velocity Arrow",
+    "ShortName": "arrow.hv"
+  },
+  "-1234735557": {
+    "Name": "Wooden Arrow",
+    "ShortName": "arrow.wooden"
+  },
+  "-1622110948": {
+    "Name": "Bandit Guard Gear",
+    "ShortName": "attire.banditguard"
+  },
+  "-1266045928": {
+    "Name": "Bunny Onesie",
+    "ShortName": "attire.bunny.onesie"
+  },
+  "-1004426654": {
+    "Name": "Bunny Ears",
+    "ShortName": "attire.bunnyears"
+  },
+  "-1773144852": {
+    "Name": "Hide Skirt",
+    "ShortName": "attire.hide.skirt"
+  },
+  "-324675402": {
+    "Name": "Reindeer Antlers",
+    "ShortName": "attire.reindeer.headband"
+  },
+  "-2139580305": {
+    "Name": "Auto Turret",
+    "ShortName": "autoturret"
+  },
+  "-262590403": {
+    "Name": "Salvaged Axe",
+    "ShortName": "axe.salvaged"
+  },
+  "-2072273936": {
+    "Name": "Bandage",
+    "ShortName": "bandage"
+  },
+  "-1215166612": {
+    "Name": "A Barrel Costume",
+    "ShortName": "barrelcostume"
+  },
+  "-1950721390": {
+    "Name": "Concrete Barricade",
+    "ShortName": "barricade.concrete"
+  },
+  "-559599960": {
+    "Name": "Sandbag Barricade",
+    "ShortName": "barricade.sandbags"
+  },
+  "-321431890": {
+    "Name": "Beach Chair",
+    "ShortName": "beachchair"
+  },
+  "-1621539785": {
+    "Name": "Beach Parasol",
+    "ShortName": "beachparasol"
+  },
+  "-8312704": {
+    "Name": "Beach Towel",
+    "ShortName": "beachtowel"
+  },
+  "-1520560807": {
+    "Name": "Raw Bear Meat",
+    "ShortName": "bearmeat"
+  },
+  "-989755543": {
+    "Name": "Burnt Bear Meat",
+    "ShortName": "bearmeat.burned"
+  },
+  "-1273339005": {
+    "Name": "Bed",
+    "ShortName": "bed"
+  },
+  "-586342290": {
+    "Name": "Blueberries",
+    "ShortName": "blueberries"
+  },
+  "-996920608": {
+    "Name": "Blueprint",
+    "ShortName": "blueprintbase"
+  },
+  "-1478094705": {
+    "Name": "Boogie Board",
+    "ShortName": "boogieboard"
+  },
+  "-1000573653": {
+    "Name": "Frog Boots",
+    "ShortName": "boots.frog"
+  },
+  "-180129657": {
+    "Name": "Wood Storage Box",
+    "ShortName": "box.wooden"
+  },
+  "-761829530": {
+    "Name": "Burlap Shoes",
+    "ShortName": "burlap.shoes"
+  },
+  "-700591459": {
+    "Name": "Can of Beans",
+    "ShortName": "can.beans"
+  },
+  "-1941646328": {
+    "Name": "Can of Tuna",
+    "ShortName": "can.tuna"
+  },
+  "-1557377697": {
+    "Name": "Empty Tuna Can",
+    "ShortName": "can.tuna.empty"
+  },
+  "-1938052175": {
+    "Name": "Charcoal",
+    "ShortName": "charcoal"
+  },
+  "-1848736516": {
+    "Name": "Cooked Chicken",
+    "ShortName": "chicken.cooked"
+  },
+  "-1440987069": {
+    "Name": "Raw Chicken Breast",
+    "ShortName": "chicken.raw"
+  },
+  "-751151717": {
+    "Name": "Spoiled Chicken",
+    "ShortName": "chicken.spoiled"
+  },
+  "-1916473915": {
+    "Name": "Chinese Lantern",
+    "ShortName": "chineselantern"
+  },
+  "-778875547": {
+    "Name": "Corn Clone",
+    "ShortName": "clone.corn"
+  },
+  "-1305326964": {
+    "Name": "Green Berry Clone",
+    "ShortName": "clone.green.berry"
+  },
+  "-886280491": {
+    "Name": "Hemp Clone",
+    "ShortName": "clone.hemp"
+  },
+  "-858312878": {
+    "Name": "Cloth",
+    "ShortName": "cloth"
+  },
+  "-803263829": {
+    "Name": "Coffee Can Helmet",
+    "ShortName": "coffeecan.helmet"
+  },
+  "-1488398114": {
+    "Name": "Composter",
+    "ShortName": "composter"
+  },
+  "-1588628467": {
+    "Name": "Computer Station",
+    "ShortName": "computerstation"
+  },
+  "-321733511": {
+    "Name": "Crude Oil",
+    "ShortName": "crude.oil"
+  },
+  "-97956382": {
+    "Name": "Tool Cupboard",
+    "ShortName": "cupboard.tool"
+  },
+  "-1903165497": {
+    "Name": "Bone Helmet",
+    "ShortName": "deer.skull.mask"
+  },
+  "-78533081": {
+    "Name": "Burnt Deer Meat",
+    "ShortName": "deermeat.burned"
+  },
+  "-1509851560": {
+    "Name": "Cooked Deer Meat",
+    "ShortName": "deermeat.cooked"
+  },
+  "-113413047": {
+    "Name": "Diving Mask",
+    "ShortName": "diving.mask"
+  },
+  "-2022172587": {
+    "Name": "Diving Tank",
+    "ShortName": "diving.tank"
+  },
+  "-1101924344": {
+    "Name": "Wetsuit",
+    "ShortName": "diving.wetsuit"
+  },
+  "-1336109173": {
+    "Name": "Wood Double Door",
+    "ShortName": "door.double.hinged.wood"
+  },
+  "-2067472972": {
+    "Name": "Sheet Metal Door",
+    "ShortName": "door.hinged.metal"
+  },
+  "-1112793865": {
+    "Name": "Door Key",
+    "ShortName": "door.key"
+  },
+  "-854270928": {
+    "Name": "Dragon Door Knocker",
+    "ShortName": "dragondoorknocker"
+  },
+  "-1519126340": {
+    "Name": "Drop Box",
+    "ShortName": "dropbox"
+  },
+  "-1330640246": {
+    "Name": "Junkyard Drum Kit",
+    "ShortName": "drumkit"
+  },
+  "-1002156085": {
+    "Name": "Gold Egg",
+    "ShortName": "easter.goldegg"
+  },
+  "-126305173": {
+    "Name": "Painted Egg",
+    "ShortName": "easter.paintedeggs"
+  },
+  "-979302481": {
+    "Name": "Easter Door Wreath",
+    "ShortName": "easterdoorwreath"
+  },
+  "-692338819": {
+    "Name": "Small Rechargable Battery",
+    "ShortName": "electric.battery.rechargable.small"
+  },
+  "-690968985": {
+    "Name": "Blocker",
+    "ShortName": "electric.blocker"
+  },
+  "-1778897469": {
+    "Name": "Button",
+    "ShortName": "electric.button"
+  },
+  "-216999575": {
+    "Name": "Counter",
+    "ShortName": "electric.counter"
+  },
+  "-502177121": {
+    "Name": "Door Controller",
+    "ShortName": "electric.doorcontroller"
+  },
+  "-939424778": {
+    "Name": "Flasher Light",
+    "ShortName": "electric.flasherlight"
+  },
+  "-295829489": {
+    "Name": "Test Generator",
+    "ShortName": "electric.generator.small"
+  },
+  "-1507239837": {
+    "Name": "HBHF Sensor",
+    "ShortName": "electric.hbhfsensor"
+  },
+  "-784870360": {
+    "Name": "Electric Heater",
+    "ShortName": "electric.heater"
+  },
+  "-44876289": {
+    "Name": "Igniter",
+    "ShortName": "electric.igniter"
+  },
+  "-798293154": {
+    "Name": "Laser Detector",
+    "ShortName": "electric.laserdetector"
+  },
+  "-1286302544": {
+    "Name": "OR Switch",
+    "ShortName": "electric.orswitch"
+  },
+  "-2049214035": {
+    "Name": "Pressure Pad",
+    "ShortName": "electric.pressurepad"
+  },
+  "-1044468317": {
+    "Name": "RF Broadcaster",
+    "ShortName": "electric.rf.broadcaster"
+  },
+  "-282113991": {
+    "Name": "Simple Light",
+    "ShortName": "electric.simplelight"
+  },
+  "-563624462": {
+    "Name": "Splitter",
+    "ShortName": "electric.splitter"
+  },
+  "-781014061": {
+    "Name": "Sprinkler",
+    "ShortName": "electric.sprinkler"
+  },
+  "-1448252298": {
+    "Name": "Electrical Branch",
+    "ShortName": "electrical.branch"
+  },
+  "-458565393": {
+    "Name": "Root Combiner",
+    "ShortName": "electrical.combiner"
+  },
+  "-746647361": {
+    "Name": "Memory Cell",
+    "ShortName": "electrical.memorycell"
+  },
+  "-1878475007": {
+    "Name": "Satchel Charge",
+    "ShortName": "explosive.satchel"
+  },
+  "-592016202": {
+    "Name": "Explosives",
+    "ShortName": "explosives"
+  },
+  "-1018587433": {
+    "Name": "Animal Fat",
+    "ShortName": "fat.animal"
+  },
+  "-930193596": {
+    "Name": "Fertilizer",
+    "ShortName": "fertilizer"
+  },
+  "-1535621066": {
+    "Name": "Stone Fireplace",
+    "ShortName": "fireplace.stone"
+  },
+  "-656349006": {
+    "Name": "Green Boomer",
+    "ShortName": "firework.boomer.green"
+  },
+  "-7270019": {
+    "Name": "Orange Boomer",
+    "ShortName": "firework.boomer.orange"
+  },
+  "-1553999294": {
+    "Name": "Red Boomer",
+    "ShortName": "firework.boomer.red"
+  },
+  "-280223496": {
+    "Name": "Violet Boomer",
+    "ShortName": "firework.boomer.violet"
+  },
+  "-515830359": {
+    "Name": "Blue Roman Candle",
+    "ShortName": "firework.romancandle.blue"
+  },
+  "-1306288356": {
+    "Name": "Green Roman Candle",
+    "ShortName": "firework.romancandle.green"
+  },
+  "-1486461488": {
+    "Name": "Red Roman Candle",
+    "ShortName": "firework.romancandle.red"
+  },
+  "-99886070": {
+    "Name": "Violet Roman Candle",
+    "ShortName": "firework.romancandle.violet"
+  },
+  "-454370658": {
+    "Name": "Red Volcano Firework",
+    "ShortName": "firework.volcano.red"
+  },
+  "-1538109120": {
+    "Name": "Violet Volcano Firework",
+    "ShortName": "firework.volcano.violet"
+  },
+  "-542577259": {
+    "Name": "Minnows",
+    "ShortName": "fish.minnows"
+  },
+  "-1878764039": {
+    "Name": "Small Trout",
+    "ShortName": "fish.troutsmall"
+  },
+  "-1215753368": {
+    "Name": "Flame Thrower",
+    "ShortName": "flamethrower"
+  },
+  "-196667575": {
+    "Name": "Flashlight",
+    "ShortName": "flashlight.held"
+  },
+  "-265292885": {
+    "Name": "Fluid Combiner",
+    "ShortName": "fluid.combiner"
+  },
+  "-1166712463": {
+    "Name": "Fluid Splitter",
+    "ShortName": "fluid.splitter"
+  },
+  "-1973785141": {
+    "Name": "Fogger-3000",
+    "ShortName": "fogmachine"
+  },
+  "-2107018088": {
+    "Name": "Shovel Bass",
+    "ShortName": "fun.bass"
+  },
+  "-1049881973": {
+    "Name": "Cowbell",
+    "ShortName": "fun.cowbell"
+  },
+  "-2040817543": {
+    "Name": "Pan Flute",
+    "ShortName": "fun.flute"
+  },
+  "-2124352573": {
+    "Name": "Acoustic Guitar",
+    "ShortName": "fun.guitar"
+  },
+  "-979951147": {
+    "Name": "Jerry Can Guitar",
+    "ShortName": "fun.jerrycanguitar"
+  },
+  "-1379036069": {
+    "Name": "Canbourine",
+    "ShortName": "fun.tambourine"
+  },
+  "-1999722522": {
+    "Name": "Furnace",
+    "ShortName": "furnace"
+  },
+  "-1992717673": {
+    "Name": "Large Furnace",
+    "ShortName": "furnace.large"
+  },
+  "-629028935": {
+    "Name": "Electric Fuse",
+    "ShortName": "fuse"
+  },
+  "-691113464": {
+    "Name": "High External Stone Gate",
+    "ShortName": "gates.external.high.stone"
+  },
+  "-335089230": {
+    "Name": "High External Wooden Gate",
+    "ShortName": "gates.external.high.wood"
+  },
+  "-1819763926": {
+    "Name": "Wind Turbine",
+    "ShortName": "generator.wind.scrap"
+  },
+  "-1861522751": {
+    "Name": "Research Table",
+    "ShortName": "research.table"
+  },
+  "-544317637": {
+    "Name": "Research Paper",
+    "ShortName": "researchpaper"
+  },
+  "-566907190": {
+    "Name": "RF Pager",
+    "ShortName": "rf_pager"
+  },
+  "-778367295": {
+    "Name": "L96 Rifle",
+    "ShortName": "rifle.l96"
+  },
+  "-1812555177": {
+    "Name": "LR-300 Assault Rifle",
+    "ShortName": "rifle.lr300"
+  },
+  "-904863145": {
+    "Name": "Semi-Automatic Rifle",
+    "ShortName": "rifle.semiauto"
+  },
+  "-699558439": {
+    "Name": "Roadsign Gloves",
+    "ShortName": "roadsign.gloves"
+  },
+  "-2002277461": {
+    "Name": "Road Sign Jacket",
+    "ShortName": "roadsign.jacket"
+  },
+  "-1985799200": {
+    "Name": "Rug",
+    "ShortName": "rug"
+  },
+  "-1104881824": {
+    "Name": "Rug Bear Skin",
+    "ShortName": "rug.bear"
+  },
+  "-173268129": {
+    "Name": "Rustigé Egg - Red",
+    "ShortName": "rustige_egg_a"
+  },
+  "-173268132": {
+    "Name": "Rustigé Egg - Blue",
+    "ShortName": "rustige_egg_b"
+  },
+  "-173268131": {
+    "Name": "Rustigé Egg - Purple",
+    "ShortName": "rustige_egg_c"
+  },
+  "-173268126": {
+    "Name": "Rustigé Egg - Ivory",
+    "ShortName": "rustige_egg_d"
+  },
+  "-1978999529": {
+    "Name": "Salvaged Cleaver",
+    "ShortName": "salvaged.cleaver"
+  },
+  "-1009359066": {
+    "Name": "SAM Site",
+    "ShortName": "samsite"
+  },
+  "-575483084": {
+    "Name": "Santa Hat",
+    "ShortName": "santahat"
+  },
+  "-1772746857": {
+    "Name": "Heavy Scientist Suit",
+    "ShortName": "scientistsuit_heavy"
+  },
+  "-932201673": {
+    "Name": "Scrap",
+    "ShortName": "scrap"
+  },
+  "-1884328185": {
+    "Name": "ScrapTransportHeliRepair",
+    "ShortName": "scraptransportheli.repair"
+  },
+  "-1776128552": {
+    "Name": "Green Berry Seed",
+    "ShortName": "seed.green.berry"
+  },
+  "-237809779": {
+    "Name": "Hemp Seed",
+    "ShortName": "seed.hemp"
+  },
+  "-2084071424": {
+    "Name": "Potato Seed",
+    "ShortName": "seed.potato"
+  },
+  "-1511285251": {
+    "Name": "Pumpkin Seed",
+    "ShortName": "seed.pumpkin"
+  },
+  "-992286106": {
+    "Name": "White Berry Seed",
+    "ShortName": "seed.white.berry"
+  },
+  "-520133715": {
+    "Name": "Yellow Berry Seed",
+    "ShortName": "seed.yellow.berry"
+  },
+  "-1994909036": {
+    "Name": "Sheet Metal",
+    "ShortName": "sheetmetal"
+  },
+  "-2025184684": {
+    "Name": "Shirt",
+    "ShortName": "shirt.collared"
+  },
+  "-1549739227": {
+    "Name": "Boots",
+    "ShortName": "shoes.boots"
+  },
+  "-765183617": {
+    "Name": "Double Barrel Shotgun",
+    "ShortName": "shotgun.double"
+  },
+  "-41440462": {
+    "Name": "Spas-12 Shotgun",
+    "ShortName": "shotgun.spas12"
+  },
+  "-1367281941": {
+    "Name": "Waterpipe Shotgun",
+    "ShortName": "shotgun.waterpipe"
+  },
+  "-1199897169": {
+    "Name": "Metal horizontal embrasure",
+    "ShortName": "shutter.metal.embrasure.a"
+  },
+  "-1199897172": {
+    "Name": "Metal Vertical embrasure",
+    "ShortName": "shutter.metal.embrasure.b"
+  },
+  "-1023374709": {
+    "Name": "Wood Shutters",
+    "ShortName": "shutter.wood.a"
+  },
+  "-1368584029": {
+    "Name": "Sickle",
+    "ShortName": "sickle"
+  },
+  "-1647846966": {
+    "Name": "Two Sided Ornate Hanging Sign",
+    "ShortName": "sign.hanging.ornate"
+  },
+  "-1423304443": {
+    "Name": "Medium Neon Sign",
+    "ShortName": "sign.neon.125x215"
+  },
+  "-845557339": {
+    "Name": "Landscape Picture Frame",
+    "ShortName": "sign.pictureframe.landscape"
+  },
+  "-1370759135": {
+    "Name": "Portrait Picture Frame",
+    "ShortName": "sign.pictureframe.portrait"
+  },
+  "-996185386": {
+    "Name": "XL Picture Frame",
+    "ShortName": "sign.pictureframe.xl"
+  },
+  "-1832422579": {
+    "Name": "One Sided Town Sign Post",
+    "ShortName": "sign.post.town"
+  },
+  "-143132326": {
+    "Name": "Huge Wooden Sign",
+    "ShortName": "sign.wooden.huge"
+  },
+  "-1819233322": {
+    "Name": "Medium Wooden Sign",
+    "ShortName": "sign.wooden.medium"
+  },
+  "-1138208076": {
+    "Name": "Small Wooden Sign",
+    "ShortName": "sign.wooden.small"
+  },
+  "-769647921": {
+    "Name": "Skull Trophy",
+    "ShortName": "skull.trophy"
+  },
+  "-924959988": {
+    "Name": "Skull Trophy",
+    "ShortName": "skull.trophy.jar2"
+  },
+  "-156748077": {
+    "Name": "Skull Trophy",
+    "ShortName": "skull.trophy.table"
+  },
+  "-216116642": {
+    "Name": "Skull Door Knocker",
+    "ShortName": "skulldoorknocker"
+  },
+  "-1073015016": {
+    "Name": "Skull Spikes",
+    "ShortName": "skullspikes"
+  },
+  "-25740268": {
+    "Name": "Skull Spikes",
+    "ShortName": "skullspikes.candles"
+  },
+  "-1078639462": {
+    "Name": "Skull Spikes",
+    "ShortName": "skullspikes.pumpkin"
+  },
+  "-333406828": {
+    "Name": "Sled",
+    "ShortName": "sled"
+  },
+  "-135252633": {
+    "Name": "Sled",
+    "ShortName": "sled.xmas"
+  },
+  "-1754948969": {
+    "Name": "Sleeping Bag",
+    "ShortName": "sleepingbag"
+  },
+  "-1293296287": {
+    "Name": "Small Oil Refinery",
+    "ShortName": "small.oil.refinery"
+  },
+  "-2058362263": {
+    "Name": "Small Candle Set",
+    "ShortName": "smallcandles"
+  },
+  "-1039528932": {
+    "Name": "Small Water Bottle",
+    "ShortName": "smallwaterbottle"
+  },
+  "-695978112": {
+    "Name": "Smart Alarm",
+    "ShortName": "smart.alarm"
+  },
+  "-1758372725": {
+    "Name": "Thompson",
+    "ShortName": "smg.thompson"
+  },
+  "-363689972": {
+    "Name": "Snowball",
+    "ShortName": "snowball"
+  },
+  "-555122905": {
+    "Name": "Sofa",
+    "ShortName": "sofa"
+  },
+  "-89874794": {
+    "Name": "Low Quality Spark Plugs",
+    "ShortName": "sparkplug1"
+  },
+  "-493159321": {
+    "Name": "Medium Quality Spark Plugs",
+    "ShortName": "sparkplug2"
+  },
+  "-92759291": {
+    "Name": "Wooden Floor Spikes",
+    "ShortName": "spikes.floor"
+  },
+  "-1100422738": {
+    "Name": "Spinning wheel",
+    "ShortName": "spinner.wheel"
+  },
+  "-369760990": {
+    "Name": "Small Stash",
+    "ShortName": "stash.small"
+  },
+  "-465682601": {
+    "Name": "SUPER Stocking",
+    "ShortName": "stocking.large"
+  },
+  "-1583967946": {
+    "Name": "Stone Hatchet",
+    "ShortName": "stonehatchet"
+  },
+  "-2099697608": {
+    "Name": "Stones",
+    "ShortName": "stones"
+  },
+  "-1581843485": {
+    "Name": "Sulfur",
+    "ShortName": "sulfur"
+  },
+  "-1157596551": {
+    "Name": "Sulfur Ore",
+    "ShortName": "sulfur.ore"
+  },
+  "-2103694546": {
+    "Name": "Sunglasses",
+    "ShortName": "sunglasses02camo"
+  },
+  "-176608084": {
+    "Name": "Sunglasses",
+    "ShortName": "sunglasses03black"
+  },
+  "-1997698639": {
+    "Name": "Sunglasses",
+    "ShortName": "sunglasses03chrome"
+  },
+  "-1408336705": {
+    "Name": "Sunglasses",
+    "ShortName": "sunglasses03gold"
+  },
+  "-1108136649": {
+    "Name": "Tactical Gloves",
+    "ShortName": "tactical.gloves"
+  },
+  "-1736356576": {
+    "Name": "Reactive Target",
+    "ShortName": "target.reactive"
+  },
+  "-1262185308": {
+    "Name": "Binoculars",
+    "ShortName": "tool.binoculars"
+  },
+  "-1316706473": {
+    "Name": "Camera",
+    "ShortName": "tool.camera"
+  },
+  "-2001260025": {
+    "Name": "Instant Camera",
+    "ShortName": "tool.instant_camera"
+  },
+  "-582782051": {
+    "Name": "Snap Trap",
+    "ShortName": "trap.bear"
+  },
+  "-1663759755": {
+    "Name": "Land Mine",
+    "ShortName": "trap.landmine"
+  },
+  "-1478445584": {
+    "Name": "Tuna Can Lamp",
+    "ShortName": "tunalight"
+  },
+  "-1569700847": {
+    "Name": "Headset",
+    "ShortName": "twitch.headset"
+  },
+  "-1802083073": {
+    "Name": "High Quality Valves",
+    "ShortName": "valve3"
+  },
+  "-1501451746": {
+    "Name": "Cockpit Vehicle Module",
+    "ShortName": "vehicle.1mod.cockpit"
+  },
+  "-1880231361": {
+    "Name": "Flatbed Vehicle Module",
+    "ShortName": "vehicle.1mod.flatbed"
+  },
+  "-1615281216": {
+    "Name": "Armored Passenger Vehicle Module",
+    "ShortName": "vehicle.1mod.passengers.armored"
+  },
+  "-626174997": {
+    "Name": "Taxi Vehicle Module",
+    "ShortName": "vehicle.1mod.taxi"
+  },
+  "-1693832478": {
+    "Name": "Large Flatbed Vehicle Module",
+    "ShortName": "vehicle.2mod.flatbed"
+  },
+  "-44066600": {
+    "Name": "Small Chassis",
+    "ShortName": "vehicle.chassis.2mod"
+  },
+  "-44066823": {
+    "Name": "Medium Chassis",
+    "ShortName": "vehicle.chassis.3mod"
+  },
+  "-44066790": {
+    "Name": "Large Chassis",
+    "ShortName": "vehicle.chassis.4mod"
+  },
+  "-985781766": {
+    "Name": "High Ice Wall",
+    "ShortName": "wall.external.high.ice"
+  },
+  "-967648160": {
+    "Name": "High External Stone Wall",
+    "ShortName": "wall.external.high.stone"
+  },
+  "-1429456799": {
+    "Name": "Prison Cell Wall",
+    "ShortName": "wall.frame.cell"
+  },
+  "-956706906": {
+    "Name": "Prison Cell Gate",
+    "ShortName": "wall.frame.cell.gate"
+  },
+  "-1117626326": {
+    "Name": "Chainlink Fence",
+    "ShortName": "wall.frame.fence"
+  },
+  "-148794216": {
+    "Name": "Garage Door",
+    "ShortName": "wall.frame.garagedoor"
+  },
+  "-796583652": {
+    "Name": "Shop Front",
+    "ShortName": "wall.frame.shopfront"
+  },
+  "-148229307": {
+    "Name": "Metal Shop Front",
+    "ShortName": "wall.frame.shopfront.metal"
+  },
+  "-1679267738": {
+    "Name": "Graveyard Fence",
+    "ShortName": "wall.graveyard.fence"
+  },
+  "-819720157": {
+    "Name": "Metal Window Bars",
+    "ShortName": "wall.window.bars.metal"
+  },
+  "-1183726687": {
+    "Name": "Wooden Window Bars",
+    "ShortName": "wall.window.bars.wood"
+  },
+  "-1614955425": {
+    "Name": "Strengthened Glass Window",
+    "ShortName": "wall.window.glass.reinforced"
+  },
+  "-463122489": {
+    "Name": "Watch Tower",
+    "ShortName": "watchtower.wood"
+  },
+  "-1779180711": {
+    "Name": "Water",
+    "ShortName": "water"
+  },
+  "-1863559151": {
+    "Name": "Water Barrel",
+    "ShortName": "water.barrel"
+  },
+  "-1100168350": {
+    "Name": "Large Water Catcher",
+    "ShortName": "water.catcher.large"
+  },
+  "-132247350": {
+    "Name": "Small Water Catcher",
+    "ShortName": "water.catcher.small"
+  },
+  "-277057363": {
+    "Name": "Salt Water",
+    "ShortName": "water.salt"
+  },
+  "-119235651": {
+    "Name": "Water Jug",
+    "ShortName": "waterjug"
+  },
+  "-1284169891": {
+    "Name": "Water Pump",
+    "ShortName": "waterpump"
+  },
+  "-132516482": {
+    "Name": "Weapon Lasersight",
+    "ShortName": "weapon.mod.lasersight"
+  },
+  "-1405508498": {
+    "Name": "Muzzle Boost",
+    "ShortName": "weapon.mod.muzzleboost"
+  },
+  "-1850571427": {
+    "Name": "Silencer",
+    "ShortName": "weapon.mod.silencer"
+  },
+  "-855748505": {
+    "Name": "Simple Handmade Sight",
+    "ShortName": "weapon.mod.simplesight"
+  },
+  "-144417939": {
+    "Name": "Wire Tool",
+    "ShortName": "wiretool"
+  },
+  "-395377963": {
+    "Name": "Raw Wolf Meat",
+    "ShortName": "wolfmeat.raw"
+  },
+  "-1167031859": {
+    "Name": "Spoiled Wolf Meat",
+    "ShortName": "wolfmeat.spoiled"
+  },
+  "-151838493": {
+    "Name": "Wood",
+    "ShortName": "wood"
+  },
+  "-2094954543": {
+    "Name": "Wood Armor Helmet",
+    "ShortName": "wood.armor.helmet"
+  },
+  "-649128577": {
+    "Name": "Basic Wood Tea",
+    "ShortName": "woodtea"
+  },
+  "-541206665": {
+    "Name": "Advanced Wood Tea",
+    "ShortName": "woodtea.advanced"
+  },
+  "-557539629": {
+    "Name": "Pure Wood Tea",
+    "ShortName": "woodtea.pure"
+  },
+  "-41896755": {
+    "Name": "Work Bench Level 2",
+    "ShortName": "workbench2"
+  },
+  "-1607980696": {
+    "Name": "Work Bench Level 3",
+    "ShortName": "workbench3"
+  },
+  "-1667224349": {
+    "Name": "Decorative Baubels",
+    "ShortName": "xmas.decoration.baubels"
+  },
+  "-209869746": {
+    "Name": "Decorative Plastic Candy Canes",
+    "ShortName": "xmas.decoration.candycanes"
+  },
+  "-129230242": {
+    "Name": "Decorative Pinecones",
+    "ShortName": "xmas.decoration.pinecone"
+  },
+  "-1331212963": {
+    "Name": "Star Tree Topper",
+    "ShortName": "xmas.decoration.star"
+  },
+  "-151387974": {
+    "Name": "Deluxe Christmas Lights",
+    "ShortName": "xmas.lightstring.advanced"
+  },
+  "-1622660759": {
+    "Name": "Large Present",
+    "ShortName": "xmas.present.large"
+  },
+  "-722241321": {
+    "Name": "Small Present",
+    "ShortName": "xmas.present.small"
+  },
+  "-1379835144": {
+    "Name": "Festive Window Garland",
+    "ShortName": "xmas.window.garland"
+  },
+  "-211235948": {
+    "Name": "Xylobone",
+    "ShortName": "xylophone"
+  },
+  "-1043618880": {
+    "Name": "Ghost Costume",
+    "ShortName": "ghostsheet"
+  },
+  "-695124222": {
+    "Name": "Giant Candy Decor",
+    "ShortName": "giantcandycanedecor"
+  },
+  "-690276911": {
+    "Name": "Glowing Eyes",
+    "ShortName": "gloweyes"
+  },
+  "-1899491405": {
+    "Name": "Glue",
+    "ShortName": "glue"
+  },
+  "-746030907": {
+    "Name": "Granola Bar",
+    "ShortName": "granolabar"
+  },
+  "-265876753": {
+    "Name": "Gun Powder",
+    "ShortName": "gunpowder"
+  },
+  "-1759188988": {
+    "Name": "Hab Repair",
+    "ShortName": "habrepair"
+  },
+  "-888153050": {
+    "Name": "Halloween Candy",
+    "ShortName": "halloween.candy"
+  },
+  "-1785231475": {
+    "Name": "Surgeon Scrubs",
+    "ShortName": "halloween.surgeonsuit"
+  },
+  "-1506397857": {
+    "Name": "Salvaged Hammer",
+    "ShortName": "hammer.salvaged"
+  },
+  "-23994173": {
+    "Name": "Boonie Hat",
+    "ShortName": "hat.boonie"
+  },
+  "-1022661119": {
+    "Name": "Baseball Cap",
+    "ShortName": "hat.cap"
+  },
+  "-22883916": {
+    "Name": "Dragon Mask",
+    "ShortName": "hat.dragonmask"
+  },
+  "-1539025626": {
+    "Name": "Miners Hat",
+    "ShortName": "hat.miner"
+  },
+  "-1478212975": {
+    "Name": "Wolf Headdress",
+    "ShortName": "hat.wolf"
+  },
+  "-1252059217": {
+    "Name": "Hatchet",
+    "ShortName": "hatchet"
+  },
+  "-560304835": {
+    "Name": "Space Suit",
+    "ShortName": "hazmatsuit.spacesuit"
+  },
+  "-253079493": {
+    "Name": "Scientist Suit",
+    "ShortName": "hazmatsuit_scientist"
+  },
+  "-1958316066": {
+    "Name": "Scientist Suit",
+    "ShortName": "hazmatsuit_scientist_peacekeeper"
+  },
+  "-929092070": {
+    "Name": "Basic Healing Tea",
+    "ShortName": "healingtea"
+  },
+  "-2123125470": {
+    "Name": "Advanced Healing Tea",
+    "ShortName": "healingtea.advanced"
+  },
+  "-1677315902": {
+    "Name": "Pure Healing Tea",
+    "ShortName": "healingtea.pure"
+  },
+  "-1102429027": {
+    "Name": "Heavy Plate Jacket",
+    "ShortName": "heavy.plate.jacket"
+  },
+  "-1778159885": {
+    "Name": "Heavy Plate Pants",
+    "ShortName": "heavy.plate.pants"
+  },
+  "-1442559428": {
+    "Name": "Hobo Barrel",
+    "ShortName": "hobobarrel"
+  },
+  "-1997543660": {
+    "Name": "Horse Saddle",
+    "ShortName": "horse.saddle"
+  },
+  "-1211268013": {
+    "Name": "Basic Horse Shoes",
+    "ShortName": "horse.shoes.basic"
+  },
+  "-1579932985": {
+    "Name": "Horse Dung",
+    "ShortName": "horsedung"
+  },
+  "-1162759543": {
+    "Name": "Cooked Horse Meat",
+    "ShortName": "horsemeat.cooked"
+  },
+  "-1130350864": {
+    "Name": "Raw Horse Meat",
+    "ShortName": "horsemeat.raw"
+  },
+  "-1982036270": {
+    "Name": "High Quality Metal Ore",
+    "ShortName": "hq.metal.ore"
+  },
+  "-682687162": {
+    "Name": "Burnt Human Meat",
+    "ShortName": "humanmeat.burned"
+  },
+  "-1709878924": {
+    "Name": "Raw Human Meat",
+    "ShortName": "humanmeat.raw"
+  },
+  "-1780802565": {
+    "Name": "Salvaged Icepick",
+    "ShortName": "icepick.salvaged"
+  },
+  "-697981032": {
+    "Name": "Inner Tube",
+    "ShortName": "innertube"
+  },
+  "-1163532624": {
+    "Name": "Jacket",
+    "ShortName": "jacket"
+  },
+  "-48090175": {
+    "Name": "Snow Jacket",
+    "ShortName": "jacket.snow"
+  },
+  "-1824943010": {
+    "Name": "Jack O Lantern Happy",
+    "ShortName": "jackolantern.happy"
+  },
+  "-484206264": {
+    "Name": "Blue Keycard",
+    "ShortName": "keycard_blue"
+  },
+  "-1880870149": {
+    "Name": "Red Keycard",
+    "ShortName": "keycard_red"
+  },
+  "-194509282": {
+    "Name": "Butcher Knife",
+    "ShortName": "knife.butcher"
+  },
+  "-316250604": {
+    "Name": "Wooden Ladder",
+    "ShortName": "ladder.wooden.wall"
+  },
+  "-489848205": {
+    "Name": "Large Candle Set",
+    "ShortName": "largecandles"
+  },
+  "-2069578888": {
+    "Name": "M249",
+    "ShortName": "lmg.m249"
+  },
+  "-850982208": {
+    "Name": "Key Lock",
+    "ShortName": "lock.key"
+  },
+  "-110921842": {
+    "Name": "Locker",
+    "ShortName": "locker"
+  },
+  "-1469578201": {
+    "Name": "Longsword",
+    "ShortName": "longsword"
+  },
+  "-946369541": {
+    "Name": "Low Grade Fuel",
+    "ShortName": "lowgradefuel"
+  },
+  "-1961560162": {
+    "Name": "Firecracker String",
+    "ShortName": "lunar.firecrackers"
+  },
+  "-1966748496": {
+    "Name": "Mace",
+    "ShortName": "mace"
+  },
+  "-1137865085": {
+    "Name": "Machete",
+    "ShortName": "machete"
+  },
+  "-586784898": {
+    "Name": "Mail Box",
+    "ShortName": "mailbox"
+  },
+  "-2012470695": {
+    "Name": "Improvised Balaclava",
+    "ShortName": "mask.balaclava"
+  },
+  "-702051347": {
+    "Name": "Bandana Mask",
+    "ShortName": "mask.bandana"
+  },
+  "-1184406448": {
+    "Name": "Basic Max Health Tea",
+    "ShortName": "maxhealthtea"
+  },
+  "-242084766": {
+    "Name": "Cooked Pork",
+    "ShortName": "meat.pork.cooked"
+  },
+  "-194953424": {
+    "Name": "Metal Facemask",
+    "ShortName": "metal.facemask"
+  },
+  "-4031221": {
+    "Name": "Metal Ore",
+    "ShortName": "metal.ore"
+  },
+  "-1021495308": {
+    "Name": "Metal Spring",
+    "ShortName": "metalspring"
+  },
+  "-1130709577": {
+    "Name": "Pump Jack",
+    "ShortName": "mining.pumpjack"
+  },
+  "-2047081330": {
+    "Name": "Movember Moustache",
+    "ShortName": "movembermoustache"
+  },
+  "-1123473824": {
+    "Name": "Multiple Grenade Launcher",
+    "ShortName": "multiplegrenadelauncher"
+  },
+  "-1962971928": {
+    "Name": "Mushroom",
+    "ShortName": "mushroom"
+  },
+  "-961457160": {
+    "Name": "New Year Gong",
+    "ShortName": "newyeargong"
+  },
+  "-1518883088": {
+    "Name": "Night Vision Goggles",
+    "ShortName": "nightvisiongoggles"
+  },
+  "-733625651": {
+    "Name": "Paddling Pool",
+    "ShortName": "paddlingpool"
+  },
+  "-1695367501": {
+    "Name": "Shorts",
+    "ShortName": "pants.shorts"
+  },
+  "-1779183908": {
+    "Name": "Paper",
+    "ShortName": "paper"
+  },
+  "-575744869": {
+    "Name": "Party Hat",
+    "ShortName": "partyhat"
+  },
+  "-1302129395": {
+    "Name": "Pickaxe",
+    "ShortName": "pickaxe"
+  },
+  "-75944661": {
+    "Name": "Eoka Pistol",
+    "ShortName": "pistol.eoka"
+  },
+  "-852563019": {
+    "Name": "M92 Pistol",
+    "ShortName": "pistol.m92"
+  }
+}

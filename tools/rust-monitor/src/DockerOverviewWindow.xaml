@@ -1,0 +1,21 @@
+<Window x:Class="RustMonitor.DockerOverviewWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="Rust Monitor / Docker サーバー一覧" Width="1260" Height="760" MinWidth="1000" MinHeight="550" Background="#101820" FontFamily="Yu Gothic UI, Segoe UI" FontSize="13" WindowStartupLocation="CenterOwner">
+  <Grid Margin="24" Background="#101820">
+    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+    <StackPanel Margin="0,0,0,20"><TextBlock Text="DOCKER / SERVERS" FontSize="24" FontWeight="Bold"/><TextBlock Text="各サーバーの人数とシーズンを、SSH でまとめて確認。" Foreground="{StaticResource Muted}" Margin="0,5,0,0"/></StackPanel>
+    <DockPanel Grid.Row="1" Margin="0,0,0,20"><Button x:Name="UpdateButton" DockPanel.Dock="Right" Content="SSH で更新" Background="#BB633D" Click="Update_Click"/><TextBlock DockPanel.Dock="Left" Text="SSH 接続先" Margin="0,0,16,0" VerticalAlignment="Center"/><TextBox x:Name="TargetBox" ToolTip="user@docker-host（Windows OpenSSH の鍵認証を使用）"/></DockPanel>
+    <DataGrid Grid.Row="2" x:Name="ServersGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserDeleteRows="False" CanUserResizeRows="False" HeadersVisibility="Column" Background="#19232C" Foreground="#E7EEF3" BorderThickness="0" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#344550" RowBackground="#19232C" AlternatingRowBackground="#1C2933" SelectionMode="Single" MinRowHeight="96">
+      <DataGrid.Resources><Style TargetType="DataGridColumnHeader"><Setter Property="Background" Value="#293A47"/><Setter Property="Foreground" Value="#C9D8E2"/><Setter Property="Padding" Value="12"/><Setter Property="BorderThickness" Value="0"/></Style><Style TargetType="DataGridCell"><Setter Property="BorderThickness" Value="0"/><Setter Property="Padding" Value="10"/><Setter Property="Template"><Setter.Value><ControlTemplate TargetType="DataGridCell"><Border Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}"><ContentPresenter VerticalAlignment="Center"/></Border></ControlTemplate></Setter.Value></Setter></Style></DataGrid.Resources>
+      <DataGrid.Columns>
+        <DataGridTemplateColumn Header="サーバー" Width="*" MinWidth="240"><DataGridTemplateColumn.CellTemplate><DataTemplate><StackPanel><TextBlock Text="{Binding Name}" TextWrapping="Wrap" FontWeight="SemiBold"/><TextBlock Text="{Binding Container}" FontSize="11" Foreground="{StaticResource Muted}" Margin="0,6,0,0"/><TextBlock Text="{Binding Error}" FontSize="11" Foreground="#E7A078" TextWrapping="Wrap"/></StackPanel></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+        <DataGridTextColumn Header="RCON ポート" Binding="{Binding RconPortText}" Width="110"/>
+        <DataGridTextColumn Header="現在人数" Binding="{Binding CurrentText}" Width="95"/>
+        <DataGridTextColumn Header="今季接続人数" Binding="{Binding SeasonUniqueText}" Width="120"/>
+        <DataGridTextColumn Header="今季最大同時接続数と日時" Binding="{Binding PeakText}" Width="235"/>
+        <DataGridTextColumn Header="収容可能最大人数" Binding="{Binding CapacityText}" Width="145"/>
+        <DataGridTextColumn Header="シーズン" Binding="{Binding SeasonText}" Width="195"/>
+      </DataGrid.Columns>
+      <DataGrid.RowStyle><Style TargetType="DataGridRow"><Setter Property="ToolTip" Value="{Binding DetailText}"/></Style></DataGrid.RowStyle>
+    </DataGrid>
+    <StackPanel Grid.Row="3" Margin="0,16,0,0"><TextBlock x:Name="StatusText" Text="接続先を入力してください。保存済みの結果はオフラインでも表示できます。" TextWrapping="Wrap"/><TextBlock Text="今季接続人数は all-playerlist.json の Steam ID 数。ピークは定期ログの観測値です。&#x0a;期間の開始は wipeunixtime と設定周期から算出します。表示時刻はこの PC のタイムゾーンです。" Foreground="{StaticResource Muted}" FontSize="11" Margin="0,8,0,0" TextWrapping="Wrap"/></StackPanel>
+  </Grid>
+</Window>

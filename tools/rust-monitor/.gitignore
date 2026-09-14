@@ -1,0 +1,6 @@
+**/bin/
+**/obj/
+artifacts/
+.runtime/
+/data/
+**/__pycache__/

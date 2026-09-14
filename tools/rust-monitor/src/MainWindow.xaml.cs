@@ -1,0 +1,272 @@
+using System.IO;
+using System.Security.Cryptography;
+using System.Text;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Threading;
+using RustMonitor.Core;
+
+namespace RustMonitor;
+
+public partial class MainWindow : Window
+{
+    private readonly Store store;
+    private readonly string root;
+    private readonly DispatcherTimer timer = new() { Interval = TimeSpan.FromSeconds(30) };
+    private readonly SemaphoreSlim syncGate = new(1, 1);
+    private CancellationTokenSource session = new();
+    private SshProfile? profile;
+    private ServerState? server;
+    private List<PlayerRecord> players = [];
+    private bool live, closed, bindingRoster, presenceAvailable;
+    private int generation;
+
+    public MainWindow(string dataRoot)
+    {
+        InitializeComponent();
+        root = dataRoot;
+        store = new Store(Path.Combine(root, "monitor.sqlite3"));
+        timer.Tick += async (_, _) => { if (live) await RefreshSafeAsync(); };
+        Closed += (_, _) => { closed = true; generation++; timer.Stop(); session.Cancel(); session.Dispose(); store.Dispose(); };
+        TargetBox.Text = store.Get("last-ssh-target") ?? "";
+        if (store.Get("ssh-list:" + TargetBox.Text) is string list) SetServers(Wire.Read<DockerReport>(list));
+        else if (store.Get("docker-report:" + TargetBox.Text) is string report) SetServers(Wire.Read<DockerReport>(report));
+        if (store.Get("last-ssh-profile") is string previous) LoadProfile(Wire.Read<SshProfile>(previous));
+        SetBusy(false);
+    }
+    private static string Time(string value) => DateTimeOffset.TryParse(value, out var time) ? time.ToLocalTime().ToString("yyyy/MM/dd HH:mm:ss") : "未記録";
+    private static string SafeError(Exception ex) => ex is IOException or InvalidDataException or ArgumentException or InvalidOperationException ? ex.Message : "応答形式または SSH 接続を確認してください。";
+    private void Status(string text) { if (!closed) StatusText.Text = text; }
+    private void SetBusy(bool busy)
+    {
+        ConnectButton.IsEnabled = !busy;
+        ListButton.IsEnabled = !busy;
+        TargetBox.IsEnabled = ContainerBox.IsEnabled = !busy;
+        RefreshButton.IsEnabled = live && !busy;
+        DisconnectButton.IsEnabled = live || busy;
+    }
+    private void SetServers(DockerReport report)
+    {
+        var selected = (ContainerBox.SelectedItem as DockerServer)?.Container ?? profile?.Container;
+        ContainerBox.ItemsSource = report.Servers;
+        ContainerBox.SelectedItem = report.Servers.FirstOrDefault(s => s.Container == selected) ?? report.Servers.FirstOrDefault();
+    }
+    private void LoadProfile(SshProfile next)
+    {
+        profile = next;
+        TargetBox.Text = next.Target;
+        var list = (ContainerBox.ItemsSource as IEnumerable<DockerServer>)?.ToList() ?? [];
+        if (!list.Any(s => s.Container == next.Container)) list.Add(new DockerServer { Container = next.Container, Name = next.Container });
+        ContainerBox.ItemsSource = list;
+        ContainerBox.SelectedItem = list.First(s => s.Container == next.Container);
+        server = store.Get("server:" + next.Key) is string json ? Wire.Read<ServerState>(json) : null;
+        players = store.Players(next.Key);
+        presenceAvailable = false;
+        BindRoster(); LoadMap(); ShowSelectedInventory();
+        Status(server == null ? "未取得 • SSH で接続してください" : "保存済みデータ • 最終同期 " + Time(server.CapturedAt));
+    }
+    private void Disconnect()
+    {
+        generation++; timer.Stop(); session.Cancel(); session.Dispose(); session = new();
+        live = false; presenceAvailable = false; SetBusy(false); BindRoster(); ShowSelectedInventory();
+    }
+    private async void List_Click(object sender, RoutedEventArgs e)
+    {
+        Disconnect();
+        var current = generation;
+        var target = TargetBox.Text.Trim();
+        SetBusy(true); Status("SSH でコンテナ一覧を取得しています…");
+        try
+        {
+            var report = await DockerSsh.ListServersAsync(target, session.Token);
+            if (closed || current != generation) return;
+            SetServers(report); store.Put("ssh-list:" + target, Wire.Write(report)); store.Put("last-ssh-target", target);
+            Status(report.Servers.Count == 0 ? "稼働中の rust-* コンテナが見つかりません。" : "サーバーを選択して「SSH で接続」を押してください。");
+        }
+        catch (Exception ex) { if (!closed && current == generation) Status(SafeError(ex)); }
+        finally { if (!closed && current == generation) SetBusy(false); }
+    }
+    private async void Connect_Click(object sender, RoutedEventArgs e)
+    {
+        if (ContainerBox.SelectedItem is not DockerServer selected) { Status("「一覧取得」でサーバーを選択してください。"); return; }
+        var next = new SshProfile(TargetBox.Text.Trim(), selected.Container);
+        if (!DockerSsh.ValidTarget(next.Target) || !DockerSsh.ValidContainer(next.Container)) { Status("SSH 接続先とコンテナを確認してください。"); return; }
+        Disconnect(); LoadProfile(next);
+        await RefreshSafeAsync(true);
+    }
+    private void Disconnect_Click(object sender, RoutedEventArgs e) { Disconnect(); Status("更新を停止しました • 保存済みデータを表示しています。"); }
+    private async void Refresh_Click(object sender, RoutedEventArgs e) => await RefreshSafeAsync(true);
+    private async Task RefreshSafeAsync(bool wait = false)
+    {
+        if (profile == null || closed) return;
+        if (wait) await syncGate.WaitAsync();
+        else if (!await syncGate.WaitAsync(0)) return;
+        if (closed) { syncGate.Release(); return; }
+        var current = generation; var next = profile;
+        SetBusy(true); Status("SSH / docker exec でメンバーと所持品を取得しています…");
+        try
+        {
+            var snapshot = await DockerSsh.ReadServerAsync(next, session.Token);
+            if (closed || current != generation) return;
+            store.SaveSshSnapshot(next, snapshot);
+            server = snapshot.Server; players = store.Players(next.Key);
+            live = true; presenceAvailable = snapshot.PresenceAvailable;
+            BindRoster(); LoadMap(); ShowSelectedInventory();
+            string mapWarning = "";
+            try { await EnsureMapAsync(next, current); }
+            catch (Exception ex) when (ex is IOException or InvalidDataException or FormatException or NotSupportedException)
+            {
+                if (!closed && current == generation) { MapReason.Text = SafeError(ex); mapWarning = " • マップ取得待ち"; }
+            }
+            if (closed || current != generation) return;
+            var profiles = store.Get("ssh-profiles") is string saved ? Wire.Read<List<SshProfile>>(saved) : [];
+            profiles.RemoveAll(p => p.Key == next.Key); profiles.Insert(0, next);
+            store.Put("ssh-profiles", Wire.Write(profiles)); store.Put("last-ssh-profile", Wire.Write(next)); store.Put("last-ssh-target", next.Target);
+            Status("SSH 同期 " + Time(server.CapturedAt) + " • 30 秒ごとに更新" + mapWarning + (snapshot.Warning.Length > 0 ? "\n" + snapshot.Warning : ""));
+            timer.Start();
+        }
+        catch (Exception ex)
+        {
+            if (!closed && current == generation) { Disconnect(); Status("更新できませんでした • " + SafeError(ex)); }
+        }
+        finally { syncGate.Release(); if (!closed && current == generation) SetBusy(false); }
+    }
+    private void Filter_Changed(object sender, RoutedEventArgs e) { if (IsInitialized && PlayerList != null) BindRoster(); }
+    private void BindRoster()
+    {
+        if (PlayerList == null) return;
+        var selected = (PlayerList.SelectedItem as PlayerRow)?.SteamId;
+        var search = SearchBox.Text.Trim();
+        var rows = players.Select(p => new PlayerRow(p, live)).Where(p =>
+            (OnlineOnly.IsChecked != true || p.IsOnline) && (search.Length == 0 || p.Name.Contains(search, StringComparison.OrdinalIgnoreCase) || p.SteamId.Contains(search)))
+            .OrderByDescending(p => p.IsOnline).ThenBy(p => p.Name, StringComparer.CurrentCultureIgnoreCase).ToList();
+        bindingRoster = true;
+        try { PlayerList.ItemsSource = rows; PlayerList.SelectedItem = rows.FirstOrDefault(p => p.SteamId == selected); }
+        finally { bindingRoster = false; }
+        RosterEmpty.Visibility = rows.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        RosterEmpty.Text = players.Count == 0 ? "SSH で接続すると、接続中の人と過去の接続履歴を表示します。" : "条件に一致するメンバーがいません。";
+        ServerTitle.Text = server?.Name is { Length: > 0 } name ? name : "SSH 接続先とサーバーを選択してください";
+        CountsText.Text = live ? (presenceAvailable ? $"オンライン {players.Count(p => new PlayerRow(p, true).IsOnline)}" : "オンライン 未確認") + $" / 記録済み {players.Count}"
+            : $"保存済み {players.Count} 人 • 接続状態は未確認";
+        ShowSelectedInventory();
+    }
+    private void Player_Selected(object sender, SelectionChangedEventArgs e) { if (!bindingRoster) ShowSelectedInventory(); }
+    private void ShowSelectedInventory()
+    {
+        UpdateMapLayout();
+        InventoryItems.Children.Clear();
+        if (PlayerList.SelectedItem is not PlayerRow row || profile == null)
+        { InventoryName.Text = "メンバーを選択"; PlayerDetails.Text = ""; ShowInventory(null); return; }
+        InventoryName.Text = row.Name;
+        PlayerDetails.Text = row.SteamId + "\n初回確認 " + Time(row.Record.FirstSeen) + "\n最終オンライン確認 " + Time(row.Record.LastSeen);
+        PlayerDetails.Text += row.Record.WipeId == server?.WipeId && row.Record.X != null && row.Record.Z != null && row.Record.PositionAt.Length > 0
+            ? "\n" + Coordinates(row.Record) + "\n座標のセーブ " + Time(row.Record.PositionAt)
+            : "\n座標：" + (row.Record.PositionReason.Length > 0 ? row.Record.PositionReason : "最新セーブに記録がありません");
+        ShowInventory(store.Inventory(profile.Key, server?.WipeId ?? "", row.SteamId));
+    }
+    private void ShowInventory(InventorySnapshot? snapshot)
+    {
+        InventoryItems.Children.Clear();
+        if (snapshot == null || string.IsNullOrEmpty(snapshot.CapturedAt))
+        { InventoryStatus.Text = PlayerList.SelectedItem == null ? "メンバーを選ぶと、持ち物を表示します。" : "このワイプの所持品は未取得です。最新セーブに本人の身体がない場合もあります。"; return; }
+        InventoryStatus.Text = snapshot.Source == "save"
+            ? (server?.SaveAt == snapshot.CapturedAt ? "最終セーブ時点の所持品" : "以前のセーブの所持品") + "\n" + Time(snapshot.CapturedAt) + "\nセーブ後の変更は次の保存で反映されます。"
+            : "最終取得時点の記録（現在の所持品は未確認）\n" + Time(snapshot.CapturedAt);
+        foreach (var (key, label) in new[] { ("main", "インベントリ"), ("belt", "ベルト"), ("wear", "装備") })
+        {
+            var items = snapshot.Items.Where(i => i.Container == key).OrderBy(i => i.Slot).ToList();
+            InventoryItems.Children.Add(new TextBlock { Text = label + $"  /  {items.Count}", FontWeight = FontWeights.SemiBold, Margin = new Thickness(0, 10, 0, 8) });
+            if (items.Count == 0) InventoryItems.Children.Add(new TextBlock { Text = "空", Foreground = Brushes.SlateGray, Margin = new Thickness(0, 0, 0, 10) });
+            foreach (var item in items) AddItem(item, 0);
+        }
+    }
+    private void AddItem(ItemRecord item, int depth)
+    {
+        if (depth > 6) return;
+        ItemCatalog.Name(item);
+        var lines = new StackPanel();
+        lines.Children.Add(new TextBlock { Text = item.Name + "   × " + item.Amount, TextWrapping = TextWrapping.Wrap, FontWeight = FontWeights.SemiBold });
+        var detail = "スロット " + (item.Slot + 1) + " • " + item.ShortName;
+        if (item.MaxCondition > 0) detail += $"\n耐久 {item.Condition:0.#} / {item.MaxCondition:0.#}";
+        if (item.Ammo != null) detail += " • 装填 " + item.Ammo;
+        lines.Children.Add(new TextBlock { Text = detail, FontSize = 11, Foreground = Brushes.LightSlateGray, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 5, 0, 0) });
+        InventoryItems.Children.Add(new Border { Background = (Brush)new BrushConverter().ConvertFrom("#22313D")!, CornerRadius = new CornerRadius(5), Padding = new Thickness(10), Margin = new Thickness(depth * 12, 0, 0, 6), Child = lines });
+        foreach (var child in item.Contents) AddItem(child, depth + 1);
+    }
+    private string MapPath(string key, string wipe) => Path.Combine(root, "maps", Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(key + "\n" + wipe))) + ".jpg");
+    private void LoadMap()
+    {
+        var key = profile?.Key + "\n" + server?.WipeId;
+        if (key == loadedMapKey && MapImage.Source != null) { UpdateMapLayout(); return; }
+        if (key != loadedMapKey) { loadedMapKey = key; mapView.Reset(); }
+        MapImage.Source = null; MapEmpty.Visibility = Visibility.Visible;
+        UpdateMapLayout();
+        MapMeta.Text = server == null ? "" : $"{server.Size} m • Seed {server.Seed}";
+        MapReason.Text = "今季のマップ画像を SSH 経由で取得します。";
+        if (server == null || profile == null) return;
+        var path = MapPath(profile.Key, server.WipeId);
+        if (!File.Exists(path)) return;
+        try
+        {
+            MapImage.Source = DecodeMap(File.ReadAllBytes(path));
+            MapEmpty.Visibility = Visibility.Collapsed;
+            UpdateMapLayout();
+        }
+        catch (Exception ex) when (ex is IOException or NotSupportedException or FileFormatException) { MapReason.Text = "保存済みマップを読み込めません。再取得します。"; }
+    }
+    private static BitmapImage DecodeMap(byte[] bytes)
+    {
+        if (bytes.Length == 0 || bytes.Length > 16000000) throw new InvalidDataException("マップ画像のサイズが不正です。");
+        var bitmap = new BitmapImage(); bitmap.BeginInit(); bitmap.CacheOption = BitmapCacheOption.OnLoad; bitmap.StreamSource = new MemoryStream(bytes); bitmap.EndInit(); bitmap.Freeze();
+        if (bitmap.PixelWidth > 10000 || bitmap.PixelHeight > 10000) throw new InvalidDataException("マップ画像の解像度が大きすぎます。");
+        return bitmap;
+    }
+    private async Task EnsureMapAsync(SshProfile next, int current)
+    {
+        if (server == null || MapImage.Source != null) return;
+        if (!server.MapAvailable) { MapReason.Text = "今季のマップ画像はまだ記録されていません。"; return; }
+        var wipe = server.WipeId;
+        var map = await DockerSsh.ReadMapAsync(next, wipe, session.Token);
+        if (closed || current != generation) return;
+        if (map.WipeId != wipe) throw new InvalidDataException("マップのワイプが変わりました。再取得してください。");
+        var bytes = Convert.FromBase64String(map.Data); var bitmap = DecodeMap(bytes);
+        var path = MapPath(next.Key, wipe); Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        File.WriteAllBytes(path + ".tmp", bytes); File.Move(path + ".tmp", path, true);
+        MapImage.Source = bitmap; MapEmpty.Visibility = Visibility.Collapsed;
+        UpdateMapLayout();
+    }
+    private void Profiles_Click(object sender, RoutedEventArgs e)
+    {
+        var menu = new ContextMenu();
+        var profiles = store.Get("ssh-profiles") is string json ? Wire.Read<List<SshProfile>>(json) : [];
+        foreach (var saved in profiles)
+        {
+            var item = new MenuItem { Header = saved.Target + " / " + saved.Container };
+            item.Click += (_, _) => { Disconnect(); LoadProfile(saved); }; menu.Items.Add(item);
+        }
+        if (profiles.Count == 0) menu.Items.Add(new MenuItem { Header = "接続するとサーバーが保存されます", IsEnabled = false });
+        menu.PlacementTarget = (Button)sender; menu.IsOpen = true;
+    }
+    private async void Docker_Click(object sender, RoutedEventArgs e)
+    {
+        var overview = new DockerOverviewWindow(store) { Owner = this };
+        if (overview.ShowDialog() == true && overview.SelectedServer is DockerServer selected)
+        {
+            Disconnect(); LoadProfile(new SshProfile(overview.Target, selected.Container));
+            await RefreshSafeAsync(true);
+        }
+    }
+    public sealed class PlayerRow(PlayerRecord record, bool connected)
+    {
+        public PlayerRecord Record => record;
+        public string Name => record.Name;
+        public string SteamId => record.SteamId;
+        public bool Fresh => connected && DateTimeOffset.TryParse(record.ObservedAt, out var time) && DateTimeOffset.UtcNow - time < TimeSpan.FromMinutes(3);
+        public bool IsOnline => Fresh && record.Online;
+        public string State => !Fresh ? "未確認" : record.Online ? "オンライン" : "オフライン";
+        public string Color => IsOnline ? "#8ECBAD" : "#9DADB9";
+        public string LastSeen => "最終オンライン確認 " + Time(record.LastSeen);
+    }
+}
