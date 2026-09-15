@@ -2,6 +2,30 @@
   <Application.Resources>
     <SolidColorBrush x:Key="Panel" Color="#19232C"/>
     <SolidColorBrush x:Key="Muted" Color="#9DADB9"/>
+    <Style x:Key="HistoryMenuStyle" TargetType="ContextMenu">
+      <Setter Property="Background" Value="#19232C"/><Setter Property="Foreground" Value="#E7EEF3"/>
+      <Setter Property="MinWidth" Value="360"/><Setter Property="MaxWidth" Value="460"/>
+      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ContextMenu">
+        <Border Background="{TemplateBinding Background}" BorderBrush="#536675" BorderThickness="1" CornerRadius="7" Padding="5">
+          <ScrollViewer MaxHeight="460" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" CanContentScroll="True"><ItemsPresenter KeyboardNavigation.DirectionalNavigation="Cycle"/></ScrollViewer>
+        </Border>
+      </ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style x:Key="HistoryItemStyle" TargetType="MenuItem">
+      <Setter Property="Foreground" Value="#E7EEF3"/><Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Padding" Value="12,10"/><Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="MenuItem">
+        <Border x:Name="row" Background="{TemplateBinding Background}" BorderBrush="Transparent" BorderThickness="1" CornerRadius="4" Padding="{TemplateBinding Padding}">
+          <ContentPresenter ContentSource="Header" RecognizesAccessKey="False"/>
+        </Border>
+        <ControlTemplate.Triggers>
+          <Trigger Property="IsHighlighted" Value="True"><Setter TargetName="row" Property="Background" Value="#344E60"/><Setter TargetName="row" Property="BorderBrush" Value="#7FA8C0"/></Trigger>
+          <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="row" Property="Background" Value="#344E60"/><Setter TargetName="row" Property="BorderBrush" Value="#7FA8C0"/></Trigger>
+          <Trigger Property="IsEnabled" Value="False"><Setter TargetName="row" Property="Opacity" Value="0.6"/><Setter Property="Cursor" Value="Arrow"/></Trigger>
+        </ControlTemplate.Triggers>
+      </ControlTemplate></Setter.Value></Setter>
+    </Style>
     <Style TargetType="TextBlock"><Setter Property="Foreground" Value="#E7EEF3"/></Style>
     <Style TargetType="Button">
       <Setter Property="Background" Value="#293A47"/><Setter Property="Foreground" Value="#F2F6FA"/>

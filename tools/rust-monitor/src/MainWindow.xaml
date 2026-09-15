@@ -5,7 +5,7 @@
       <StackPanel DockPanel.Dock="Left"><TextBlock Text="RUST / MONITOR" FontSize="25" FontWeight="Bold"/><TextBlock Text="サーバーの今と、プレイヤーの記録。" Foreground="{StaticResource Muted}" Margin="0,4,0,0"/></StackPanel>
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
         <Button Content="Docker サーバー一覧" Click="Docker_Click"/>
-        <Button Content="保存済みサーバー" Click="Profiles_Click"/>
+        <Button x:Name="HistoryButton" Content="接続履歴" Click="Profiles_Click" ToolTip="以前接続したサーバーを選んで再接続します。"/>
         <Button x:Name="RefreshButton" Content="今すぐ更新" Click="Refresh_Click" IsEnabled="False"/>
         <Button x:Name="DisconnectButton" Content="更新停止" Click="Disconnect_Click" IsEnabled="False"/>
       </StackPanel>

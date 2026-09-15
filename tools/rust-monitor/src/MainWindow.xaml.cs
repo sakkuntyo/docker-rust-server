@@ -14,6 +14,7 @@ public partial class MainWindow : Window
 {
     private readonly Store store;
     private readonly string root;
+    private readonly Func<SshProfile, CancellationToken, Task<SshServerSnapshot>> readServer;
     private readonly DispatcherTimer timer = new() { Interval = TimeSpan.FromSeconds(30) };
     private readonly SemaphoreSlim syncGate = new(1, 1);
     private CancellationTokenSource session = new();
@@ -23,10 +24,11 @@ public partial class MainWindow : Window
     private bool live, closed, bindingRoster, presenceAvailable;
     private int generation;
 
-    public MainWindow(string dataRoot)
+    public MainWindow(string dataRoot, Func<SshProfile, CancellationToken, Task<SshServerSnapshot>>? serverReader = null)
     {
         InitializeComponent();
         root = dataRoot;
+        readServer = serverReader ?? DockerSsh.ReadServerAsync;
         store = new Store(Path.Combine(root, "monitor.sqlite3"));
         timer.Tick += async (_, _) => { if (live) await RefreshSafeAsync(); };
         Closed += (_, _) => { closed = true; generation++; timer.Stop(); session.Cancel(); session.Dispose(); store.Dispose(); };
@@ -55,14 +57,22 @@ public partial class MainWindow : Window
     }
     private void LoadProfile(SshProfile next)
     {
+        var changed = profile != next;
         profile = next;
         TargetBox.Text = next.Target;
-        var list = (ContainerBox.ItemsSource as IEnumerable<DockerServer>)?.ToList() ?? [];
-        if (!list.Any(s => s.Container == next.Container)) list.Add(new DockerServer { Container = next.Container, Name = next.Container });
+        server = store.Get("server:" + next.Key) is string json ? Wire.Read<ServerState>(json) : null;
+        var savedList = store.Get("ssh-list:" + next.Target) ?? store.Get("docker-report:" + next.Target);
+        var list = savedList != null ? Wire.Read<DockerReport>(savedList).Servers : [];
+        if (!list.Any(s => s.Container == next.Container)) list.Add(new DockerServer { Container = next.Container, Name = server?.Name is { Length: > 0 } name ? name : next.Container });
         ContainerBox.ItemsSource = list;
         ContainerBox.SelectedItem = list.First(s => s.Container == next.Container);
-        server = store.Get("server:" + next.Key) is string json ? Wire.Read<ServerState>(json) : null;
         players = store.Players(next.Key);
+        if (changed)
+        {
+            bindingRoster = true;
+            try { SearchBox.Clear(); OnlineOnly.IsChecked = false; }
+            finally { bindingRoster = false; }
+        }
         presenceAvailable = false;
         BindRoster(); LoadMap(); ShowSelectedInventory();
         Status(server == null ? "未取得 • SSH で接続してください" : "保存済みデータ • 最終同期 " + Time(server.CapturedAt));
@@ -92,6 +102,11 @@ public partial class MainWindow : Window
     {
         if (ContainerBox.SelectedItem is not DockerServer selected) { Status("「一覧取得」でサーバーを選択してください。"); return; }
         var next = new SshProfile(TargetBox.Text.Trim(), selected.Container);
+        await ConnectProfileAsync(next);
+    }
+    private async Task ConnectProfileAsync(SshProfile next)
+    {
+        if (closed) return;
         if (!DockerSsh.ValidTarget(next.Target) || !DockerSsh.ValidContainer(next.Container)) { Status("SSH 接続先とコンテナを確認してください。"); return; }
         Disconnect(); LoadProfile(next);
         await RefreshSafeAsync(true);
@@ -101,14 +116,14 @@ public partial class MainWindow : Window
     private async Task RefreshSafeAsync(bool wait = false)
     {
         if (profile == null || closed) return;
+        var current = generation; var next = profile;
         if (wait) await syncGate.WaitAsync();
         else if (!await syncGate.WaitAsync(0)) return;
-        if (closed) { syncGate.Release(); return; }
-        var current = generation; var next = profile;
+        if (closed || current != generation) { syncGate.Release(); return; }
         SetBusy(true); Status("SSH / docker exec でメンバーと所持品を取得しています…");
         try
         {
-            var snapshot = await DockerSsh.ReadServerAsync(next, session.Token);
+            var snapshot = await readServer(next, session.Token);
             if (closed || current != generation) return;
             store.SaveSshSnapshot(next, snapshot);
             server = snapshot.Server; players = store.Players(next.Key);
@@ -133,7 +148,7 @@ public partial class MainWindow : Window
         }
         finally { syncGate.Release(); if (!closed && current == generation) SetBusy(false); }
     }
-    private void Filter_Changed(object sender, RoutedEventArgs e) { if (IsInitialized && PlayerList != null) BindRoster(); }
+    private void Filter_Changed(object sender, RoutedEventArgs e) { if (IsInitialized && PlayerList != null && !bindingRoster) BindRoster(); }
     private void BindRoster()
     {
         if (PlayerList == null) return;
@@ -239,15 +254,25 @@ public partial class MainWindow : Window
     }
     private void Profiles_Click(object sender, RoutedEventArgs e)
     {
-        var menu = new ContextMenu();
+        if (HistoryButton.ContextMenu is { IsOpen: true } previous) { previous.IsOpen = false; return; }
+        var menu = new ContextMenu { Style = (Style)FindResource("HistoryMenuStyle"), Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom };
         var profiles = store.Get("ssh-profiles") is string json ? Wire.Read<List<SshProfile>>(json) : [];
-        foreach (var saved in profiles)
+        foreach (var saved in profiles.Distinct())
         {
-            var item = new MenuItem { Header = saved.Target + " / " + saved.Container };
-            item.Click += (_, _) => { Disconnect(); LoadProfile(saved); }; menu.Items.Add(item);
+            var cached = store.Get("server:" + saved.Key) is string state ? Wire.Read<ServerState>(state) : null;
+            var header = new StackPanel();
+            header.Children.Add(new TextBlock { Text = cached?.Name is { Length: > 0 } name ? name : saved.Container,
+                Foreground = Brushes.White, FontWeight = FontWeights.SemiBold, TextWrapping = TextWrapping.Wrap });
+            header.Children.Add(new TextBlock { Text = saved.Target + " / " + saved.Container, Foreground = Brushes.LightSteelBlue, FontSize = 11, Margin = new Thickness(0, 4, 0, 0), TextWrapping = TextWrapping.Wrap });
+            header.Children.Add(new TextBlock { Text = "前回同期 " + Time(cached?.CapturedAt ?? "") + " • クリックで接続", Foreground = Brushes.LightSlateGray, FontSize = 11, Margin = new Thickness(0, 3, 0, 0) });
+            var item = new MenuItem { Header = header, Tag = saved, Style = (Style)FindResource("HistoryItemStyle") };
+            System.Windows.Automation.AutomationProperties.SetName(item, (cached?.Name ?? saved.Container) + " / " + saved.Target + " / " + saved.Container);
+            item.Click += async (_, args) => { args.Handled = true; menu.IsOpen = false; await ConnectProfileAsync(saved); };
+            menu.Items.Add(item);
         }
-        if (profiles.Count == 0) menu.Items.Add(new MenuItem { Header = "接続するとサーバーが保存されます", IsEnabled = false });
-        menu.PlacementTarget = (Button)sender; menu.IsOpen = true;
+        if (profiles.Count == 0) menu.Items.Add(new MenuItem { Header = "接続履歴はまだありません。SSH で接続すると追加されます。", IsEnabled = false, Style = (Style)FindResource("HistoryItemStyle") });
+        HistoryButton.ContextMenu = menu;
+        menu.PlacementTarget = HistoryButton; menu.IsOpen = true;
     }
     private async void Docker_Click(object sender, RoutedEventArgs e)
     {

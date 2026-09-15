@@ -375,6 +375,49 @@ internal static class Program
             using (var file = File.Create(Path.Combine(root, "docker-overview-preview.png"))) png.Save(file);
             overview.Close();
         }
+        HistoryChecks();
+        window.Close();
+    }
+    private static void HistoryChecks()
+    {
+        var fixture = Path.Combine(root, "history-fixture"); Directory.CreateDirectory(fixture);
+        var first = new SshProfile("admin@first.invalid", "rust-demo");
+        var second = new SshProfile("admin@second.invalid", "rust-demo");
+        SshServerSnapshot Snapshot(string name) => new()
+        {
+            Server = new ServerState { Protocol = 1, Name = name, WipeId = "history-wipe", CapturedAt = DateTimeOffset.UtcNow.ToString("O") },
+            PresenceAvailable = true,
+            Players = [new PlayerRecord { SteamId = "76561198000000003", Name = name + " Player", WipeId = "history-wipe" }]
+        };
+        using (var db = new Store(Path.Combine(fixture, "monitor.sqlite3")))
+        {
+            db.Put("last-ssh-profile", Wire.Write(first)); db.Put("ssh-profiles", Wire.Write(new[] { first, second }));
+            db.Put("ssh-list:" + first.Target, Wire.Write(new DockerReport { Servers = [new DockerServer { Container = first.Container, Name = "First server" }] }));
+            db.SaveSshSnapshot(first, Snapshot("First server")); db.SaveSshSnapshot(second, Snapshot("Second server"));
+        }
+        var requests = new List<SshProfile>(); var fail = false;
+        var window = new MainWindow(fixture, (selected, _) =>
+        {
+            requests.Add(selected);
+            return fail ? Task.FromException<SshServerSnapshot>(new IOException("SSH test unavailable"))
+                : Task.FromResult(Snapshot(selected == first ? "First server" : "Second server"));
+        });
+        var history = (Button)window.FindName("HistoryButton");
+        void Select(SshProfile selected)
+        {
+            history.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            history.ContextMenu.Items.Cast<MenuItem>().Single(i => Equals(i.Tag, selected)).RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+        }
+        ((TextBox)window.FindName("SearchBox")).Text = "no match";
+        ((CheckBox)window.FindName("OnlineOnly")).IsChecked = true;
+        Select(second);
+        Check(requests.SequenceEqual(new[] { second }) && ((TextBlock)window.FindName("StatusText")).Text.StartsWith("SSH 同期"), "history click starts SSH synchronization for the selected profile");
+        Check(((TextBox)window.FindName("TargetBox")).Text == second.Target && ((DockerServer)((ComboBox)window.FindName("ContainerBox")).SelectedItem).Name == "Second server", "history changes the host and container even when both hosts use the same container name");
+        Check(((ListBox)window.FindName("PlayerList")).Items.Count == 1 && ((TextBox)window.FindName("SearchBox")).Text == "" && ((CheckBox)window.FindName("OnlineOnly")).IsChecked == false, "switching history clears filters that would hide the new roster");
+        Select(second);
+        Check(requests.Count == 2 && !history.ContextMenu.IsOpen && ((Button)window.FindName("DisconnectButton")).IsEnabled, "choosing the current history entry refreshes it and enables update controls");
+        fail = true; Select(first);
+        Check(requests.Last() == first && ((TextBlock)window.FindName("StatusText")).Text.Contains("SSH test unavailable") && ((TextBlock)window.FindName("ServerTitle")).Text == "First server" && ((ListBox)window.FindName("PlayerList")).Items.Count == 1, "failed history reconnection reports its reason and retains that server's cached roster");
         window.Close();
     }
 }
