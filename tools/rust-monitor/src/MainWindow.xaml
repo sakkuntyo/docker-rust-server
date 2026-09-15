@@ -4,7 +4,7 @@
     <DockPanel Margin="0,0,0,22">
       <StackPanel DockPanel.Dock="Left"><TextBlock Text="RUST / MONITOR" FontSize="25" FontWeight="Bold"/><TextBlock Text="サーバーの今と、プレイヤーの記録。" Foreground="{StaticResource Muted}" Margin="0,4,0,0"/></StackPanel>
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-        <Button Content="Docker サーバー一覧" Click="Docker_Click"/>
+        <Button x:Name="DockerButton" Content="Docker サーバー一覧" Click="Docker_Click"/>
         <Button x:Name="HistoryButton" Content="接続履歴" Click="Profiles_Click" ToolTip="以前接続したサーバーを選んで再接続します。"/>
         <Button x:Name="RefreshButton" Content="今すぐ更新" Click="Refresh_Click" IsEnabled="False"/>
         <Button x:Name="DisconnectButton" Content="更新停止" Click="Disconnect_Click" IsEnabled="False"/>
@@ -39,11 +39,41 @@
             <Button x:Name="MapReset" Content="全体" Click="MapReset_Click" Padding="10,5" Margin="0,0,4,4"/>
             <Button x:Name="MapFocus" Content="選択した人へ" Click="MapFocus_Click" Padding="10,5" Margin="0,0,8,4" IsEnabled="False"/>
             <CheckBox x:Name="MapNames" Content="名前・座標" IsChecked="True" Checked="MapNames_Changed" Unchecked="MapNames_Changed" Margin="0,0,0,4"/>
+            <CheckBox x:Name="ChatVisible" Content="チャット" IsChecked="True" Checked="ChatVisibility_Changed" Unchecked="ChatVisibility_Changed" Margin="12,0,0,4"/>
           </WrapPanel>
-          <Grid x:Name="MapArea" Grid.Row="2" Margin="0,8,0,12" ClipToBounds="True" Background="#112029" SizeChanged="MapArea_SizeChanged" MouseWheel="MapArea_Wheel" MouseLeftButtonDown="MapArea_Down" MouseLeftButtonUp="MapArea_Up" MouseMove="MapArea_Move" LostMouseCapture="MapArea_LostCapture">
+          <Grid Grid.Row="2" Margin="0,8,0,12">
+          <Grid x:Name="MapArea" ClipToBounds="True" Background="#112029" SizeChanged="MapArea_SizeChanged" MouseWheel="MapArea_Wheel" MouseLeftButtonDown="MapArea_Down" MouseLeftButtonUp="MapArea_Up" MouseMove="MapArea_Move" LostMouseCapture="MapArea_LostCapture">
             <Canvas IsHitTestVisible="False"><Image x:Name="MapImage" Stretch="Fill"/></Canvas>
             <Canvas x:Name="MapMarkers"/>
             <StackPanel x:Name="MapEmpty" VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="280"><TextBlock Text="マップはまだありません" FontSize="18" TextAlignment="Center"/><TextBlock x:Name="MapReason" Text="今季のマップ画像を SSH 経由で取得します。" TextWrapping="Wrap" Foreground="{StaticResource Muted}" Margin="0,12,0,0" TextAlignment="Center"/></StackPanel>
+          </Grid>
+          <Border x:Name="ChatOverlay" VerticalAlignment="Bottom" Margin="8" Background="#19232C" BorderBrush="#536675" BorderThickness="1" CornerRadius="7" Padding="10" Panel.ZIndex="10">
+            <StackPanel>
+              <DockPanel>
+                <Button x:Name="ChatFold" Content="▼ サーバーチャット" Click="ChatFold_Click" Background="Transparent" Padding="2,3" Margin="0,0,10,0" DockPanel.Dock="Left"/>
+                <Button Content="非表示" Click="ChatHide_Click" Padding="8,3" Margin="8,0,0,0" DockPanel.Dock="Right"/>
+                <TextBlock x:Name="ChatStateText" Text="接続すると取得します" Foreground="{StaticResource Muted}" FontSize="11" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+              </DockPanel>
+              <Grid x:Name="ChatBody" Height="250" Margin="0,8,0,0">
+                <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                <CheckBox x:Name="ChatGlobalOnly" Content="全体・サーバーのみ" IsChecked="True" Checked="ChatFilter_Changed" Unchecked="ChatFilter_Changed" FontSize="11" Margin="0,0,0,6"/>
+                <Grid Grid.Row="1">
+                  <ScrollViewer x:Name="ChatScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <ItemsControl x:Name="ChatMessages"><ItemsControl.ItemTemplate><DataTemplate>
+                      <StackPanel Margin="0,0,0,8"><TextBlock Text="{Binding Heading}" Foreground="#AAC5D6" FontSize="11" TextWrapping="Wrap"/><TextBlock Text="{Binding Message}" FontSize="12" TextWrapping="Wrap" Margin="0,2,0,0"/></StackPanel>
+                    </DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+                  </ScrollViewer>
+                  <TextBlock x:Name="ChatEmpty" Text="表示できるチャットはありません" Foreground="{StaticResource Muted}" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                </Grid>
+                <TextBlock Grid.Row="2" x:Name="ChatDestination" Text="サーバーへ接続してください" FontSize="11" Foreground="#AAC5D6" TextTrimming="CharacterEllipsis" Margin="0,6,0,5"/>
+                <DockPanel Grid.Row="3">
+                  <Button x:Name="ChatSend" Content="送信" Click="ChatSend_Click" DockPanel.Dock="Right" Margin="8,0,0,0" Padding="12,6" IsEnabled="False"/>
+                  <TextBox x:Name="ChatInput" MaxLength="256" IsEnabled="False" Padding="8,6" PreviewKeyDown="ChatInput_KeyDown" TextChanged="ChatInput_Changed" ToolTip="サーバーとして全体へ発言します（global.say）。送信ボタンまたは Ctrl＋Enter。"/>
+                </DockPanel>
+                <TextBlock Grid.Row="4" x:Name="ChatSendStatus" Text="送信ボタン / Ctrl＋Enter で発言" FontSize="11" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,5,0,0"/>
+              </Grid>
+            </StackPanel>
+          </Border>
           </Grid>
           <StackPanel Grid.Row="3"><TextBlock x:Name="MapPositionStatus" Text="座標は最終セーブ時点の記録です。" Foreground="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap"/><TextBlock Text="ホイールで拡大・縮小 / ドラッグで移動&#x0a;● 緑：オンライン　灰：オフライン・未確認　橙：選択" Foreground="{StaticResource Muted}" FontSize="10" TextWrapping="Wrap" Margin="0,5,0,0"/></StackPanel>
         </Grid>
@@ -52,6 +82,6 @@
         <DockPanel><StackPanel DockPanel.Dock="Top"><TextBlock Text="プレイヤーの持ち物" FontSize="16" FontWeight="SemiBold"/><TextBlock x:Name="InventoryName" Text="メンバーを選択" FontSize="21" FontWeight="SemiBold" Margin="0,18,0,6" TextWrapping="Wrap"/><TextBlock x:Name="PlayerDetails" Foreground="{StaticResource Muted}" TextWrapping="Wrap" FontSize="11"/><Border Background="#253340" CornerRadius="5" Padding="10" Margin="0,14"><TextBlock x:Name="InventoryStatus" Text="インベントリ・ベルト・装備を表示します。" Foreground="#D3DFE7" TextWrapping="Wrap" FontSize="12"/></Border></StackPanel><ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel x:Name="InventoryItems"/></ScrollViewer></DockPanel>
       </Border>
     </Grid>
-    <DockPanel Grid.Row="4" Margin="0,16,0,0"><TextBlock x:Name="StatusText" Text="未接続 • 閲覧専用" Foreground="{StaticResource Muted}" TextWrapping="Wrap"/><TextBlock Text="SQLite • ローカル保存" HorizontalAlignment="Right" Foreground="{StaticResource Muted}" FontSize="11"/></DockPanel>
+    <DockPanel Grid.Row="4" Margin="0,16,0,0"><TextBlock x:Name="StatusText" Text="未接続" Foreground="{StaticResource Muted}" TextWrapping="Wrap"/><TextBlock Text="SQLite • ローカル保存" HorizontalAlignment="Right" Foreground="{StaticResource Muted}" FontSize="11"/></DockPanel>
   </Grid>
 </Window>

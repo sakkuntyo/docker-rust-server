@@ -88,15 +88,27 @@ public static class DockerSsh
         if (!ValidContainer(profile.Container)) throw new ArgumentException("一覧から Rust コンテナを選択してください。");
         return ReadAsync<SshMap>(profile.Target, new { mode = "map", container = profile.Container, wipe }, cancellation);
     }
-    private static async Task<T> ReadAsync<T>(string target, object request, CancellationToken cancellation)
+    public static Task<ChatSnapshot> ReadChatAsync(SshProfile profile, CancellationToken cancellation = default)
+    {
+        if (!ValidContainer(profile.Container)) throw new ArgumentException("Rust コンテナを選択してください。");
+        return ReadAsync<ChatSnapshot>(profile.Target, new { mode = "chat", container = profile.Container }, cancellation, "chat.py", 20);
+    }
+    public static Task<ChatSendResult> SendChatAsync(SshProfile profile, string message, CancellationToken cancellation = default)
+    {
+        if (!ValidContainer(profile.Container)) throw new ArgumentException("Rust コンテナを選択してください。");
+        message = ChatText.Validate(message);
+        return ReadAsync<ChatSendResult>(profile.Target, new { mode = "say", container = profile.Container, message }, cancellation, "chat.py", 20);
+    }
+    private static async Task<T> ReadAsync<T>(string target, object request, CancellationToken cancellation, string scriptFile = "docker_status.py", int timeoutSeconds = 90)
     {
         if (!ValidTarget(target)) throw new ArgumentException("SSH 接続先を user@hostname 形式で入力してください。");
-        var source = Path.Combine(AppContext.BaseDirectory, "collector", "docker_status.py");
+        var source = Path.Combine(AppContext.BaseDirectory, "collector", scriptFile);
         var requestData = Convert.ToBase64String(Encoding.UTF8.GetBytes(Wire.Write(request)));
-        var script = "import json, base64\nREQUEST = json.loads(base64.b64decode('" + requestData + "'))\n"
-            + await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "collector", "save_reader.py"), cancellation)
-            + "\n" + await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "collector", "conntrack_reader.py"), cancellation)
-            + "\n" + await File.ReadAllTextAsync(source, cancellation);
+        var script = "import json, base64\nREQUEST = json.loads(base64.b64decode('" + requestData + "'))\n";
+        if (scriptFile == "docker_status.py")
+            script += await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "collector", "save_reader.py"), cancellation)
+                + "\n" + await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "collector", "conntrack_reader.py"), cancellation) + "\n";
+        script += await File.ReadAllTextAsync(source, cancellation);
         var start = new ProcessStartInfo
         {
             FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "System32", "OpenSSH", "ssh.exe"),
@@ -105,7 +117,7 @@ public static class DockerSsh
         };
         foreach (var arg in new[] { "-T", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=yes", "--", target, "python3", "-" }) start.ArgumentList.Add(arg);
         using var process = Process.Start(start) ?? throw new IOException("Windows OpenSSH を起動できません。");
-        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellation); timeout.CancelAfter(TimeSpan.FromSeconds(90));
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellation); timeout.CancelAfter(TimeSpan.FromSeconds(timeoutSeconds));
         try
         {
             var outputTask = process.StandardOutput.ReadToEndAsync(timeout.Token);

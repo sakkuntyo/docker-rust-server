@@ -21,17 +21,22 @@ public partial class MainWindow : Window
     private SshProfile? profile;
     private ServerState? server;
     private List<PlayerRecord> players = [];
-    private bool live, closed, bindingRoster, presenceAvailable;
+    private bool live, closed, bindingRoster, presenceAvailable, mainBusy;
     private int generation;
 
-    public MainWindow(string dataRoot, Func<SshProfile, CancellationToken, Task<SshServerSnapshot>>? serverReader = null)
+    public MainWindow(string dataRoot, Func<SshProfile, CancellationToken, Task<SshServerSnapshot>>? serverReader = null,
+        Func<SshProfile, CancellationToken, Task<ChatSnapshot>>? chatReader = null,
+        Func<SshProfile, string, CancellationToken, Task<ChatSendResult>>? chatSender = null)
     {
         InitializeComponent();
         root = dataRoot;
         readServer = serverReader ?? DockerSsh.ReadServerAsync;
+        readChat = chatReader ?? DockerSsh.ReadChatAsync;
+        sendChat = chatSender ?? DockerSsh.SendChatAsync;
         store = new Store(Path.Combine(root, "monitor.sqlite3"));
+        InitializeChat();
         timer.Tick += async (_, _) => { if (live) await RefreshSafeAsync(); };
-        Closed += (_, _) => { closed = true; generation++; timer.Stop(); session.Cancel(); session.Dispose(); store.Dispose(); };
+        Closed += (_, _) => { closed = true; generation++; timer.Stop(); chatTimer.Stop(); session.Cancel(); session.Dispose(); store.Dispose(); };
         TargetBox.Text = store.Get("last-ssh-target") ?? "";
         if (store.Get("ssh-list:" + TargetBox.Text) is string list) SetServers(Wire.Read<DockerReport>(list));
         else if (store.Get("docker-report:" + TargetBox.Text) is string report) SetServers(Wire.Read<DockerReport>(report));
@@ -43,11 +48,14 @@ public partial class MainWindow : Window
     private void Status(string text) { if (!closed) StatusText.Text = text; }
     private void SetBusy(bool busy)
     {
-        ConnectButton.IsEnabled = !busy;
-        ListButton.IsEnabled = !busy;
-        TargetBox.IsEnabled = ContainerBox.IsEnabled = !busy;
+        mainBusy = busy;
+        ConnectButton.IsEnabled = !busy && !chatSending;
+        ListButton.IsEnabled = !busy && !chatSending;
+        TargetBox.IsEnabled = ContainerBox.IsEnabled = !busy && !chatSending;
+        HistoryButton.IsEnabled = DockerButton.IsEnabled = !chatSending;
         RefreshButton.IsEnabled = live && !busy;
         DisconnectButton.IsEnabled = live || busy;
+        UpdateChatControls();
     }
     private void SetServers(DockerReport report)
     {
@@ -58,6 +66,7 @@ public partial class MainWindow : Window
     private void LoadProfile(SshProfile next)
     {
         var changed = profile != next;
+        if (changed && profile != null) chatDrafts[profile.Key] = ChatInput.Text;
         profile = next;
         TargetBox.Text = next.Target;
         server = store.Get("server:" + next.Key) is string json ? Wire.Read<ServerState>(json) : null;
@@ -67,6 +76,7 @@ public partial class MainWindow : Window
         ContainerBox.ItemsSource = list;
         ContainerBox.SelectedItem = list.First(s => s.Container == next.Container);
         players = store.Players(next.Key);
+        if (changed) LoadChat(next);
         if (changed)
         {
             bindingRoster = true;
@@ -79,8 +89,10 @@ public partial class MainWindow : Window
     }
     private void Disconnect()
     {
+        chatTimer.Stop();
         generation++; timer.Stop(); session.Cancel(); session.Dispose(); session = new();
         live = false; presenceAvailable = false; SetBusy(false); BindRoster(); ShowSelectedInventory();
+        if (chatReady) ChatStateText.Text = "更新停止 • 取得済みの履歴";
     }
     private async void List_Click(object sender, RoutedEventArgs e)
     {
@@ -141,6 +153,7 @@ public partial class MainWindow : Window
             store.Put("ssh-profiles", Wire.Write(profiles)); store.Put("last-ssh-profile", Wire.Write(next)); store.Put("last-ssh-target", next.Target);
             Status("SSH 同期 " + Time(server.CapturedAt) + " • 30 秒ごとに更新" + mapWarning + (snapshot.Warning.Length > 0 ? "\n" + snapshot.Warning : ""));
             timer.Start();
+            StartChat();
         }
         catch (Exception ex)
         {

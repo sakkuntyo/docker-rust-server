@@ -32,6 +32,13 @@ internal static class Program
                 LiveSshCheck(new SshProfile(args[2], args[3]));
                 return 0;
             }
+            if (args.Length == 4 && args[1] == "--live-chat")
+            {
+                var chat = DockerSsh.ReadChatAsync(new SshProfile(args[2], args[3])).GetAwaiter().GetResult();
+                Check(chat.Messages.Count <= 200 && DateTimeOffset.TryParse(chat.CheckedAt, out _), "actual SSH reads bounded chat history");
+                Console.WriteLine($"Chat entries: {chat.Messages.Count}; channels: {string.Join(",", chat.Messages.Select(m => m.Channel).Distinct())}");
+                return 0;
+            }
             if (args.Length == 3 && args[1] == "--live-overview")
             {
                 var report = DockerSsh.ReadOverviewAsync(args[2]).GetAwaiter().GetResult();
@@ -376,6 +383,7 @@ internal static class Program
             overview.Close();
         }
         HistoryChecks();
+        ChatChecks();
         window.Close();
     }
     private static void HistoryChecks()
@@ -418,6 +426,61 @@ internal static class Program
         Check(requests.Count == 2 && !history.ContextMenu.IsOpen && ((Button)window.FindName("DisconnectButton")).IsEnabled, "choosing the current history entry refreshes it and enables update controls");
         fail = true; Select(first);
         Check(requests.Last() == first && ((TextBlock)window.FindName("StatusText")).Text.Contains("SSH test unavailable") && ((TextBlock)window.FindName("ServerTitle")).Text == "First server" && ((ListBox)window.FindName("PlayerList")).Items.Count == 1, "failed history reconnection reports its reason and retains that server's cached roster");
+        window.Close();
+    }
+    private static void ChatChecks()
+    {
+        var fixture = Path.Combine(root, "chat-fixture"); Directory.CreateDirectory(fixture);
+        var profile = new SshProfile("admin@chat.invalid", "rust-chat");
+        var now = DateTimeOffset.UtcNow;
+        var snapshot = new ChatSnapshot { CheckedAt = now.ToString("O"), Messages = [
+            new ChatMessage { Channel = 0, Time = now.ToUnixTimeSeconds(), Username = "日本語の名前", Message = "こんにちは 🦀 <b>文字として表示</b>" },
+            new ChatMessage { Channel = 1, Time = now.ToUnixTimeSeconds(), Username = "Team", Message = "チームの発言" },
+            new ChatMessage { Channel = 2, Time = now.ToUnixTimeSeconds(), Username = "SERVER", Message = "サーバーからのお知らせ" }
+        ] };
+        using (var db = new Store(Path.Combine(fixture, "monitor.sqlite3"))) db.Put("last-ssh-profile", Wire.Write(profile));
+        var sends = new List<(SshProfile Profile, string Message)>();
+        var pending = new TaskCompletionSource<ChatSendResult>(); var readFail = false;
+        var window = new MainWindow(fixture,
+            (_, _) => Task.FromResult(new SshServerSnapshot { Server = new ServerState { Protocol = 1, Name = "チャット検証サーバー", WipeId = "test", CapturedAt = now.ToString("O") } }),
+            (_, _) => readFail ? Task.FromException<ChatSnapshot>(new IOException("test failure")) : Task.FromResult(snapshot),
+            (destination, message, _) => { sends.Add((destination, message)); return pending.Task; });
+        Task Invoke(string method) => (Task)typeof(MainWindow).GetMethod(method, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.Invoke(window, null)!;
+        var input = (TextBox)window.FindName("ChatInput"); var send = (Button)window.FindName("ChatSend");
+        Check(!input.IsEnabled && !send.IsEnabled, "cached server data cannot send chat");
+        ((Button)window.FindName("ConnectButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        Invoke("RefreshChatAsync").GetAwaiter().GetResult();
+        var messages = (ItemsControl)window.FindName("ChatMessages");
+        Check(messages.Items.Count == 2 && messages.Items.Cast<ChatMessage>().All(m => m.Channel is 0 or 2), "global/server filter separates team messages");
+        ((CheckBox)window.FindName("ChatGlobalOnly")).IsChecked = false;
+        Invoke("RefreshChatAsync").GetAwaiter().GetResult();
+        Check(messages.Items.Count == 3, "polling replaces the tail without duplicating repeated history");
+        var content = (FrameworkElement)window.Content;
+        content.Measure(new Size(1392, 784)); content.Arrange(new Rect(0, 0, 1392, 784)); content.UpdateLayout();
+        var height = ((Grid)window.FindName("MapArea")).ActualHeight;
+        ((Button)window.FindName("ChatFold")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); content.UpdateLayout();
+        Check(((Grid)window.FindName("ChatBody")).Visibility == Visibility.Collapsed && ((Grid)window.FindName("MapArea")).ActualHeight == height, "folding chat preserves the full map viewport");
+        ((CheckBox)window.FindName("ChatVisible")).IsChecked = false; content.UpdateLayout();
+        Check(((Border)window.FindName("ChatOverlay")).Visibility == Visibility.Collapsed && ((Grid)window.FindName("MapArea")).ActualHeight == height, "chat can be fully hidden without resizing the map");
+        ((CheckBox)window.FindName("ChatVisible")).IsChecked = true;
+        ((Button)window.FindName("ChatFold")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        input.Text = "日本語の発言 \"引用\" ; quit";
+        var sending = Invoke("SendChatAsync");
+        Invoke("SendChatAsync").GetAwaiter().GetResult();
+        Check(sends.Count == 1 && sends[0] == (profile, input.Text) && !((Button)window.FindName("HistoryButton")).IsEnabled && !((Button)window.FindName("DockerButton")).IsEnabled, "pending send captures the displayed server and prevents double sends and server switching");
+        pending.SetResult(new ChatSendResult { Accepted = false }); sending.GetAwaiter().GetResult();
+        Check(input.Text.Length > 0 && ((TextBlock)window.FindName("ChatSendStatus")).Text.Contains("再送する前"), "unknown send outcome retains the draft and never auto-retries");
+        pending = new TaskCompletionSource<ChatSendResult>(); pending.SetResult(new ChatSendResult { Accepted = true });
+        Invoke("SendChatAsync").GetAwaiter().GetResult();
+        Check(sends.Count == 2 && input.Text == "" && ((TextBlock)window.FindName("ChatSendStatus")).Text == "送信しました", "an acknowledged explicit send clears the draft");
+        readFail = true; Invoke("RefreshChatAsync").GetAwaiter().GetResult();
+        Check(messages.Items.Count == 3 && ((TextBlock)window.FindName("ChatStateText")).Text.Contains("取得待ち"), "chat read failure keeps the visible history");
+        try { ChatText.Validate("test\nquit"); Check(false, "chat newline"); }
+        catch (ArgumentException) { Check(true, "chat rejects control characters before dispatch"); }
+        content.UpdateLayout();
+        var rendered = new RenderTargetBitmap(1440, 832, 96, 96, PixelFormats.Pbgra32); rendered.Render(content);
+        var png = new PngBitmapEncoder(); png.Frames.Add(BitmapFrame.Create(rendered));
+        using (var file = File.Create(Path.Combine(root, "chat-preview.png"))) png.Save(file);
         window.Close();
     }
 }

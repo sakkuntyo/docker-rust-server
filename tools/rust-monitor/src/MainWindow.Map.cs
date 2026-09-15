@@ -84,7 +84,11 @@ public partial class MainWindow
         if (PlayerList.SelectedItem != null) PlayerList.ScrollIntoView(PlayerList.SelectedItem);
         e.Handled = true;
     }
-    private void MapArea_SizeChanged(object sender, SizeChangedEventArgs e) => UpdateMapLayout();
+    private void MapArea_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        UpdateMapLayout();
+        if (ChatBody != null) ChatBody.Height = Math.Clamp(MapArea.ActualHeight * .53, 150, 300);
+    }
     private void MapNames_Changed(object sender, RoutedEventArgs e) => UpdateMapLayout();
     private void ZoomMap(double factor, Point? anchor = null)
     {
