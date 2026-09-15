@@ -3,8 +3,10 @@ import io
 import json
 from pathlib import Path
 import unittest
+import sys
 from unittest.mock import patch
 
+sys.path.insert(0, str(Path(__file__).parent.parent / 'collector'))
 spec = importlib.util.spec_from_file_location("docker_status", Path(__file__).parent.parent / "collector" / "docker_status.py")
 collector = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(collector)
@@ -135,7 +137,7 @@ class DockerCollectorTests(unittest.TestCase):
     def test_ssh_server_includes_saved_offline_inventory_without_plugin(self):
         saved = {'Created': 1789301000, 'SavedAt': 1789303000, 'SaveWipeId': 'fixture',
                  'Players': {'76561198000000003': {'Name': 'Sleeper', 'Items': [], 'Position': {'X': 0, 'Y': 7, 'Z': -500}}}}
-        with patch.object(collector, 'docker', return_value=json.dumps(self.raw())), patch.object(collector, 'read_saved_players', return_value=saved, create=True):
+        with patch.object(collector, 'docker', return_value=json.dumps(self.raw())), patch.object(collector, 'read_ip_route', return_value={}), patch.object(collector, 'read_saved_players', return_value=saved, create=True):
             result = collector.read_server('rust-test')
         self.assertEqual(len(result['Players']), 3)
         self.assertFalse(result['Inventories'][0]['Current'])

@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.IO;
+using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -52,10 +53,35 @@ public static class DockerSsh
     public static bool ValidContainer(string container) => Regex.IsMatch(container, @"\Arust-[A-Za-z0-9][A-Za-z0-9_.-]*\z");
     public static Task<DockerReport> ReadOverviewAsync(string target, CancellationToken cancellation = default) => ReadAsync<DockerReport>(target, new { mode = "overview" }, cancellation);
     public static Task<DockerReport> ListServersAsync(string target, CancellationToken cancellation = default) => ReadAsync<DockerReport>(target, new { mode = "list" }, cancellation);
-    public static Task<SshServerSnapshot> ReadServerAsync(SshProfile profile, CancellationToken cancellation = default)
+    public static async Task<SshServerSnapshot> ReadServerAsync(SshProfile profile, CancellationToken cancellation = default)
     {
         if (!ValidContainer(profile.Container)) throw new ArgumentException("一覧から Rust コンテナを選択してください。");
-        return ReadAsync<SshServerSnapshot>(profile.Target, new { mode = "server", container = profile.Container }, cancellation);
+        var snapshot = await ReadAsync<SshServerSnapshot>(profile.Target, new { mode = "server", container = profile.Container }, cancellation);
+        var online = snapshot.Players.Where(p => p.Online).ToList();
+        if (!snapshot.PresenceAvailable || online.Count == 0) return snapshot;
+        try
+        {
+            var route = snapshot.IpRoute;
+            if (route.Reason.Length > 0) throw new IOException(route.Reason);
+            if (Uri.CheckHostName(route.Host) != UriHostNameType.Dns || !Regex.IsMatch(route.User, @"\A[A-Za-z0-9_][A-Za-z0-9_.-]*\z") ||
+                route.GamePort is < 1 or > 65535 || route.ServerIps.Count is < 1 or > 8 || route.ServerIps.Any(ip => !IPAddress.TryParse(ip, out _)))
+                throw new IOException("中継サーバーの接続情報を確認できません");
+            var validPeers = online.Where(p => IPEndPoint.TryParse(p.Address, out var peer) && route.GatewayIps.Contains(peer.Address.ToString())).Select(p => p.Address).Distinct().ToArray();
+            if (validPeers.Length == 0) throw new IOException("プレイヤーの接続先と使用中の中継サーバーが一致しません");
+            using var lookup = CancellationTokenSource.CreateLinkedTokenSource(cancellation); lookup.CancelAfter(TimeSpan.FromSeconds(30));
+            var connections = await ReadAsync<ConnectionReport>(route.User + "@" + route.Host,
+                new { mode = "connections", gamePort = route.GamePort, serverIps = route.ServerIps, peers = validPeers }, lookup.Token);
+            if (connections.Status != "ok") throw new IOException(connections.Status == "tool_missing" ? "中継サーバーに conntrack がありません" : "中継サーバーの conntrack を読み取れません");
+            var confirmation = await ReadAsync<PresenceSnapshot>(profile.Target, new { mode = "presence", container = profile.Container }, lookup.Token);
+            IpAttribution.Apply(snapshot, connections, confirmation);
+        }
+        catch (Exception ex) when (ex is IOException or InvalidDataException or ArgumentException or OperationCanceledException)
+        {
+            cancellation.ThrowIfCancellationRequested();
+            foreach (var player in online) { player.IpVerified = false; player.IpReason = ex is OperationCanceledException ? "IP の照合が時間内に完了しませんでした" : ex.Message; }
+            snapshot.Warning = string.Join(" / ", new[] { snapshot.Warning, "本IPの照合待ち（メンバーのIP欄で詳細を確認）" }.Where(s => s.Length > 0));
+        }
+        return snapshot;
     }
     public static Task<SshMap> ReadMapAsync(SshProfile profile, string wipe, CancellationToken cancellation = default)
     {
@@ -69,6 +95,7 @@ public static class DockerSsh
         var requestData = Convert.ToBase64String(Encoding.UTF8.GetBytes(Wire.Write(request)));
         var script = "import json, base64\nREQUEST = json.loads(base64.b64decode('" + requestData + "'))\n"
             + await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "collector", "save_reader.py"), cancellation)
+            + "\n" + await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "collector", "conntrack_reader.py"), cancellation)
             + "\n" + await File.ReadAllTextAsync(source, cancellation);
         var start = new ProcessStartInfo
         {

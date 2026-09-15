@@ -39,7 +39,7 @@ internal static class Program
                 Check(report.Servers.Count > 0 && report.Servers.All(s => s.Capacity.HasValue && s.Name.Length > 0), "desktop SSH transport reads aggregate metadata even with partial startup results");
                 Console.WriteLine(Wire.Write(report)); return 0;
             }
-            DatabaseChecks(); SshSnapshotChecks(); MapChecks(); RconChecks().GetAwaiter().GetResult(); RenderChecks(args.Length > 1 ? args[1] : null); Console.WriteLine($"{checks} checks passed."); return 0;
+            DatabaseChecks(); SshSnapshotChecks(); MapChecks(); IpChecks(); RconChecks().GetAwaiter().GetResult(); RenderChecks(args.Length > 1 ? args[1] : null); Console.WriteLine($"{checks} checks passed."); return 0;
         }
         catch (Exception ex) { Console.Error.WriteLine(ex); return 1; }
     }
@@ -121,6 +121,42 @@ internal static class Program
         map.ZoomAt(100, new Point(300, 200)); Check(map.Zoom == 16, "zoom is bounded to a usable maximum");
         map.Reset(); Check(map.Zoom == 1 && map.Center == new Point(.5, .5), "reset restores the whole map");
     }
+    private static void IpChecks()
+    {
+        var now = DateTimeOffset.UtcNow.ToString("O");
+        const string id = "76561198000000001";
+        var player = new PlayerRecord { SteamId = id, WipeId = "test", Online = true, ObservedAt = now, Address = "100.64.0.1:40000", ConnectionSeconds = 100 };
+        var snapshot = new SshServerSnapshot { Server = new ServerState { Protocol = 1, WipeId = "test" }, Players = [player] };
+        var connections = new ConnectionReport { CheckedAt = now, Status = "ok", Matches = [new ConnectionMatch { Address = player.Address, Ip = "203.0.113.10", Status = "verified" }] };
+        var presence = new PresenceSnapshot { CheckedAt = DateTimeOffset.Parse(now).AddSeconds(2).ToString("O"), PresenceAvailable = true, Players = [new PlayerRecord { SteamId = id, Address = player.Address, ConnectionSeconds = 102 }] };
+        IpAttribution.Apply(snapshot, connections, presence);
+        Check(player.IpVerified && player.RealIp == "203.0.113.10" && player.IpCheckedAt == now, "conntrack IP is accepted only after the same player session is confirmed");
+        var row = new MainWindow.PlayerRow(player, true);
+        Check(row.SteamIdLabel == "Steam ID: " + id && row.CurrentIp && row.IpText == "本IP: 203.0.113.10", "current IP and Steam ID have explicit labels");
+        Check(new MainWindow.PlayerRow(player, false).IpText.Contains("最終確認"), "cached IP is clearly historical after disconnect");
+        using var db = new Store(Path.Combine(root, "ip-checks.sqlite3"));
+        var profile = new SshProfile("admin@demo.invalid", "rust-test");
+        db.SaveSshSnapshot(profile, snapshot);
+        presence.Players[0].SteamId = "76561198000000002";
+        IpAttribution.Apply(snapshot, connections, presence);
+        Check(!player.IpVerified, "a translated port reused by another Steam ID never attributes its IP to the old player");
+        presence.Players[0].SteamId = id; presence.Players[0].ConnectionSeconds = 1;
+        IpAttribution.Apply(snapshot, connections, presence);
+        Check(!player.IpVerified, "same Steam ID reconnecting creates a different session and is not attributed using an earlier snapshot");
+        presence.Players[0].ConnectionSeconds = 102; presence.CheckedAt = DateTimeOffset.Parse(now).AddSeconds(30).ToString("O");
+        IpAttribution.Apply(snapshot, connections, presence);
+        Check(!player.IpVerified, "connection uptime must advance with elapsed time even if a reconnected session exceeds the previous uptime");
+        presence.CheckedAt = DateTimeOffset.Parse(now).AddSeconds(2).ToString("O");
+        presence.Players[0].ConnectionSeconds = 102; connections.Matches[0].Status = "ambiguous";
+        IpAttribution.Apply(snapshot, connections, presence);
+        Check(!player.IpVerified && player.IpReason.Contains("複数"), "ambiguous conntrack matches have an explicit reason");
+        var offline = new SshServerSnapshot { Server = snapshot.Server, PresenceAvailable = true, Players = [new PlayerRecord { SteamId = id, WipeId = "test", ObservedAt = now }] };
+        db.SaveSshSnapshot(profile, offline);
+        var saved = db.Players(profile.Key).Single();
+        Check(saved.RealIp == "203.0.113.10" && saved.IpCheckedAt == now && !saved.IpVerified, "offline player retains the last verified IP and its original timestamp");
+        Check(new MainWindow.PlayerRow(saved, true).IpText.Contains("最終確認"), "offline historical IP is not shown as current");
+        Check(db.Players(new SshProfile("admin@other.invalid", "rust-test").Key).Count == 0, "IP records remain isolated by server");
+    }
     private static void LiveSshCheck(SshProfile profile)
     {
         using (var db = new Store(Path.Combine(root, "monitor.sqlite3")))
@@ -149,6 +185,9 @@ internal static class Program
         {
             var state = Wire.Read<ServerState>(db.Get("server:" + profile.Key)!);
             var available = db.Players(profile.Key).Select(p => db.Inventory(profile.Key, state.WipeId, p.SteamId)).Where(i => i != null).ToList();
+            var onlinePlayers = db.Players(profile.Key).Where(p => p.Online).ToList();
+            Console.WriteLine($"Online={onlinePlayers.Count}; ConntrackVerified={onlinePlayers.Count(p => p.IpVerified)}");
+            Check(onlinePlayers.All(p => p.IpVerified && System.Net.IPAddress.TryParse(p.RealIp, out _)), "actual online players receive an IP verified against gateway conntrack");
             Console.WriteLine($"Members={list.Items.Count}; Inventories={available.Count}; Items={available.Sum(i => i!.Items.Count)}; SaveAt={state.SaveAt}");
             Check(list.Items.Count > 0 && available.Count > 0, "actual SSH reads and persists players and saved inventories");
             var selected = available.FirstOrDefault(i => i!.Items.Count > 0)?.SteamId;
@@ -300,6 +339,7 @@ internal static class Program
         using (var file = File.Create(Path.Combine(root, "ui-preview.png"))) encoder.Save(file);
         Check(list.Items.Count == 2, "WPF loads persisted roster without a connection");
         Check(((TextBlock)window.FindName("InventoryStatus")).Text.Contains("最終取得"), "WPF labels cached inventory as historical");
+        Check(((TextBlock)window.FindName("PlayerDetails")).Text.StartsWith("Steam ID: ") && ((TextBlock)window.FindName("PlayerDetails")).Text.Contains("本IP: "), "selected player details label Steam ID and show the IP immediately below it");
         var markers = (Canvas)window.FindName("MapMarkers");
         Check(markers.Children.OfType<Button>().Count() == 2, "WPF draws online and offline saved player coordinates");
         markers.Children.OfType<Button>().First(b => (string)b.Tag == roster[1].SteamId).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));

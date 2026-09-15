@@ -49,6 +49,12 @@ public sealed class PlayerRecord
     public double? Z { get; set; }
     public string PositionAt { get; set; } = "";
     public string PositionReason { get; set; } = "";
+    public string Address { get; set; } = "";
+    public double? ConnectionSeconds { get; set; }
+    public string RealIp { get; set; } = "";
+    public string IpCheckedAt { get; set; } = "";
+    public bool IpVerified { get; set; }
+    public string IpReason { get; set; } = "";
 }
 
 public sealed class PlayerPage
@@ -106,6 +112,38 @@ public sealed class SshServerSnapshot
     public bool PresenceAvailable { get; set; }
     public bool HistoryAvailable { get; set; }
     public string Warning { get; set; } = "";
+    public IpRoute IpRoute { get; set; } = new();
+}
+
+public sealed class IpRoute
+{
+    public string Host { get; set; } = "";
+    public string User { get; set; } = "";
+    public int GamePort { get; set; }
+    public List<string> ServerIps { get; set; } = [];
+    public List<string> GatewayIps { get; set; } = [];
+    public string Reason { get; set; } = "";
+}
+
+public sealed class ConnectionReport
+{
+    public string CheckedAt { get; set; } = "";
+    public string Status { get; set; } = "";
+    public List<ConnectionMatch> Matches { get; set; } = [];
+}
+
+public sealed class ConnectionMatch
+{
+    public string Address { get; set; } = "";
+    public string Ip { get; set; } = "";
+    public string Status { get; set; } = "";
+}
+
+public sealed class PresenceSnapshot
+{
+    public string CheckedAt { get; set; } = "";
+    public bool PresenceAvailable { get; set; }
+    public List<PlayerRecord> Players { get; set; } = [];
 }
 
 public sealed class SshMap

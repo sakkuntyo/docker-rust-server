@@ -49,11 +49,13 @@ public sealed class Store : IDisposable
             {
                 if (DateTimeOffset.TryParse(old.FirstSeen, out var previousFirst) && (!DateTimeOffset.TryParse(current.FirstSeen, out var first) || previousFirst < first)) current.FirstSeen = old.FirstSeen;
                 if (current.LastSeen.Length == 0) current.LastSeen = old.LastSeen;
+                if (!current.IpVerified) { current.RealIp = old.RealIp; current.IpCheckedAt = old.IpCheckedAt; }
             }
             else
             {
                 old.Online = false; old.BodyAvailable = false; old.X = null; old.Y = null; old.Z = null;
                 old.PositionAt = ""; old.PositionReason = "最新セーブに本人の座標がありません";
+                old.IpVerified = false; old.IpReason = ""; old.Address = ""; old.ConnectionSeconds = null;
                 old.ObservedAt = snapshot.PresenceAvailable ? snapshot.Server.CapturedAt : "";
                 incoming[old.SteamId] = old;
             }

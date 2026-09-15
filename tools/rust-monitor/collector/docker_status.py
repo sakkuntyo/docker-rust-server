@@ -12,6 +12,9 @@ import subprocess
 import sys
 from urllib.parse import urlparse
 
+if 'read_connections' not in globals() and '__file__' in globals() and __file__ != '<stdin>':
+    from conntrack_reader import read_connections, read_ip_route, read_presence
+
 UTC = dt.timezone.utc
 REQUEST = globals().get("REQUEST", {"mode": "overview"})
 CONTAINER = re.compile(r"rust-[a-zA-Z0-9][a-zA-Z0-9_.-]*\Z")
@@ -81,7 +84,7 @@ end_after=$(cat /root/rustserver/server/wipeunixtime 2>/dev/null || true)
 if [ "$end" != "$end_after" ]; then
   end="$end_after"; created=0; history=null; history_status=season_changed; current=null; rcon_status=season_changed; maprow=''
 fi
-jq -n --arg name "${ENV_SERVERNAME:-}" --arg rcon_port "${ENV_RCON_PORT:-}" --arg max "${ENV_MAXPLAYERS:-}" --arg cycle "${ENV_WIPE_CYCLE:-}" --arg end "$end" --arg created "$created" --arg maprow "$maprow" --arg size "${ENV_WORLDSIZE:-0}" --arg seed "$(cat /root/rustserver/server/seed 2>/dev/null || echo 0)" --arg rcon_status "$rcon_status" --arg history_status "$history_status" --argjson current "$current" --argjson history "$history" '{name:$name,rcon_port:$rcon_port,max:$max,cycle:$cycle,end:$end,created:$created,maprow:$maprow,size:$size,seed:$seed,rcon_status:$rcon_status,history_status:$history_status,current:(if $current == null then null else [$current[] | {SteamId:(.SteamID|tostring),Name:.DisplayName}] end),history:$history}'
+jq -n --arg name "${ENV_SERVERNAME:-}" --arg rcon_port "${ENV_RCON_PORT:-}" --arg max "${ENV_MAXPLAYERS:-}" --arg cycle "${ENV_WIPE_CYCLE:-}" --arg end "$end" --arg created "$created" --arg maprow "$maprow" --arg size "${ENV_WORLDSIZE:-0}" --arg seed "$(cat /root/rustserver/server/seed 2>/dev/null || echo 0)" --arg rcon_status "$rcon_status" --arg history_status "$history_status" --argjson current "$current" --argjson history "$history" '{name:$name,rcon_port:$rcon_port,max:$max,cycle:$cycle,end:$end,created:$created,maprow:$maprow,size:$size,seed:$seed,rcon_status:$rcon_status,history_status:$history_status,current:(if $current == null then null else [$current[] | {SteamId:(.SteamID|tostring),Name:.DisplayName,Address:.Address,ConnectionSeconds:.ConnectedSeconds}] end),history:$history}'
 '''
 
 
@@ -131,7 +134,8 @@ def collect(name, include_logs):
     for record in raw["current"] or []:
         steamid = record["SteamId"]
         info = known.setdefault(steamid, {"SteamId": steamid, "FirstSeen": now, "WipeId": wipe, "BodyAvailable": False})
-        info.update(Name=record["Name"], Online=True, LastSeen=now, ObservedAt=now)
+        info.update(Name=record["Name"], Online=True, LastSeen=now, ObservedAt=now,
+                    Address=record.get('Address') or '', ConnectionSeconds=record.get('ConnectionSeconds'))
     map_url = ""
     map_at = ""
     if raw["maprow"]:
@@ -229,6 +233,7 @@ def read_server(name):
                        'Size': report['Size'] or 0, 'CapturedAt': report['CheckedAt'],
                        'MapAvailable': bool(report['MapUrl']), 'SaveAt': save_at},
             'Players': list(known.values()), 'Inventories': inventories, 'Warning': warning,
+            'IpRoute': read_ip_route(name, docker) if any(p.get('Online') for p in known.values()) else {},
             'PresenceAvailable': report['RconStatus'] == 'ok', 'HistoryAvailable': report['HistoryStatus'] == 'ok'}
 
 
@@ -258,15 +263,18 @@ def read_map(name, expected_wipe):
 
 def main():
     mode = REQUEST.get("mode", "overview")
-    if mode not in ("overview", "list", "server", "map"):
+    if mode not in ("overview", "list", "server", "map", "connections", "presence"):
         raise ValueError("Unsupported mode")
+    if mode == 'connections':
+        print(json.dumps(read_connections(REQUEST), ensure_ascii=False))
+        return
     selected = REQUEST.get("container", "")
     if selected and not CONTAINER.fullmatch(selected):
         raise ValueError("Invalid container")
-    if mode in ('server', 'map'):
+    if mode in ('server', 'map', 'presence'):
         if not selected:
             raise ValueError('Container required')
-        result = read_server(selected) if mode == 'server' else read_map(selected, REQUEST.get('wipe', ''))
+        result = read_server(selected) if mode == 'server' else read_presence(selected, docker) if mode == 'presence' else read_map(selected, REQUEST.get('wipe', ''))
         print(json.dumps(result, ensure_ascii=False))
         return
     names = [selected] if selected else [n for n in docker("ps", "--format", "{{.Names}}").splitlines() if CONTAINER.fullmatch(n)]

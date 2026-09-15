@@ -160,7 +160,7 @@ public partial class MainWindow : Window
         if (PlayerList.SelectedItem is not PlayerRow row || profile == null)
         { InventoryName.Text = "メンバーを選択"; PlayerDetails.Text = ""; ShowInventory(null); return; }
         InventoryName.Text = row.Name;
-        PlayerDetails.Text = row.SteamId + "\n初回確認 " + Time(row.Record.FirstSeen) + "\n最終オンライン確認 " + Time(row.Record.LastSeen);
+        PlayerDetails.Text = row.SteamIdLabel + "\n" + row.IpDetails + "\n初回確認 " + Time(row.Record.FirstSeen) + "\n最終オンライン確認 " + Time(row.Record.LastSeen);
         PlayerDetails.Text += row.Record.WipeId == server?.WipeId && row.Record.X != null && row.Record.Z != null && row.Record.PositionAt.Length > 0
             ? "\n" + Coordinates(row.Record) + "\n座標のセーブ " + Time(row.Record.PositionAt)
             : "\n座標：" + (row.Record.PositionReason.Length > 0 ? row.Record.PositionReason : "最新セーブに記録がありません");
@@ -263,6 +263,12 @@ public partial class MainWindow : Window
         public PlayerRecord Record => record;
         public string Name => record.Name;
         public string SteamId => record.SteamId;
+        public string SteamIdLabel => "Steam ID: " + record.SteamId;
+        private bool HasIp => System.Net.IPAddress.TryParse(record.RealIp, out _) && DateTimeOffset.TryParse(record.IpCheckedAt, out _);
+        public bool CurrentIp => IsOnline && record.IpVerified && DateTimeOffset.TryParse(record.IpCheckedAt, out var time) && Math.Abs((DateTimeOffset.UtcNow - time).TotalMinutes) < 3;
+        public string IpText => "本IP: " + (HasIp ? record.RealIp + (CurrentIp ? "" : "（最終確認）") : "未確認");
+        public string IpDetails => IpText + (HasIp ? "\nconntrack 確認 " + Time(record.IpCheckedAt) : "") +
+            (IsOnline && !CurrentIp && record.IpReason.Length > 0 ? "\n" + record.IpReason : !HasIp && !IsOnline ? "\n接続中に確認できたIPを記録します。" : "");
         public bool Fresh => connected && DateTimeOffset.TryParse(record.ObservedAt, out var time) && DateTimeOffset.UtcNow - time < TimeSpan.FromMinutes(3);
         public bool IsOnline => Fresh && record.Online;
         public string State => !Fresh ? "未確認" : record.Online ? "オンライン" : "オフライン";
