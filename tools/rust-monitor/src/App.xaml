@@ -2,6 +2,22 @@
   <Application.Resources>
     <SolidColorBrush x:Key="Panel" Color="#19232C"/>
     <SolidColorBrush x:Key="Muted" Color="#9DADB9"/>
+    <Style TargetType="ToolTip">
+      <Style.Resources>
+        <Style TargetType="TextBlock">
+          <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type ToolTip}}}"/>
+          <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+      </Style.Resources>
+      <Setter Property="Background" Value="#253340"/><Setter Property="Foreground" Value="#E7EEF3"/>
+      <Setter Property="BorderBrush" Value="#7FA8C0"/><Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="Padding" Value="10,7"/><Setter Property="MaxWidth" Value="460"/><Setter Property="FontSize" Value="12"/>
+      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ToolTip">
+        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5" Padding="{TemplateBinding Padding}">
+          <ContentPresenter RecognizesAccessKey="False"/>
+        </Border>
+      </ControlTemplate></Setter.Value></Setter>
+    </Style>
     <Style x:Key="HistoryMenuStyle" TargetType="ContextMenu">
       <Setter Property="Background" Value="#19232C"/><Setter Property="Foreground" Value="#E7EEF3"/>
       <Setter Property="MinWidth" Value="360"/><Setter Property="MaxWidth" Value="460"/>

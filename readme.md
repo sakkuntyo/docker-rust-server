@@ -14,7 +14,7 @@ Rust サーバーを管理するために生まれたコンテナです。
 
 [Rust Monitor](tools/rust-monitor/README.md) は、SSH と docker exec でサーバー人数、メンバー、マップ、本人の座標・所持品を確認する Windows アプリです。マップの拡大・縮小とプレイヤー選択に対応し、追加のサーバープラグインは不要です。座標・所持品は最終セーブ時点の記録を表示します。
 
-[Rust Monitor 0.2.3 の ZIP をダウンロード](https://github.com/sakkuntyo/docker-rust-server/releases/download/1.1.9/RustMonitor-0.2.3-windows.zip)。Steam IDと、conntrackで照合した本IPを表示します。「接続履歴」からサーバーを選んで再接続できます。Windows 10/11 と .NET 10 Desktop Runtime が必要です。
+[Rust Monitor 0.2.4 の ZIP をダウンロード](https://github.com/sakkuntyo/docker-rust-server/releases/download/1.1.10/RustMonitor-0.2.4-windows.zip)。Steam IDと、conntrackで照合した本IPを表示します。「接続履歴」からサーバーを選んで再接続できます。Windows 10/11 と .NET 10 Desktop Runtime が必要です。
 
 # 使い方
 
