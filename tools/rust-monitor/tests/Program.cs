@@ -183,13 +183,13 @@ internal static partial class Program
         var poll = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(100) };
         poll.Tick += (_, _) =>
         {
-            var status = ((TextBlock)window.FindName("StatusText")).Text;
+            var status = ((TextBox)window.FindName("StatusText")).Text;
             if (status.StartsWith("SSH 同期") || status.StartsWith("更新できませんでした") || DateTime.UtcNow > deadline)
                 frame.Continue = false;
         };
         app.Dispatcher.BeginInvoke(() => ((Button)window.FindName("ConnectButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent)));
         poll.Start(); System.Windows.Threading.Dispatcher.PushFrame(frame); poll.Stop();
-        var statusText = ((TextBlock)window.FindName("StatusText")).Text;
+        var statusText = ((TextBox)window.FindName("StatusText")).Text;
         Console.WriteLine(statusText);
         Check(statusText.StartsWith("SSH 同期"), "actual SSH button completes synchronization");
         var list = (ListBox)window.FindName("PlayerList");
@@ -209,12 +209,12 @@ internal static partial class Program
         var content = (FrameworkElement)window.Content;
         content.Measure(new Size(1392, 784)); content.Arrange(new Rect(0, 0, 1392, 784)); content.UpdateLayout();
         var markers = (Canvas)window.FindName("MapMarkers");
-        Console.WriteLine(((TextBlock)window.FindName("MapPositionStatus")).Text);
+        Console.WriteLine(((TextBox)window.FindName("MapPositionStatus")).Text);
         Check(markers.Children.OfType<Button>().Any(), "actual saved player coordinates are drawn on the map");
         var marker = markers.Children.OfType<Button>().First();
         var id = marker.Tag as string;
         marker.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-        Check((list.SelectedItem as MainWindow.PlayerRow)?.SteamId == id && ((TextBlock)window.FindName("PlayerDetails")).Text.Contains("X "), "actual map marker selects member coordinates and inventory");
+        Check((list.SelectedItem as MainWindow.PlayerRow)?.SteamId == id && ((TextBox)window.FindName("PlayerDetails")).Text.Contains("X "), "actual map marker selects member coordinates and inventory");
         content.UpdateLayout();
         var rendered = new RenderTargetBitmap(1440, 832, 96, 96, PixelFormats.Pbgra32); rendered.Render(content);
         var png = new PngBitmapEncoder(); png.Frames.Add(BitmapFrame.Create(rendered));
@@ -354,13 +354,14 @@ internal static partial class Program
         var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(image));
         using (var file = File.Create(Path.Combine(root, "ui-preview.png"))) encoder.Save(file);
         InventoryRenderChecks(window);
+        SelectableTextChecks(window);
         Check(list.Items.Count == 2, "WPF loads persisted roster without a connection");
-        Check(((TextBlock)window.FindName("InventoryStatus")).Text.Contains("最終取得"), "WPF labels cached inventory as historical");
-        Check(((TextBlock)window.FindName("PlayerDetails")).Text.StartsWith("Steam ID: ") && ((TextBlock)window.FindName("PlayerDetails")).Text.Contains("本IP: "), "selected player details label Steam ID and show the IP immediately below it");
+        Check(((TextBox)window.FindName("InventoryStatus")).Text.Contains("最終取得"), "WPF labels cached inventory as historical");
+        Check(((TextBox)window.FindName("PlayerDetails")).Text.StartsWith("Steam ID: ") && ((TextBox)window.FindName("PlayerDetails")).Text.Contains("本IP: "), "selected player details label Steam ID and show the IP immediately below it");
         var markers = (Canvas)window.FindName("MapMarkers");
         Check(markers.Children.OfType<Button>().Count() == 2, "WPF draws online and offline saved player coordinates");
         markers.Children.OfType<Button>().First(b => (string)b.Tag == roster[1].SteamId).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-        Check((list.SelectedItem as MainWindow.PlayerRow)?.SteamId == roster[1].SteamId && ((TextBlock)window.FindName("PlayerDetails")).Text.Contains("Z -290.0"), "map marker click selects the correct player and shows coordinates");
+        Check((list.SelectedItem as MainWindow.PlayerRow)?.SteamId == roster[1].SteamId && ((TextBox)window.FindName("PlayerDetails")).Text.Contains("Z -290.0"), "map marker click selects the correct player and shows coordinates");
         var width = ((Image)window.FindName("MapImage")).Width;
         ((Button)window.FindName("MapZoomIn")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
         Check(Math.Abs(((Image)window.FindName("MapImage")).Width / width - 1.5) < .001, "WPF zoom button enlarges the displayed map");
@@ -383,7 +384,7 @@ internal static partial class Program
             ] });
             var overview = new DockerOverviewWindow(db);
             Check(((DataGrid)overview.FindName("ServersGrid")).Items.Count == 3, "WPF Docker overview loads normal, restarting, and wiped servers");
-            Check(((TextBlock)overview.FindName("StatusText")).Text.StartsWith("保存済み"), "WPF Docker overview identifies cached counts");
+            Check(((TextBox)overview.FindName("StatusText")).Text.StartsWith("保存済み"), "WPF Docker overview identifies cached counts");
             var panel = (FrameworkElement)overview.Content;
             panel.Measure(new Size(1212, 664)); panel.Arrange(new Rect(0, 0, 1212, 664)); panel.UpdateLayout();
             Check(((DataGrid)overview.FindName("ServersGrid")).Columns[0].ActualWidth >= 240, "server-name column remains visible during initial layout");
@@ -429,13 +430,13 @@ internal static partial class Program
         ((TextBox)window.FindName("SearchBox")).Text = "no match";
         ((CheckBox)window.FindName("OnlineOnly")).IsChecked = true;
         Select(second);
-        Check(requests.SequenceEqual(new[] { second }) && ((TextBlock)window.FindName("StatusText")).Text.StartsWith("SSH 同期"), "history click starts SSH synchronization for the selected profile");
+        Check(requests.SequenceEqual(new[] { second }) && ((TextBox)window.FindName("StatusText")).Text.StartsWith("SSH 同期"), "history click starts SSH synchronization for the selected profile");
         Check(((TextBox)window.FindName("TargetBox")).Text == second.Target && ((DockerServer)((ComboBox)window.FindName("ContainerBox")).SelectedItem).Name == "Second server", "history changes the host and container even when both hosts use the same container name");
         Check(((ListBox)window.FindName("PlayerList")).Items.Count == 1 && ((TextBox)window.FindName("SearchBox")).Text == "" && ((CheckBox)window.FindName("OnlineOnly")).IsChecked == false, "switching history clears filters that would hide the new roster");
         Select(second);
         Check(requests.Count == 2 && !history.ContextMenu.IsOpen && ((Button)window.FindName("DisconnectButton")).IsEnabled, "choosing the current history entry refreshes it and enables update controls");
         fail = true; Select(first);
-        Check(requests.Last() == first && ((TextBlock)window.FindName("StatusText")).Text.Contains("SSH test unavailable") && ((TextBlock)window.FindName("ServerTitle")).Text == "First server" && ((ListBox)window.FindName("PlayerList")).Items.Count == 1, "failed history reconnection reports its reason and retains that server's cached roster");
+        Check(requests.Last() == first && ((TextBox)window.FindName("StatusText")).Text.Contains("SSH test unavailable") && ((TextBox)window.FindName("ServerTitle")).Text == "First server" && ((ListBox)window.FindName("PlayerList")).Items.Count == 1, "failed history reconnection reports its reason and retains that server's cached roster");
         window.Close();
     }
     private static void ChatChecks()
@@ -479,12 +480,12 @@ internal static partial class Program
         Invoke("SendChatAsync").GetAwaiter().GetResult();
         Check(sends.Count == 1 && sends[0] == (profile, input.Text) && !((Button)window.FindName("HistoryButton")).IsEnabled && !((Button)window.FindName("DockerButton")).IsEnabled, "pending send captures the displayed server and prevents double sends and server switching");
         pending.SetResult(new ChatSendResult { Accepted = false }); sending.GetAwaiter().GetResult();
-        Check(input.Text.Length > 0 && ((TextBlock)window.FindName("ChatSendStatus")).Text.Contains("再送する前"), "unknown send outcome retains the draft and never auto-retries");
+        Check(input.Text.Length > 0 && ((TextBox)window.FindName("ChatSendStatus")).Text.Contains("再送する前"), "unknown send outcome retains the draft and never auto-retries");
         pending = new TaskCompletionSource<ChatSendResult>(); pending.SetResult(new ChatSendResult { Accepted = true });
         Invoke("SendChatAsync").GetAwaiter().GetResult();
-        Check(sends.Count == 2 && input.Text == "" && ((TextBlock)window.FindName("ChatSendStatus")).Text == "送信しました", "an acknowledged explicit send clears the draft");
+        Check(sends.Count == 2 && input.Text == "" && ((TextBox)window.FindName("ChatSendStatus")).Text == "送信しました", "an acknowledged explicit send clears the draft");
         readFail = true; Invoke("RefreshChatAsync").GetAwaiter().GetResult();
-        Check(messages.Items.Count == 3 && ((TextBlock)window.FindName("ChatStateText")).Text.Contains("取得待ち"), "chat read failure keeps the visible history");
+        Check(messages.Items.Count == 3 && ((TextBox)window.FindName("ChatStateText")).Text.Contains("取得待ち"), "chat read failure keeps the visible history");
         try { ChatText.Validate("test\nquit"); Check(false, "chat newline"); }
         catch (ArgumentException) { Check(true, "chat rejects control characters before dispatch"); }
         content.UpdateLayout();

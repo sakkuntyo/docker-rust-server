@@ -140,9 +140,9 @@ internal static partial class Program
         var scroll = (ScrollViewer)window.FindName("InventoryScroll");
         var expandedHeight = scroll.ActualHeight;
         var toggle = (Button)window.FindName("InventoryDetailsToggle");
-        var name = ((TextBlock)window.FindName("InventoryName")).Text;
+        var name = ((TextBox)window.FindName("InventoryName")).Text;
         toggle.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); content.UpdateLayout();
-        Check(scroll.ActualHeight > expandedHeight + 100 && ((TextBlock)window.FindName("InventoryName")).Text == name,
+        Check(scroll.ActualHeight > expandedHeight + 100 && ((TextBox)window.FindName("InventoryName")).Text == name,
             "hiding player information gives the inventory more vertical space while keeping the selected name");
         SaveRender(content, "inventory-collapsed-preview.png", 1872, 1000);
         var restored = new MainWindow(Path.Combine(root, "ui-fixture"));
@@ -157,14 +157,14 @@ internal static partial class Program
         var list = (ListBox)window.FindName("PlayerList"); list.SelectedIndex = 1;
         Check(panel.Children.OfType<Viewbox>().Count() == 0, "a player with no inventory snapshot never appears to have an empty inventory");
         content.UpdateLayout();
-        var notice = (TextBlock)window.FindName("InventoryNotice");
+        var notice = (TextBox)window.FindName("InventoryNotice");
         Check(notice.Visibility == Visibility.Visible && notice.Text.Contains("未取得"), "missing inventory remains explained when player information is hidden");
         list.SelectedIndex = 0;
         content.UpdateLayout();
         Check(scroll.ActualHeight > expandedHeight + 100 && notice.Visibility == Visibility.Collapsed,
             "selecting another recorded player preserves the extra inventory space");
         toggle.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); content.UpdateLayout();
-        Check(Math.Abs(scroll.ActualHeight - expandedHeight) < 1 && ((TextBlock)window.FindName("PlayerDetails")).Text.Contains("Steam ID:"),
+        Check(Math.Abs(scroll.ActualHeight - expandedHeight) < 1 && ((TextBox)window.FindName("PlayerDetails")).Text.Contains("Steam ID:"),
             "showing information again restores the details and original inventory viewport");
         content.Measure(new Size(1392, 784)); content.Arrange(new Rect(0, 0, 1392, 784)); content.UpdateLayout();
     }

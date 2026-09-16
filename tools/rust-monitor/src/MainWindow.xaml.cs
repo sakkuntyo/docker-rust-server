@@ -190,10 +190,11 @@ public partial class MainWindow : Window
         if (PlayerList.SelectedItem is not PlayerRow row || profile == null)
         { InventoryName.Text = "メンバーを選択"; PlayerDetails.Text = ""; ShowInventory(null); return; }
         InventoryName.Text = row.Name;
-        PlayerDetails.Text = row.SteamIdLabel + "\n" + row.IpDetails + "\n初回確認 " + Time(row.Record.FirstSeen) + "\n最終オンライン確認 " + Time(row.Record.LastSeen);
-        PlayerDetails.Text += row.Record.WipeId == server?.WipeId && row.Record.X != null && row.Record.Z != null && row.Record.PositionAt.Length > 0
+        var details = row.SteamIdLabel + "\n" + row.IpDetails + "\n初回確認 " + Time(row.Record.FirstSeen) + "\n最終オンライン確認 " + Time(row.Record.LastSeen);
+        details += row.Record.WipeId == server?.WipeId && row.Record.X != null && row.Record.Z != null && row.Record.PositionAt.Length > 0
             ? "\n" + Coordinates(row.Record) + "\n座標のセーブ " + Time(row.Record.PositionAt)
             : "\n座標：" + (row.Record.PositionReason.Length > 0 ? row.Record.PositionReason : "最新セーブに記録がありません");
+        PlayerDetails.SetDisplayText(details);
         ShowInventory(store.Inventory(profile.Key, server?.WipeId ?? "", row.SteamId));
     }
     private void ShowInventory(InventorySnapshot? snapshot)

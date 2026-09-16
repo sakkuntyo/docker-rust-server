@@ -1,4 +1,4 @@
-<Window x:Class="RustMonitor.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="Rust Monitor" Width="1440" Height="880" MinWidth="1080" MinHeight="700" Background="#101820" FontFamily="Yu Gothic UI, Segoe UI" FontSize="13" WindowStartupLocation="CenterScreen">
+<Window x:Class="RustMonitor.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ui="clr-namespace:RustMonitor.Controls" Title="Rust Monitor" Width="1440" Height="880" MinWidth="1080" MinHeight="700" Background="#101820" FontFamily="Yu Gothic UI, Segoe UI" FontSize="13" WindowStartupLocation="CenterScreen">
   <Grid Margin="24" Background="#101820">
     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
     <DockPanel Margin="0,0,0,22">
@@ -18,20 +18,20 @@
         <Button Grid.Column="3" x:Name="ConnectButton" Content="SSH で接続" Background="#BB633D" Click="Connect_Click" VerticalAlignment="Bottom"/>
       </Grid>
     </Border>
-    <DockPanel Grid.Row="2" Margin="0,0,0,14"><TextBlock x:Name="ServerTitle" Text="サーバーを接続してください" FontSize="18" FontWeight="SemiBold"/><TextBlock x:Name="CountsText" DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{StaticResource Muted}"/></DockPanel>
+    <DockPanel Grid.Row="2" Margin="0,0,0,14"><ui:SelectableText x:Name="ServerTitle" Text="サーバーを接続してください" FontSize="18" FontWeight="SemiBold"/><ui:SelectableText x:Name="CountsText" DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{StaticResource Muted}"/></DockPanel>
     <Grid Grid.Row="3"><Grid.ColumnDefinitions><ColumnDefinition Width="280"/><ColumnDefinition Width="16"/><ColumnDefinition Width="1.3*"/><ColumnDefinition Width="16"/><ColumnDefinition Width="*" MinWidth="400" MaxWidth="520"/></Grid.ColumnDefinitions>
       <Border Background="{StaticResource Panel}" CornerRadius="8" Padding="16">
         <DockPanel>
           <StackPanel DockPanel.Dock="Top"><TextBlock Text="メンバー" FontSize="16" FontWeight="SemiBold"/><TextBox x:Name="SearchBox" Margin="0,14,0,10" TextChanged="Filter_Changed" ToolTip="名前・Steam ID で検索"/><StackPanel Orientation="Horizontal" Margin="0,0,0,14"><CheckBox x:Name="OnlineOnly" Content="オンラインのみ" Checked="Filter_Changed" Unchecked="Filter_Changed"/><TextBlock Text="  名前 / Steam ID で検索" FontSize="10" Foreground="{StaticResource Muted}"/></StackPanel></StackPanel>
-          <TextBlock x:Name="RosterEmpty" DockPanel.Dock="Bottom" Text="接続すると、収集済みのメンバーが表示されます。" TextWrapping="Wrap" Foreground="{StaticResource Muted}" Margin="0,12"/>
+          <ui:SelectableText x:Name="RosterEmpty" DockPanel.Dock="Bottom" Text="接続すると、収集済みのメンバーが表示されます。" TextWrapping="Wrap" Foreground="{StaticResource Muted}" Margin="0,12"/>
           <ListBox x:Name="PlayerList" SelectionChanged="Player_Selected">
-            <ListBox.ItemTemplate><DataTemplate><StackPanel><DockPanel><TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/><TextBlock Text="{Binding State}" Foreground="{Binding Color}" HorizontalAlignment="Right" FontSize="11" Margin="8,0,0,0"/></DockPanel><TextBlock Text="{Binding SteamIdLabel}" FontSize="11" Foreground="{StaticResource Muted}" Margin="0,4,0,0"/><TextBlock Text="{Binding IpText}" ToolTip="{Binding IpDetails}" FontSize="11" TextWrapping="Wrap" Foreground="{StaticResource Muted}" Margin="0,4,0,0"/><TextBlock Text="{Binding LastSeen}" FontSize="11" Foreground="{StaticResource Muted}" Margin="0,4,0,0"/></StackPanel></DataTemplate></ListBox.ItemTemplate>
+            <ListBox.ItemTemplate><DataTemplate><StackPanel><DockPanel><ui:SelectableText Text="{Binding Name, Mode=OneWay}" FontWeight="SemiBold"/><ui:SelectableText Text="{Binding State, Mode=OneWay}" Foreground="{Binding Color}" HorizontalAlignment="Right" FontSize="11" Margin="8,0,0,0"/></DockPanel><ui:SelectableText Text="{Binding SteamIdLabel, Mode=OneWay}" FontSize="11" Foreground="{StaticResource Muted}" Margin="0,4,0,0"/><ui:SelectableText Text="{Binding IpText, Mode=OneWay}" ToolTip="{Binding IpDetails}" FontSize="11" TextWrapping="Wrap" Foreground="{StaticResource Muted}" Margin="0,4,0,0"/><ui:SelectableText Text="{Binding LastSeen, Mode=OneWay}" FontSize="11" Foreground="{StaticResource Muted}" Margin="0,4,0,0"/></StackPanel></DataTemplate></ListBox.ItemTemplate>
           </ListBox>
         </DockPanel>
       </Border>
       <Border Grid.Column="2" Background="{StaticResource Panel}" CornerRadius="8" Padding="16">
         <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-          <DockPanel><TextBlock Text="マップ" FontSize="16" FontWeight="SemiBold"/><TextBlock x:Name="MapMeta" HorizontalAlignment="Right" Foreground="{StaticResource Muted}" FontSize="11" VerticalAlignment="Center"/></DockPanel>
+          <DockPanel><TextBlock Text="マップ" FontSize="16" FontWeight="SemiBold"/><ui:SelectableText x:Name="MapMeta" HorizontalAlignment="Right" Foreground="{StaticResource Muted}" FontSize="11" VerticalAlignment="Center"/></DockPanel>
           <WrapPanel Grid.Row="1" Margin="0,12,0,0">
             <Button x:Name="MapZoomOut" Content="−" Click="MapZoomOut_Click" Padding="10,5" Margin="0,0,4,4" ToolTip="縮小"/>
             <TextBlock x:Name="MapZoomText" Text="100%" Width="45" TextAlignment="Center" VerticalAlignment="Center" Margin="0,0,4,4"/>
@@ -52,7 +52,7 @@
               <DockPanel>
                 <Button x:Name="ChatFold" Content="▼ サーバーチャット" Click="ChatFold_Click" Background="Transparent" Padding="2,3" Margin="0,0,10,0" DockPanel.Dock="Left"/>
                 <Button Content="非表示" Click="ChatHide_Click" Padding="8,3" Margin="8,0,0,0" DockPanel.Dock="Right"/>
-                <TextBlock x:Name="ChatStateText" Text="接続すると取得します" Foreground="{StaticResource Muted}" FontSize="11" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                <ui:SelectableText x:Name="ChatStateText" Text="接続すると取得します" Foreground="{StaticResource Muted}" FontSize="11" VerticalAlignment="Center"/>
               </DockPanel>
               <Grid x:Name="ChatBody" Height="250" Margin="0,8,0,0">
                 <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
@@ -60,22 +60,22 @@
                 <Grid Grid.Row="1">
                   <ScrollViewer x:Name="ChatScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <ItemsControl x:Name="ChatMessages"><ItemsControl.ItemTemplate><DataTemplate>
-                      <StackPanel Margin="0,0,0,8"><TextBlock Text="{Binding Heading}" Foreground="#AAC5D6" FontSize="11" TextWrapping="Wrap"/><TextBlock Text="{Binding Message}" FontSize="12" TextWrapping="Wrap" Margin="0,2,0,0"/></StackPanel>
+                      <StackPanel Margin="0,0,0,8"><ui:SelectableText Text="{Binding Heading, Mode=OneWay}" Foreground="#AAC5D6" FontSize="11" TextWrapping="Wrap"/><ui:SelectableText Text="{Binding Message, Mode=OneWay}" FontSize="12" TextWrapping="Wrap" Margin="0,2,0,0"/></StackPanel>
                     </DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
                   </ScrollViewer>
                   <TextBlock x:Name="ChatEmpty" Text="表示できるチャットはありません" Foreground="{StaticResource Muted}" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                 </Grid>
-                <TextBlock Grid.Row="2" x:Name="ChatDestination" Text="サーバーへ接続してください" FontSize="11" Foreground="#AAC5D6" TextTrimming="CharacterEllipsis" Margin="0,6,0,5"/>
+                <ui:SelectableText Grid.Row="2" x:Name="ChatDestination" Text="サーバーへ接続してください" FontSize="11" Foreground="#AAC5D6" Margin="0,6,0,5"/>
                 <DockPanel Grid.Row="3">
                   <Button x:Name="ChatSend" Content="送信" Click="ChatSend_Click" DockPanel.Dock="Right" Margin="8,0,0,0" Padding="12,6" IsEnabled="False"/>
                   <TextBox x:Name="ChatInput" MaxLength="256" IsEnabled="False" Padding="8,6" PreviewKeyDown="ChatInput_KeyDown" TextChanged="ChatInput_Changed" ToolTip="サーバーとして全体へ発言します（global.say）。送信ボタンまたは Ctrl＋Enter。"/>
                 </DockPanel>
-                <TextBlock Grid.Row="4" x:Name="ChatSendStatus" Text="送信ボタン / Ctrl＋Enter で発言" FontSize="11" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,5,0,0"/>
+                <ui:SelectableText Grid.Row="4" x:Name="ChatSendStatus" Text="送信ボタン / Ctrl＋Enter で発言" FontSize="11" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,5,0,0"/>
               </Grid>
             </StackPanel>
           </Border>
           </Grid>
-          <StackPanel Grid.Row="3"><TextBlock x:Name="MapPositionStatus" Text="座標は最終セーブ時点の記録です。" Foreground="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap"/><TextBlock Text="ホイールで拡大・縮小 / ドラッグで移動&#x0a;● 緑：オンライン　灰：オフライン・未確認　橙：選択" Foreground="{StaticResource Muted}" FontSize="10" TextWrapping="Wrap" Margin="0,5,0,0"/></StackPanel>
+          <StackPanel Grid.Row="3"><ui:SelectableText x:Name="MapPositionStatus" Text="座標は最終セーブ時点の記録です。" Foreground="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap"/><TextBlock Text="ホイールで拡大・縮小 / ドラッグで移動&#x0a;● 緑：オンライン　灰：オフライン・未確認　橙：選択" Foreground="{StaticResource Muted}" FontSize="10" TextWrapping="Wrap" Margin="0,5,0,0"/></StackPanel>
         </Grid>
       </Border>
       <Border Grid.Column="4" Background="{StaticResource Panel}" CornerRadius="8" Padding="16">
@@ -84,18 +84,18 @@
             <TextBlock Text="プレイヤーの持ち物" FontSize="16" FontWeight="SemiBold"/>
             <DockPanel Margin="0,18,0,6">
               <Button x:Name="InventoryDetailsToggle" Content="▼ 情報を隠す" Click="InventoryDetailsToggle_Click" DockPanel.Dock="Right" VerticalAlignment="Center" Padding="8,5" Margin="8,0,0,0" ToolTip="Steam ID・本IP・座標・保存日時などの表示を切り替えます。"/>
-              <TextBlock x:Name="InventoryName" Text="メンバーを選択" FontSize="21" FontWeight="SemiBold" TextWrapping="Wrap"/>
+              <ui:SelectableText x:Name="InventoryName" Text="メンバーを選択" FontSize="21" FontWeight="SemiBold" TextWrapping="Wrap"/>
             </DockPanel>
             <StackPanel x:Name="InventoryDetailsPanel">
-              <TextBlock x:Name="PlayerDetails" Foreground="{StaticResource Muted}" TextWrapping="Wrap" FontSize="11"/>
-              <Border Background="#253340" CornerRadius="5" Padding="10" Margin="0,14"><TextBlock x:Name="InventoryStatus" Text="インベントリ・ベルト・装備を表示します。" Foreground="#D3DFE7" TextWrapping="Wrap" FontSize="12"/></Border>
+              <ui:SelectableText x:Name="PlayerDetails" Foreground="{StaticResource Muted}" TextWrapping="Wrap" FontSize="11"/>
+              <Border Background="#253340" CornerRadius="5" Padding="10" Margin="0,14"><ui:SelectableText x:Name="InventoryStatus" Text="インベントリ・ベルト・装備を表示します。" Foreground="#D3DFE7" TextWrapping="Wrap" FontSize="12"/></Border>
             </StackPanel>
-            <TextBlock x:Name="InventoryNotice" Text="{Binding Text, ElementName=InventoryStatus}" Visibility="Collapsed" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,6,0,12"/>
+            <ui:SelectableText x:Name="InventoryNotice" Text="{Binding Text, ElementName=InventoryStatus, Mode=OneWay}" Visibility="Collapsed" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,6,0,12"/>
           </StackPanel>
           <ScrollViewer x:Name="InventoryScroll" VerticalScrollBarVisibility="Hidden"><StackPanel x:Name="InventoryItems"/></ScrollViewer>
         </DockPanel>
       </Border>
     </Grid>
-    <DockPanel Grid.Row="4" Margin="0,16,0,0"><TextBlock x:Name="StatusText" Text="未接続" Foreground="{StaticResource Muted}" TextWrapping="Wrap"/><TextBlock Text="SQLite • ローカル保存" HorizontalAlignment="Right" Foreground="{StaticResource Muted}" FontSize="11"/></DockPanel>
+    <DockPanel Grid.Row="4" Margin="0,16,0,0"><ui:SelectableText x:Name="StatusText" Text="未接続" Foreground="{StaticResource Muted}" TextWrapping="Wrap"/><TextBlock Text="SQLite • ローカル保存" HorizontalAlignment="Right" Foreground="{StaticResource Muted}" FontSize="11"/></DockPanel>
   </Grid>
 </Window>
