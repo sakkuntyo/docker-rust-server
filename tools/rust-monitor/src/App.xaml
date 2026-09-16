@@ -2,6 +2,11 @@
   <Application.Resources>
     <SolidColorBrush x:Key="Panel" Color="#19232C"/>
     <SolidColorBrush x:Key="Muted" Color="#9DADB9"/>
+    <Style x:Key="InventorySlotStyle" TargetType="Border">
+      <Setter Property="Background" Value="#373D3F"/><Setter Property="BorderBrush" Value="#4C5558"/>
+      <Setter Property="BorderThickness" Value="1"/><Setter Property="Margin" Value="2"/>
+      <Style.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="#515C60"/><Setter Property="BorderBrush" Value="#D5DFD7"/></Trigger></Style.Triggers>
+    </Style>
     <Style TargetType="ToolTip">
       <Style.Resources>
         <Style TargetType="TextBlock">

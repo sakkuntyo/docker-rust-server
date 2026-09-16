@@ -26,17 +26,18 @@ public partial class MainWindow : Window
 
     public MainWindow(string dataRoot, Func<SshProfile, CancellationToken, Task<SshServerSnapshot>>? serverReader = null,
         Func<SshProfile, CancellationToken, Task<ChatSnapshot>>? chatReader = null,
-        Func<SshProfile, string, CancellationToken, Task<ChatSendResult>>? chatSender = null)
+        Func<SshProfile, string, CancellationToken, Task<ChatSendResult>>? chatSender = null, ItemIcons? itemIcons = null)
     {
         InitializeComponent();
         root = dataRoot;
+        icons = itemIcons ?? new ItemIcons(Path.Combine(root, "icons"));
         readServer = serverReader ?? DockerSsh.ReadServerAsync;
         readChat = chatReader ?? DockerSsh.ReadChatAsync;
         sendChat = chatSender ?? DockerSsh.SendChatAsync;
         store = new Store(Path.Combine(root, "monitor.sqlite3"));
         InitializeChat();
         timer.Tick += async (_, _) => { if (live) await RefreshSafeAsync(); };
-        Closed += (_, _) => { closed = true; generation++; timer.Stop(); chatTimer.Stop(); session.Cancel(); session.Dispose(); store.Dispose(); };
+        Closed += (_, _) => { closed = true; generation++; icons.Dispose(); timer.Stop(); chatTimer.Stop(); session.Cancel(); session.Dispose(); store.Dispose(); };
         TargetBox.Text = store.Get("last-ssh-target") ?? "";
         if (store.Get("ssh-list:" + TargetBox.Text) is string list) SetServers(Wire.Read<DockerReport>(list));
         else if (store.Get("docker-report:" + TargetBox.Text) is string report) SetServers(Wire.Read<DockerReport>(report));
@@ -196,32 +197,14 @@ public partial class MainWindow : Window
     }
     private void ShowInventory(InventorySnapshot? snapshot)
     {
+        inventoryGeneration++;
         InventoryItems.Children.Clear();
         if (snapshot == null || string.IsNullOrEmpty(snapshot.CapturedAt))
         { InventoryStatus.Text = PlayerList.SelectedItem == null ? "メンバーを選ぶと、持ち物を表示します。" : "このワイプの所持品は未取得です。最新セーブに本人の身体がない場合もあります。"; return; }
         InventoryStatus.Text = snapshot.Source == "save"
             ? (server?.SaveAt == snapshot.CapturedAt ? "最終セーブ時点の所持品" : "以前のセーブの所持品") + "\n" + Time(snapshot.CapturedAt) + "\nセーブ後の変更は次の保存で反映されます。"
             : "最終取得時点の記録（現在の所持品は未確認）\n" + Time(snapshot.CapturedAt);
-        foreach (var (key, label) in new[] { ("main", "インベントリ"), ("belt", "ベルト"), ("wear", "装備") })
-        {
-            var items = snapshot.Items.Where(i => i.Container == key).OrderBy(i => i.Slot).ToList();
-            InventoryItems.Children.Add(new TextBlock { Text = label + $"  /  {items.Count}", FontWeight = FontWeights.SemiBold, Margin = new Thickness(0, 10, 0, 8) });
-            if (items.Count == 0) InventoryItems.Children.Add(new TextBlock { Text = "空", Foreground = Brushes.SlateGray, Margin = new Thickness(0, 0, 0, 10) });
-            foreach (var item in items) AddItem(item, 0);
-        }
-    }
-    private void AddItem(ItemRecord item, int depth)
-    {
-        if (depth > 6) return;
-        ItemCatalog.Name(item);
-        var lines = new StackPanel();
-        lines.Children.Add(new TextBlock { Text = item.Name + "   × " + item.Amount, TextWrapping = TextWrapping.Wrap, FontWeight = FontWeights.SemiBold });
-        var detail = "スロット " + (item.Slot + 1) + " • " + item.ShortName;
-        if (item.MaxCondition > 0) detail += $"\n耐久 {item.Condition:0.#} / {item.MaxCondition:0.#}";
-        if (item.Ammo != null) detail += " • 装填 " + item.Ammo;
-        lines.Children.Add(new TextBlock { Text = detail, FontSize = 11, Foreground = Brushes.LightSlateGray, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 5, 0, 0) });
-        InventoryItems.Children.Add(new Border { Background = (Brush)new BrushConverter().ConvertFrom("#22313D")!, CornerRadius = new CornerRadius(5), Padding = new Thickness(10), Margin = new Thickness(depth * 12, 0, 0, 6), Child = lines });
-        foreach (var child in item.Contents) AddItem(child, depth + 1);
+        DrawInventory(snapshot.Items);
     }
     private string MapPath(string key, string wipe) => Path.Combine(root, "maps", Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(key + "\n" + wipe))) + ".jpg");
     private void LoadMap()

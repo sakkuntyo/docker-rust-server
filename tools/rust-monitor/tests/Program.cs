@@ -16,7 +16,7 @@ using Microsoft.Extensions.Logging;
 using RustMonitor;
 using RustMonitor.Core;
 
-internal static class Program
+internal static partial class Program
 {
     private static int checks;
     private static string root = "";
@@ -46,7 +46,7 @@ internal static class Program
                 Check(report.Servers.Count > 0 && report.Servers.All(s => s.Capacity.HasValue && s.Name.Length > 0), "desktop SSH transport reads aggregate metadata even with partial startup results");
                 Console.WriteLine(Wire.Write(report)); return 0;
             }
-            DatabaseChecks(); SshSnapshotChecks(); MapChecks(); IpChecks(); RconChecks().GetAwaiter().GetResult(); RenderChecks(args.Length > 1 ? args[1] : null); Console.WriteLine($"{checks} checks passed."); return 0;
+            DatabaseChecks(); SshSnapshotChecks(); MapChecks(); IpChecks(); InventoryChecks(); RconChecks().GetAwaiter().GetResult(); RenderChecks(args.Length > 1 ? args[1] : null); Console.WriteLine($"{checks} checks passed."); return 0;
         }
         catch (Exception ex) { Console.Error.WriteLine(ex); return 1; }
     }
@@ -322,7 +322,10 @@ internal static class Program
             db.SaveInventory(profile.Key, new InventorySnapshot { SteamId = roster[0].SteamId, WipeId = state.WipeId, CapturedAt = state.CapturedAt, Current = true, Items = [
                 new ItemRecord { Container = "main", Name = "Wood", ShortName = "wood", Amount = 2500 },
                 new ItemRecord { Container = "main", Name = "Metal Fragments", ShortName = "metal.fragments", Amount = 650, Slot = 1 },
-                new ItemRecord { Container = "belt", Name = "Assault Rifle", ShortName = "rifle.ak", Amount = 1, Condition = 74, MaxCondition = 100, Ammo = 23 },
+                new ItemRecord { Container = "main", Name = "Cloth", ShortName = "cloth", Amount = 39, Slot = 23 },
+                new ItemRecord { Container = "belt", Name = "Assault Rifle", ShortName = "rifle.ak", Amount = 1, Condition = 74, MaxCondition = 100, Ammo = 23, Skin = "12345", Contents = [new ItemRecord { Name = "Holosight", ShortName = "weapon.mod.holosight", Amount = 1 }] },
+                new ItemRecord { Container = "belt", Name = "Bone Knife", ShortName = "knife.bone", Amount = 1, Slot = 2, Condition = 12, MaxCondition = 100 },
+                new ItemRecord { Container = "belt", Name = "Medical Syringe", ShortName = "syringe.medical", Amount = 2, Slot = 3 },
                 new ItemRecord { Container = "wear", Name = "Hazmat Suit", ShortName = "hazmatsuit", Amount = 1 }
             ] });
         }
@@ -331,7 +334,8 @@ internal static class Program
             var target = Path.Combine(uiRoot, "maps", Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes(profile.Key + "\n" + state.WipeId))) + ".jpg");
             Directory.CreateDirectory(Path.GetDirectoryName(target)!); File.Copy(mapPath, target, true);
         }
-        var window = new MainWindow(uiRoot);
+        using var testIcons = PrepareRenderIcons(uiRoot);
+        var window = new MainWindow(uiRoot, itemIcons: testIcons);
         if (mapPath == null)
         {
             var fixtureImage = BitmapSource.Create(3000, 3000, 96, 96, PixelFormats.Gray8, null, new byte[3000 * 3000], 3000);
@@ -344,6 +348,7 @@ internal static class Program
         var image = new RenderTargetBitmap(1440, 832, 96, 96, PixelFormats.Pbgra32); image.Render(content);
         var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(image));
         using (var file = File.Create(Path.Combine(root, "ui-preview.png"))) encoder.Save(file);
+        InventoryRenderChecks(window);
         Check(list.Items.Count == 2, "WPF loads persisted roster without a connection");
         Check(((TextBlock)window.FindName("InventoryStatus")).Text.Contains("最終取得"), "WPF labels cached inventory as historical");
         Check(((TextBlock)window.FindName("PlayerDetails")).Text.StartsWith("Steam ID: ") && ((TextBlock)window.FindName("PlayerDetails")).Text.Contains("本IP: "), "selected player details label Steam ID and show the IP immediately below it");

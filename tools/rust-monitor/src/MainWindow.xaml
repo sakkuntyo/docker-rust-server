@@ -19,7 +19,7 @@
       </Grid>
     </Border>
     <DockPanel Grid.Row="2" Margin="0,0,0,14"><TextBlock x:Name="ServerTitle" Text="サーバーを接続してください" FontSize="18" FontWeight="SemiBold"/><TextBlock x:Name="CountsText" DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{StaticResource Muted}"/></DockPanel>
-    <Grid Grid.Row="3"><Grid.ColumnDefinitions><ColumnDefinition Width="280"/><ColumnDefinition Width="16"/><ColumnDefinition Width="*"/><ColumnDefinition Width="16"/><ColumnDefinition Width="340"/></Grid.ColumnDefinitions>
+    <Grid Grid.Row="3"><Grid.ColumnDefinitions><ColumnDefinition Width="280"/><ColumnDefinition Width="16"/><ColumnDefinition Width="*"/><ColumnDefinition Width="16"/><ColumnDefinition Width="400"/></Grid.ColumnDefinitions>
       <Border Background="{StaticResource Panel}" CornerRadius="8" Padding="16">
         <DockPanel>
           <StackPanel DockPanel.Dock="Top"><TextBlock Text="メンバー" FontSize="16" FontWeight="SemiBold"/><TextBox x:Name="SearchBox" Margin="0,14,0,10" TextChanged="Filter_Changed" ToolTip="名前・Steam ID で検索"/><StackPanel Orientation="Horizontal" Margin="0,0,0,14"><CheckBox x:Name="OnlineOnly" Content="オンラインのみ" Checked="Filter_Changed" Unchecked="Filter_Changed"/><TextBlock Text="  名前 / Steam ID で検索" FontSize="10" Foreground="{StaticResource Muted}"/></StackPanel></StackPanel>
