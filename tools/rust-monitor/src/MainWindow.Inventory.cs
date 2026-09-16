@@ -11,8 +11,27 @@ public partial class MainWindow
 {
     private readonly ItemIcons icons;
     private int inventoryGeneration;
+    private bool inventoryDetailsVisible = true, inventoryAvailable;
     private static readonly Brush DurabilityGood = new SolidColorBrush(Color.FromRgb(145, 187, 81));
     private static readonly Brush DurabilityLow = new SolidColorBrush(Color.FromRgb(207, 112, 77));
+
+    private void InitializeInventory()
+    {
+        inventoryDetailsVisible = store.Get("inventory-details-visible") != "false";
+        UpdateInventoryDetailsVisibility();
+    }
+    private void InventoryDetailsToggle_Click(object sender, RoutedEventArgs e)
+    {
+        inventoryDetailsVisible = !inventoryDetailsVisible;
+        store.Put("inventory-details-visible", inventoryDetailsVisible ? "true" : "false");
+        UpdateInventoryDetailsVisibility();
+    }
+    private void UpdateInventoryDetailsVisibility()
+    {
+        InventoryDetailsPanel.Visibility = inventoryDetailsVisible ? Visibility.Visible : Visibility.Collapsed;
+        InventoryDetailsToggle.Content = inventoryDetailsVisible ? "▼ 情報を隠す" : "▶ 情報を表示";
+        InventoryNotice.Visibility = !inventoryDetailsVisible && !inventoryAvailable ? Visibility.Visible : Visibility.Collapsed;
+    }
 
     private void DrawInventory(List<ItemRecord> items)
     {

@@ -36,6 +36,7 @@ public partial class MainWindow : Window
         sendChat = chatSender ?? DockerSsh.SendChatAsync;
         store = new Store(Path.Combine(root, "monitor.sqlite3"));
         InitializeChat();
+        InitializeInventory();
         timer.Tick += async (_, _) => { if (live) await RefreshSafeAsync(); };
         Closed += (_, _) => { closed = true; generation++; icons.Dispose(); timer.Stop(); chatTimer.Stop(); session.Cancel(); session.Dispose(); store.Dispose(); };
         TargetBox.Text = store.Get("last-ssh-target") ?? "";
@@ -199,9 +200,11 @@ public partial class MainWindow : Window
     {
         inventoryGeneration++;
         InventoryItems.Children.Clear();
-        if (snapshot == null || string.IsNullOrEmpty(snapshot.CapturedAt))
+        inventoryAvailable = snapshot != null && !string.IsNullOrEmpty(snapshot.CapturedAt);
+        UpdateInventoryDetailsVisibility();
+        if (!inventoryAvailable)
         { InventoryStatus.Text = PlayerList.SelectedItem == null ? "メンバーを選ぶと、持ち物を表示します。" : "このワイプの所持品は未取得です。最新セーブに本人の身体がない場合もあります。"; return; }
-        InventoryStatus.Text = snapshot.Source == "save"
+        InventoryStatus.Text = snapshot!.Source == "save"
             ? (server?.SaveAt == snapshot.CapturedAt ? "最終セーブ時点の所持品" : "以前のセーブの所持品") + "\n" + Time(snapshot.CapturedAt) + "\nセーブ後の変更は次の保存で反映されます。"
             : "最終取得時点の記録（現在の所持品は未確認）\n" + Time(snapshot.CapturedAt);
         DrawInventory(snapshot.Items);
