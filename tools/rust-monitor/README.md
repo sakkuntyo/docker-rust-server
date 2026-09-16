@@ -1,4 +1,4 @@
-# Rust Monitor 0.2.7（Windows / SSH）
+# Rust Monitor 0.2.8（Windows / SSH）
 
 SSH と docker exec で Rust サーバーのマップ、接続中・過去に接続したメンバー、本人のインベントリ・ベルト・装備を表示する Windows アプリです。収集プラグインの追加は不要です。
 
@@ -133,6 +133,12 @@ py -3 -m unittest discover -s .\tests -p 'test_*.py'
 ~~~
 
 SQLite の永続化、サーバー・ワイプ分離、欠損と0人の区別、セーブ内の数値・ネスト、破損・非対応バージョン、SSH 入力検証、WPF の保存済み表示を検証します。画面の検証画像は artifacts 以下へ出力します。
+
+実際の公式画像の取得も確認する場合は、以下を実行します。ネイティブセーブと同じ数字のアイテム識別子を使い、キャッシュがない状態から画像の取得・画面への反映まで検証します。サーバーへの接続は不要です。
+
+~~~powershell
+dotnet run --project .\tests\RustMonitor.Checks.csproj -c Release -- .\artifacts\live-icons --live-icons
+~~~
 
 0.1.x の直接 WebRCON 接続用コード・プラグインのソースは開発資料として残っていますが、0.2.x の画面と配布物は SSH 方式です。
 

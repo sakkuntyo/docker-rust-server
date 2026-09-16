@@ -14,7 +14,9 @@ public static class ItemCatalog
         if (Items.Value.TryGetValue(item.ItemId.ToString(), out var definition))
         {
             if (item.Name.Length == 0) item.Name = definition.Name;
-            if (item.ShortName.Length == 0) item.ShortName = definition.ShortName;
+            // Native saves use the numeric item ID as a placeholder shortname.
+            // Resolve it even for cached records that already have a display name.
+            item.ShortName = definition.ShortName;
         }
         if (item.Name.Length == 0) item.Name = item.ItemId != 0 ? "アイテム ID " + item.ItemId : item.ShortName;
     }

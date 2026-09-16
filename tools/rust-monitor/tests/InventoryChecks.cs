@@ -35,6 +35,10 @@ internal static partial class Program
         Check(extra.Count == 26 && extra.Count(s => s.Item != null) == 3 && extra.Skip(24).All(s => !s.PositionKnown), "duplicate and invalid slots preserve items without inventing positions or allocating huge grids");
         var named = new ItemRecord { ItemId = -151838493, Name = "Custom name" }; ItemCatalog.Name(named);
         Check(named.Name == "Custom name" && named.ShortName == "wood", "catalog resolves icon shortnames while preserving custom item names");
+        var saved = new ItemRecord { ItemId = -151838493, ShortName = "-151838493" }; ItemCatalog.Name(saved);
+        Check(saved.ShortName == "wood" && ItemIcons.ImageUri(saved.ShortName) != null, "numeric shortname placeholders from SSH saves resolve to real icon names");
+        var cached = new ItemRecord { ItemId = 1079279582, Name = "Medical Syringe", ShortName = "1079279582" }; ItemCatalog.Name(cached);
+        Check(cached.Name == "Medical Syringe" && cached.ShortName == "syringe.medical", "already-named cached items resolve positive numeric placeholders too");
         Check(InventoryLayout.Durability(new ItemRecord { Condition = 150, MaxCondition = 100 }) == 1 && InventoryLayout.Durability(new ItemRecord { Condition = float.NaN, MaxCondition = 100 }) == 0, "durability bars stay bounded even with invalid saved values");
         Check(ItemIcons.ImageUri("pistol.m92")!.AbsoluteUri == "https://files.facepunch.com/rust/item/pistol.m92_512.png" && new[] { "../cloth", "x/y", "C:\\x", "https://evil.invalid", "" }.All(n => ItemIcons.ImageUri(n) == null), "icon requests stay on the official image host with valid item names");
         var bytes = FixturePng();
@@ -78,11 +82,52 @@ internal static partial class Program
         }
         return icons;
     }
+    private static void LiveIconChecks()
+    {
+        // Exercise the production catalog -> download -> dispatcher -> Image path,
+        // starting from the same numeric shortname placeholders as native saves.
+        var fixture = Path.Combine(root, "live-icons-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(fixture);
+        var app = new App(); app.InitializeComponent();
+        SynchronizationContext.SetSynchronizationContext(new System.Windows.Threading.DispatcherSynchronizationContext(app.Dispatcher));
+        var profile = new SshProfile("admin@demo.invalid", "rust-demo");
+        var state = new ServerState { WipeId = "icon-check", Name = "DEMO / 画像取得の検証", CapturedAt = DateTimeOffset.UtcNow.ToString("O") };
+        var player = new PlayerRecord { SteamId = "76561198000000001", Name = "Demo Player", WipeId = state.WipeId };
+        var ids = new[] { 1079279582, 317398316, -1211166256, -151838493, 1545779598, 1266491000 };
+        var names = new[] { "syringe.medical", "metal.refined", "ammo.rifle", "wood", "rifle.ak", "hazmatsuit" };
+        using (var db = new Store(Path.Combine(fixture, "monitor.sqlite3")))
+        {
+            db.Put("last-ssh-profile", Wire.Write(profile)); db.SaveRoster(profile.Key, state, [player]);
+            db.SaveInventory(profile.Key, new InventorySnapshot { SteamId = player.SteamId, WipeId = state.WipeId, CapturedAt = state.CapturedAt,
+                Items = ids.Select((id, slot) => new ItemRecord { ItemId = id, ShortName = id.ToString(), Slot = slot, Container = "main", Amount = slot + 1 }).ToList() });
+        }
+        Check(!Directory.Exists(Path.Combine(fixture, "icons")), "live icon check starts with no cached images");
+        var window = new MainWindow(fixture);
+        ((ListBox)window.FindName("PlayerList")).SelectedIndex = 0;
+        ((CheckBox)window.FindName("ChatVisible")).IsChecked = false;
+        var panel = (StackPanel)window.FindName("InventoryItems");
+        var cells = ((UniformGrid)panel.Children.OfType<Viewbox>().First().Child).Children.OfType<Border>().Take(ids.Length).ToArray();
+        var images = cells.Select(c => ((Grid)c.Child).Children.OfType<Image>().Single()).ToArray();
+        var frame = new System.Windows.Threading.DispatcherFrame();
+        var start = DateTime.UtcNow;
+        var timer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
+        timer.Tick += (_, _) => { if (images.All(i => i.Source != null) || DateTime.UtcNow - start > TimeSpan.FromSeconds(35)) frame.Continue = false; };
+        timer.Start(); System.Windows.Threading.Dispatcher.PushFrame(frame); timer.Stop();
+        for (var i = 0; i < names.Length; i++)
+            Check(images[i].Source != null && File.Exists(Path.Combine(fixture, "icons", names[i] + ".png")), "live download and WPF image assignment: " + names[i]);
+        var content = (FrameworkElement)window.Content;
+        content.Measure(new Size(1872, 1000)); content.Arrange(new Rect(0, 0, 1872, 1000)); content.UpdateLayout();
+        SaveRender(content, "live-icons-preview.png", 1872, 1000);
+        window.Close();
+        Console.WriteLine("Live icon cache: " + Path.Combine(fixture, "icons"));
+    }
     private static void InventoryRenderChecks(MainWindow window)
     {
         var panel = (StackPanel)window.FindName("InventoryItems");
         var grids = panel.Children.OfType<Viewbox>().Select(v => (UniformGrid)v.Child).ToList();
         Check(grids.Select(g => g.Children.Count).SequenceEqual(new[] { 24, 6, 8 }), "WPF shows all main, belt, and equipment slots");
+        var nativeCells = new[] { (Border)grids[0].Children[0], (Border)grids[1].Children[3] };
+        Check(nativeCells.All(c => ((Grid)c.Child).Children.OfType<Image>().Single().Source != null), "WPF resolves images from raw native-save and already-named cached item records");
         var cloth = (Border)grids[0].Children[23];
         Check(((InventorySlot)cloth.Tag).Item!.Amount == 39 && ((Grid)cloth.Child).Children.OfType<Image>().Single().Source != null, "the saved 24th slot shows its icon and stack amount");
         var rifle = (Border)grids[1].Children[0];

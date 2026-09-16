@@ -27,6 +27,11 @@ internal static partial class Program
         root = Path.GetFullPath(args[0]); Directory.CreateDirectory(root);
         try
         {
+            if (args.Length == 2 && args[1] == "--live-icons")
+            {
+                LiveIconChecks();
+                return 0;
+            }
             if (args.Length == 4 && args[1] == "--live-ssh")
             {
                 LiveSshCheck(new SshProfile(args[2], args[3]));
@@ -320,12 +325,12 @@ internal static partial class Program
         {
             db.Put("last-ssh-profile", Wire.Write(profile)); db.Put("ssh-profiles", Wire.Write(new[] { profile })); db.SaveRoster(profile.Key, state, roster);
             db.SaveInventory(profile.Key, new InventorySnapshot { SteamId = roster[0].SteamId, WipeId = state.WipeId, CapturedAt = state.CapturedAt, Current = true, Items = [
-                new ItemRecord { Container = "main", Name = "Wood", ShortName = "wood", Amount = 2500 },
+                new ItemRecord { Container = "main", ItemId = -151838493, ShortName = "-151838493", Amount = 2500 },
                 new ItemRecord { Container = "main", Name = "Metal Fragments", ShortName = "metal.fragments", Amount = 650, Slot = 1 },
                 new ItemRecord { Container = "main", Name = "Cloth", ShortName = "cloth", Amount = 39, Slot = 23 },
                 new ItemRecord { Container = "belt", Name = "Assault Rifle", ShortName = "rifle.ak", Amount = 1, Condition = 74, MaxCondition = 100, Ammo = 23, Skin = "12345", Contents = [new ItemRecord { Name = "Holosight", ShortName = "weapon.mod.holosight", Amount = 1 }] },
                 new ItemRecord { Container = "belt", Name = "Bone Knife", ShortName = "knife.bone", Amount = 1, Slot = 2, Condition = 12, MaxCondition = 100 },
-                new ItemRecord { Container = "belt", Name = "Medical Syringe", ShortName = "syringe.medical", Amount = 2, Slot = 3 },
+                new ItemRecord { Container = "belt", Name = "Medical Syringe", ItemId = 1079279582, ShortName = "1079279582", Amount = 2, Slot = 3 },
                 new ItemRecord { Container = "wear", Name = "Hazmat Suit", ShortName = "hazmatsuit", Amount = 1 }
             ] });
         }
