@@ -92,7 +92,7 @@
             </StackPanel>
             <TextBlock x:Name="InventoryNotice" Text="{Binding Text, ElementName=InventoryStatus}" Visibility="Collapsed" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,6,0,12"/>
           </StackPanel>
-          <ScrollViewer x:Name="InventoryScroll" VerticalScrollBarVisibility="Auto"><StackPanel x:Name="InventoryItems"/></ScrollViewer>
+          <ScrollViewer x:Name="InventoryScroll" VerticalScrollBarVisibility="Hidden"><StackPanel x:Name="InventoryItems"/></ScrollViewer>
         </DockPanel>
       </Border>
     </Grid>
