@@ -45,6 +45,13 @@ def player():
 
 
 class SaveReaderTests(unittest.TestCase):
+    def test_instance_uids_are_preserved_as_strings_including_nested_items(self):
+        child = message(100, number(1, 18446744073709551614) + number(2, 2) + number(4, 1))
+        item = message(100, number(1, 9007199254740993) + number(2, 1) + number(4, 1) + message(100, child))
+        parsed = reader.saved_items(item, 'belt')[0]
+        self.assertEqual(parsed['Uid'], '9007199254740993')
+        self.assertEqual(parsed['Contents'][0]['Uid'], '18446744073709551614')
+
     def test_saved_world_coordinates_include_zero_and_negative_axes(self):
         entity = player() + message(2, message(1, vec(-350.25, 0, 620.5)))
         value = reader.parse_save(io.BytesIO(save([entity])))['Players']['76561198012345678']

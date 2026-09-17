@@ -86,7 +86,7 @@ def saved_items(data, container, depth=0):
             itemid -= 0x100000000
         condition = proto_fields(scalar(item, 11, 2, b''))
         contents = scalar(item, 100, 2)
-        result.append({"Container": container, "Slot": scalar(item, 3, 0, 0),
+        result.append({"Uid": str(scalar(item, 1, 0, 0)), "Container": container, "Slot": scalar(item, 3, 0, 0),
                        "ItemId": itemid, "Name": "", "ShortName": str(itemid),
                        "Amount": scalar(item, 4, 0, 0), "Skin": str(scalar(item, 16, 0, 0)),
                        "Condition": float_field(condition, 1), "MaxCondition": float_field(condition, 2),

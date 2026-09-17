@@ -117,6 +117,12 @@ public static class DockerSsh
         return ReadAsync<GiveItemResult>(profile.Target, new { mode = "giveitem", container = profile.Container, steamid = request.SteamId,
             itemid = request.ItemId, shortname = request.ShortName, amount = request.Amount }, cancellation, "items.py", 55);
     }
+    public static Task<ModerationResult> ModerateAsync(SshProfile profile, ModerationRequest request, CancellationToken cancellation = default)
+    {
+        if (!ValidContainer(profile.Container)) throw new ArgumentException("サーバーを選択してください。");
+        request.Validate();
+        return ReadAsync<ModerationResult>(profile.Target, new { container = profile.Container, action = request }, cancellation, "moderation.py", 150);
+    }
     private static async Task<T> ReadAsync<T>(string target, object request, CancellationToken cancellation, string scriptFile = "docker_status.py", int timeoutSeconds = 90)
     {
         if (!ValidTarget(target)) throw new ArgumentException("SSH 接続先を user@hostname 形式で入力してください。");
@@ -126,6 +132,11 @@ public static class DockerSsh
         if (scriptFile == "docker_status.py")
             script += await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "collector", "save_reader.py"), cancellation)
                 + "\n" + await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "collector", "conntrack_reader.py"), cancellation) + "\n";
+        if (scriptFile == "moderation.py")
+        {
+            var plugin = (await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "plugin", "RustMonitorAdmin.cs"), cancellation)).Replace("\r\n", "\n");
+            script += "ADMIN_PLUGIN = base64.b64decode('" + Convert.ToBase64String(Encoding.UTF8.GetBytes(plugin)) + "').decode('utf-8')\n";
+        }
         script += await File.ReadAllTextAsync(source, cancellation);
         var start = new ProcessStartInfo
         {

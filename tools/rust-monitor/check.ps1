@@ -8,4 +8,6 @@ $monitorCheckArgs = @($monitorCheckOutput)
 if ($MapImage) { $monitorCheckArgs += (Resolve-Path -LiteralPath $MapImage).Path }
 dotnet run --project (Join-Path $PSScriptRoot 'tests\RustMonitor.Checks.csproj') -c Release -- @monitorCheckArgs
 if ($LASTEXITCODE -ne 0) { throw 'Checks failed.' }
+dotnet run --project (Join-Path $PSScriptRoot 'tests\admin-plugin\AdminPlugin.Checks.csproj') -c Release
+if ($LASTEXITCODE -ne 0) { throw 'Admin plugin checks failed.' }
 Write-Output $monitorCheckOutput

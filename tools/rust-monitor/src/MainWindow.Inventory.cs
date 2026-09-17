@@ -88,6 +88,7 @@ public partial class MainWindow
         ToolTipService.SetInitialShowDelay(cell, 150); ToolTipService.SetShowDuration(cell, 30000);
         System.Windows.Automation.AutomationProperties.SetName(cell, item.Name + " × " + item.Amount + " / " + detail);
         _ = ShowItemIconAsync(image, fallback, item.ShortName, inventoryGeneration);
+        AddDeleteMenu(cell, slot);
         return cell;
     }
     private static void AddInventoryContents(Panel panel, List<ItemRecord> contents, int depth)

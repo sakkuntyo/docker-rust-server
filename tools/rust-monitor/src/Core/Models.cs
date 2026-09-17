@@ -77,6 +77,7 @@ public sealed class InventorySnapshot
 
 public sealed class ItemRecord
 {
+    public string Uid { get; set; } = "";
     public int ItemId { get; set; }
     public string Container { get; set; } = "";
     public int Slot { get; set; }

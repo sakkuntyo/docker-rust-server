@@ -424,6 +424,7 @@ internal static partial class Program
         ChatChecks();
         CombatChecks();
         ItemGiveChecks();
+        ModerationChecks();
         window.Close();
     }
     private static void HistoryChecks()

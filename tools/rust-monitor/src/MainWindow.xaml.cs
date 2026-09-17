@@ -40,7 +40,7 @@ public partial class MainWindow : Window
         store = new Store(Path.Combine(root, "monitor.sqlite3"));
         InitializeInventory();
         timer.Tick += async (_, _) => { if (live) await RefreshSafeAsync(); };
-        Closing += (_, e) => { if (itemWindows.Values.Any(w => w.IsSending) || chatWindows.Values.Any(w => w.IsSending)) { e.Cancel = true; Status("送信結果を確認しています。完了後に閉じてください。"); } };
+        Closing += (_, e) => { if (moderationWindow?.IsSending == true || itemWindows.Values.Any(w => w.IsSending) || chatWindows.Values.Any(w => w.IsSending)) { e.Cancel = true; Status("送信結果を確認しています。完了後に閉じてください。"); } };
         Closed += (_, _) => { closed = true; generation++; foreach (var window in chatWindows.Values.ToArray()) window.Close(); foreach (var window in itemWindows.Values.ToArray()) window.Close(); foreach (var window in combatWindows.Values.ToArray()) window.Close(); icons.Dispose(); timer.Stop(); session.Cancel(); session.Dispose(); store.Dispose(); };
         TargetBox.Text = store.Get("last-ssh-target") ?? "";
         if (store.Get("ssh-list:" + TargetBox.Text) is string list) SetServers(Wire.Read<DockerReport>(list));
@@ -183,6 +183,7 @@ public partial class MainWindow : Window
         UpdateMapLayout();
         CombatLogButton.IsEnabled = profile != null && PlayerList.SelectedItem is PlayerRow;
         GiveItemButton.IsEnabled = CombatLogButton.IsEnabled;
+        BanButton.IsEnabled = CombatLogButton.IsEnabled;
         InventoryItems.Children.Clear();
         if (PlayerList.SelectedItem is not PlayerRow row || profile == null)
         {
@@ -217,6 +218,7 @@ public partial class MainWindow : Window
     }
     private void ShowInventory(InventorySnapshot? snapshot)
     {
+        shownInventory = snapshot;
         inventoryGeneration++;
         InventoryItems.Children.Clear();
         inventoryAvailable = snapshot != null && !string.IsNullOrEmpty(snapshot.CapturedAt);
