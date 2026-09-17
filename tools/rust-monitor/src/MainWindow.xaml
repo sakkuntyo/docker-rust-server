@@ -81,7 +81,10 @@
       <Border Grid.Column="4" Background="{StaticResource Panel}" CornerRadius="8" Padding="16">
         <DockPanel>
           <StackPanel DockPanel.Dock="Top">
-            <TextBlock Text="プレイヤーの持ち物" FontSize="16" FontWeight="SemiBold"/>
+            <DockPanel>
+              <Button x:Name="CombatLogButton" Content="コンバットログ" Click="CombatLog_Click" DockPanel.Dock="Right" Padding="10,5" Margin="8,0,0,0" IsEnabled="False" ToolTip="選択したプレイヤーのコンバットログを別窓で開きます。1分ごとに新しい記録を追記します。"/>
+              <TextBlock Text="プレイヤーの持ち物" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center"/>
+            </DockPanel>
             <DockPanel Margin="0,18,0,6">
               <Button x:Name="InventoryDetailsToggle" Content="▼ 情報を隠す" Click="InventoryDetailsToggle_Click" DockPanel.Dock="Right" VerticalAlignment="Center" Padding="8,5" Margin="8,0,0,0" ToolTip="Steam ID・本IP・座標・保存日時などの表示を切り替えます。"/>
               <ui:SelectableText x:Name="InventoryName" Text="メンバーを選択" FontSize="21" FontWeight="SemiBold" TextWrapping="Wrap"/>

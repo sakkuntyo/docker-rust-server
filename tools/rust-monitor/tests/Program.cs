@@ -44,6 +44,19 @@ internal static partial class Program
                 Console.WriteLine($"Chat entries: {chat.Messages.Count}; channels: {string.Join(",", chat.Messages.Select(m => m.Channel).Distinct())}");
                 return 0;
             }
+            if (args.Length == 5 && args[1] == "--live-combat")
+            {
+                var profile = new SshProfile(args[2], args[3]);
+                var first = DockerSsh.ReadCombatAsync(profile, args[4]).GetAwaiter().GetResult();
+                var history = new CombatHistory();
+                history.Append(first, args[4]);
+                Check(first.Available && first.Rows.Count > 0, "actual SSH reads the selected player's standard combat log");
+                var second = DockerSsh.ReadCombatAsync(profile, args[4]).GetAwaiter().GetResult();
+                var delta = history.Append(second, args[4]);
+                Check(second.Rows.Count > delta.Added.Count && delta.Notice.Length == 0, "a second actual SSH read recognizes the existing combat events despite changing ages");
+                Console.WriteLine($"Combat entries: {first.Rows.Count}; next read: {second.Rows.Count}; appended: {delta.Added.Count}");
+                return 0;
+            }
             if (args.Length == 3 && args[1] == "--live-overview")
             {
                 var report = DockerSsh.ReadOverviewAsync(args[2]).GetAwaiter().GetResult();
@@ -397,6 +410,7 @@ internal static partial class Program
         }
         HistoryChecks();
         ChatChecks();
+        CombatChecks();
         window.Close();
     }
     private static void HistoryChecks()

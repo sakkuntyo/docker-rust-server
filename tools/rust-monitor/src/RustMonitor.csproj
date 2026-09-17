@@ -6,9 +6,10 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>RustMonitor</AssemblyName>
-    <Version>0.2.12</Version>
+    <Version>0.2.13</Version>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="../collector/combat.py" Link="collector/combat.py" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest"/>
     <Content Include="../collector/chat.py" Link="collector/chat.py" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest"/>
     <Content Include="../collector/docker_status.py" Link="collector/docker_status.py" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest"/>
     <Content Include="../collector/save_reader.py" Link="collector/save_reader.py" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest"/>

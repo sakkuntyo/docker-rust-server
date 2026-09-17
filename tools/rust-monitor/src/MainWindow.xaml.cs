@@ -41,7 +41,7 @@ public partial class MainWindow : Window
         InitializeChat();
         InitializeInventory();
         timer.Tick += async (_, _) => { if (live) await RefreshSafeAsync(); };
-        Closed += (_, _) => { closed = true; generation++; icons.Dispose(); timer.Stop(); chatTimer.Stop(); session.Cancel(); session.Dispose(); store.Dispose(); };
+        Closed += (_, _) => { closed = true; generation++; foreach (var window in combatWindows.Values.ToArray()) window.Close(); icons.Dispose(); timer.Stop(); chatTimer.Stop(); session.Cancel(); session.Dispose(); store.Dispose(); };
         TargetBox.Text = store.Get("last-ssh-target") ?? "";
         if (store.Get("ssh-list:" + TargetBox.Text) is string list) SetServers(Wire.Read<DockerReport>(list));
         else if (store.Get("docker-report:" + TargetBox.Text) is string report) SetServers(Wire.Read<DockerReport>(report));
@@ -189,6 +189,7 @@ public partial class MainWindow : Window
     private void ShowSelectedInventory()
     {
         UpdateMapLayout();
+        CombatLogButton.IsEnabled = profile != null && PlayerList.SelectedItem is PlayerRow;
         InventoryItems.Children.Clear();
         if (PlayerList.SelectedItem is not PlayerRow row || profile == null)
         {

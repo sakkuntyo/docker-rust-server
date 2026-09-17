@@ -93,6 +93,12 @@ public static class DockerSsh
         if (!ValidContainer(profile.Container)) throw new ArgumentException("Rust コンテナを選択してください。");
         return ReadAsync<ChatSnapshot>(profile.Target, new { mode = "chat", container = profile.Container }, cancellation, "chat.py", 20);
     }
+    public static Task<CombatSnapshot> ReadCombatAsync(SshProfile profile, string steamId, CancellationToken cancellation = default)
+    {
+        if (!ValidContainer(profile.Container) || !Regex.IsMatch(steamId, @"\A[0-9]{17}\z"))
+            throw new ArgumentException("サーバーとプレイヤーを選択してください。");
+        return ReadAsync<CombatSnapshot>(profile.Target, new { mode = "combat", container = profile.Container, steamid = steamId }, cancellation, "combat.py", 40);
+    }
     public static Task<ChatSendResult> SendChatAsync(SshProfile profile, string message, CancellationToken cancellation = default)
     {
         if (!ValidContainer(profile.Container)) throw new ArgumentException("Rust コンテナを選択してください。");
