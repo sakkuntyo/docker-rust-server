@@ -42,17 +42,18 @@ class ModerationTests(unittest.TestCase):
         action = dict(ACTION, Action='ban', Reason='quotes " ; $(quit) 日本語')
         with patch.object(mod, 'ensure_helper'), patch.object(mod, 'run', return_value='{}') as run:
             mod.moderation_request(dict(container='rust-demo', action=action), SOURCE)
-            command = run.call_args.args[2]
+            command = run.call_args_list[0].args[2]
             self.assertNotIn('$(quit)', command)
             self.assertEqual(json.loads(base64.b64decode(command.split()[1]))['Reason'], action['Reason'])
 
     def test_timeout_or_unmatched_response_is_unknown_without_retry(self):
         for reply in ['{}', 'invalid', json.dumps(dict(Protocol=mod.PROTOCOL, RequestId='b'*32, State='accepted', Message='wrong')),
                       subprocess.TimeoutExpired('rcon', 15)]:
-            with patch.object(mod, 'ensure_helper'), patch.object(mod, 'run', side_effect=[reply]) as run:
+            with patch.object(mod, 'ensure_helper'), patch.object(mod, 'run', side_effect=[reply, '{}']) as run:
                 result = mod.moderation_request(dict(container='rust-demo', action=ACTION), SOURCE)
                 self.assertEqual(result['State'], 'unknown')
-                self.assertEqual(run.call_count, 1)
+                self.assertEqual(run.call_count, 2)
+                self.assertEqual(run.call_args_list[1].args[2], 'rustmonitoradmin.result ' + ACTION['RequestId'])
 
     def test_helper_failure_never_dispatches_mutation(self):
         with patch.object(mod, 'ensure_helper', side_effect=RuntimeError), patch.object(mod, 'run') as run:
@@ -69,11 +70,53 @@ class ModerationTests(unittest.TestCase):
 
     def test_install_waits_for_protocol_without_touching_modded_setting(self):
         digest = hashlib.sha256(SOURCE.encode()).hexdigest()
-        with patch.object(mod, 'run', side_effect=[digest + ' file', 'Unknown command', json.dumps(dict(Protocol=mod.PROTOCOL))]) as run, patch.object(mod.time, 'sleep'):
+        with patch.object(mod, 'run', side_effect=[digest + ' file', 'Unknown command', json.dumps(dict(Protocol=mod.PROTOCOL, Version=mod.HELPER_VERSION))]) as run, patch.object(mod.time, 'sleep'):
             mod.ensure_helper('rust-demo', SOURCE)
             self.assertEqual(run.call_count, 3)
             self.assertTrue(all(c.args[2] == 'rustmonitoradmin.ping' for c in run.call_args_list[1:]))
         self.assertNotIn('Options.Modded', mod.INSTALL_SH)
+
+    def test_known_helper_upgrade_reloads_once_and_requires_new_version(self):
+        digest = hashlib.sha256(SOURCE.encode()).hexdigest()
+        with patch.object(mod, 'run', side_effect=[digest + ' file', json.dumps(dict(Protocol=mod.PROTOCOL)), 'Reloaded',
+                json.dumps(dict(Protocol=mod.PROTOCOL, Version=mod.HELPER_VERSION))]) as run, patch.object(mod.time, 'sleep'):
+            mod.ensure_helper('rust-demo', SOURCE)
+            self.assertEqual([c.args[2] for c in run.call_args_list[1:]], ['rustmonitoradmin.ping', 'oxide.reload RustMonitorAdmin', 'rustmonitoradmin.ping'])
+        self.assertIn('RustMonitorAdmin.cs', mod.INSTALL_SH)
+        self.assertIn('c58cf9b48ef80a5c829908b98f0f5927b2f89c9eaaac0ba4060fcb9e83f300b8', mod.INSTALL_SH)
+        self.assertIn('0.1.0.bak', mod.INSTALL_SH)
+
+    def test_console_log_reply_uses_read_only_result_lookup(self):
+        result = dict(Protocol=mod.PROTOCOL, RequestId=ACTION['RequestId'], State='accepted', Message='done')
+        with patch.object(mod, 'ensure_helper'), patch.object(mod, 'run', side_effect=['[RustMonitorAdmin] ban log', json.dumps(result)]) as run:
+            self.assertEqual(mod.moderation_request(dict(container='rust-demo', action=ACTION), SOURCE), result)
+            self.assertTrue(run.call_args_list[0].args[2].startswith('rustmonitoradmin.execute '))
+            self.assertEqual(run.call_args_list[1].args[2], 'rustmonitoradmin.result ' + ACTION['RequestId'])
+
+    def test_large_item_descriptions_are_staged_below_cli_limit(self):
+        action = copy.deepcopy(ACTION)
+        action['Item']['Contents'] = [dict(action['Item'], Uid=str(i+100), Slot=i, Contents=[]) for i in range(12)]
+        parts = []
+        def respond(container, script, cmd):
+            self.assertLessEqual(len(cmd.encode()), 1000)
+            fields = cmd.split()
+            if fields[0] == 'rustmonitoradmin.prepare':
+                parts.append(fields[4])
+                return json.dumps(dict(Protocol=mod.PROTOCOL, RequestId=fields[1], Prepared=int(fields[2])))
+            self.assertEqual(fields, ['rustmonitoradmin.commit', action['RequestId']])
+            return json.dumps(dict(Protocol=mod.PROTOCOL, RequestId=fields[1], State='accepted', Message='done'))
+        with patch.object(mod, 'ensure_helper'), patch.object(mod, 'run', side_effect=respond) as run:
+            self.assertEqual(mod.moderation_request(dict(container='rust-demo', action=action), SOURCE)['State'], 'accepted')
+            self.assertGreater(len(parts), 1)
+            self.assertEqual(json.loads(base64.b64decode(''.join(parts))), action)
+            self.assertEqual(sum(c.args[2].startswith('rustmonitoradmin.commit ') for c in run.call_args_list), 1)
+
+    def test_failed_staging_never_commits(self):
+        action = copy.deepcopy(ACTION)
+        action['Item']['Contents'] = [dict(action['Item'], Uid=str(i+100), Contents=[]) for i in range(12)]
+        with patch.object(mod, 'ensure_helper'), patch.object(mod, 'run', return_value='{}') as run:
+            self.assertEqual(mod.moderation_request(dict(container='rust-demo', action=action), SOURCE)['State'], 'rejected')
+            self.assertTrue(all(c.args[2].startswith('rustmonitoradmin.prepare ') for c in run.call_args_list))
 
     def test_no_shell_interpolation_of_request(self):
         from types import SimpleNamespace

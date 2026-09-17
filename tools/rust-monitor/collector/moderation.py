@@ -7,6 +7,7 @@ import subprocess
 import time
 
 PROTOCOL = 'rust-monitor-admin/1'
+HELPER_VERSION = '0.1.1'
 RCON_SH = '''
 if [ -z "${ENV_RCON_PORT:-}" ] || [ -z "${ENV_RCON_PASSWD:-}" ]; then exit 2; fi
 exec timeout -k 1s 8s rcon -t web -T 6s -a "127.0.0.1:${ENV_RCON_PORT}" -p "$ENV_RCON_PASSWD" -- "$1"
@@ -17,12 +18,19 @@ dir=/root/rustserver/oxide/plugins
 test -d "$dir"
 test -f /root/rustserver/RustDedicated_Data/Managed/Oxide.Rust.dll
 dest="$dir/RustMonitorAdmin.cs"
+tmp=$(mktemp "$dir/.rust-monitor-admin.XXXXXX")
+trap 'rm -f "$tmp"' EXIT
+cat > "$tmp"
+chmod 644 "$tmp"
 if [ ! -e "$dest" ]; then
-  tmp=$(mktemp "$dir/.rust-monitor-admin.XXXXXX")
-  trap 'rm -f "$tmp"' EXIT
-  cat > "$tmp"
-  chmod 644 "$tmp"
   ln "$tmp" "$dest" || test -f "$dest"
+elif [ "$(sha256sum "$dest" | cut -d ' ' -f 1)" = c58cf9b48ef80a5c829908b98f0f5927b2f89c9eaaac0ba4060fcb9e83f300b8 ]; then
+  # Only the exact unmodified 0.1.0 bundled helper can be upgraded automatically.
+  backup="$dest.0.1.0.bak"
+  ln "$dest" "$backup" || test "$(sha256sum "$backup" | cut -d ' ' -f 1)" = c58cf9b48ef80a5c829908b98f0f5927b2f89c9eaaac0ba4060fcb9e83f300b8
+  if [ "$(sha256sum "$dest" | cut -d ' ' -f 1)" = c58cf9b48ef80a5c829908b98f0f5927b2f89c9eaaac0ba4060fcb9e83f300b8 ]; then
+    mv "$tmp" "$dest"
+  fi
 fi
 sha256sum "$dest"
 '''
@@ -40,15 +48,20 @@ def run(container, script, *args, data=None):
 def ensure_helper(container, source):
     if not isinstance(source, str) or not source.startswith('using System;') or len(source) > 100000:
         raise ValueError('Invalid bundled helper')
-    # Existing custom/different helper files are never overwritten automatically.
+    # Custom / unknown helper versions are never overwritten automatically.
     installed = run(container, INSTALL_SH, data=source)
     if installed.split()[0] != hashlib.sha256(source.encode('utf-8')).hexdigest():
         raise ValueError('Different helper installed')
+    reloaded = False
     for attempt in range(8):
         try:
             ping = json.loads(run(container, RCON_SH, 'rustmonitoradmin.ping'))
-            if isinstance(ping, dict) and ping.get('Protocol') == PROTOCOL:
+            if isinstance(ping, dict) and ping.get('Protocol') == PROTOCOL and ping.get('Version') == HELPER_VERSION:
                 return
+            if isinstance(ping, dict) and ping.get('Protocol') == PROTOCOL and not reloaded:
+                # An atomic source replacement is not picked up by every Oxide watcher.
+                reloaded = True
+                run(container, RCON_SH, 'oxide.reload RustMonitorAdmin')
         except (ValueError, RuntimeError, subprocess.TimeoutExpired):
             pass
         if attempt < 7:
@@ -63,6 +76,14 @@ def valid_item(item, depth=0):
             type(item.get('Slot')) is int and 0 <= item['Slot'] <= 1024 and
             type(item.get('Amount')) is int and 0 < item['Amount'] <= 2**31-1 and
             isinstance(item.get('Contents'), list) and len(item['Contents']) <= 64 and all(valid_item(i, depth+1) for i in item['Contents']))
+
+
+def result_response(raw, request_id):
+    response = json.loads(raw)
+    if (isinstance(response, dict) and response.get('Protocol') == PROTOCOL and response.get('RequestId') == request_id and
+            response.get('State') in ('accepted', 'rejected', 'unknown') and isinstance(response.get('Message'), str)):
+        return response
+    raise ValueError('Not the action result')
 
 
 def moderation_request(request, source):
@@ -91,13 +112,27 @@ def moderation_request(request, source):
         return rejected
     try:
         ensure_helper(container, source)
+        command = 'rustmonitoradmin.execute ' + encoded
+        # The installed rcon CLI caps commands at 1,000 bytes. Stage large item
+        # descriptions in bounded chunks; only the final commit mutates the game.
+        if len(command) > 1000:
+            chunks = [encoded[i:i+600] for i in range(0, len(encoded), 600)]
+            for index, chunk in enumerate(chunks):
+                reply = json.loads(run(container, RCON_SH, f'rustmonitoradmin.prepare {action["RequestId"]} {index} {len(chunks)} {chunk}'))
+                if (not isinstance(reply, dict) or reply.get('Protocol') != PROTOCOL or reply.get('RequestId') != action['RequestId'] or
+                        type(reply.get('Prepared')) is not int or reply['Prepared'] != index):
+                    raise ValueError('Prepare failed')
+            command = 'rustmonitoradmin.commit ' + action['RequestId']
     except (ValueError, IndexError, RuntimeError, subprocess.TimeoutExpired, OSError):
         return {'State': 'rejected', 'Message': '管理プラグインを準備できません。操作は送信していません。uMod/Oxideの稼働状態・RustMonitorAdmin.csの既存ファイル・コンパイルログを確認してください。'}
     try:
-        response = json.loads(run(container, RCON_SH, 'rustmonitoradmin.execute ' + encoded))
-        if (isinstance(response, dict) and response.get('Protocol') == PROTOCOL and response.get('RequestId') == action['RequestId'] and
-                response.get('State') in ('accepted', 'rejected', 'unknown') and isinstance(response.get('Message'), str)):
-            return response
+        return result_response(run(container, RCON_SH, command), action['RequestId'])
+    except (ValueError, RuntimeError, subprocess.TimeoutExpired, OSError):
+        pass
+    try:
+        # Rust may send a log/kick message with the same RCON identifier first.
+        # Read the already-recorded result, NEVER re-execute the mutation.
+        return result_response(run(container, RCON_SH, 'rustmonitoradmin.result ' + action['RequestId']), action['RequestId'])
     except (ValueError, RuntimeError, subprocess.TimeoutExpired, OSError):
         pass
     return {'State': 'unknown', 'Message': '操作結果を確認できません。自動再送しません。ゲーム内の所持品またはサーバーのBAN一覧を確認してください。'}

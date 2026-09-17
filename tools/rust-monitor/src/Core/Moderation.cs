@@ -11,6 +11,23 @@ public sealed class ModerationRequest
     public string Reason { get; set; } = "";
     public string WipeId { get; set; } = "";
     public ItemRecord? Item { get; set; }
+    public ModerationRequest WithFreshIdentity(InventorySnapshot snapshot)
+    {
+        if (Action != "delete" || Item == null || snapshot.Source != "save" || snapshot.SteamId != SteamId || snapshot.WipeId != WipeId)
+            throw new ArgumentException("プレイヤーまたはワイプが変わりました。所持品を選び直してください。");
+        var matches = snapshot.Items.Where(i => i.Container == Item.Container && i.Slot == Item.Slot).ToArray();
+        if (matches.Length != 1 || !SameSavedItem(Item, matches[0]))
+            throw new ArgumentException("所持品の内容が変わっています。更新された一覧からアイテムを選び直してください。");
+        var fresh = Wire.Read<ModerationRequest>(Wire.Write(this));
+        fresh.Item = Wire.Read<ItemRecord>(Wire.Write(matches[0]));
+        ItemCatalog.Name(fresh.Item);
+        fresh.Validate();
+        return fresh;
+    }
+    private static bool SameSavedItem(ItemRecord a, ItemRecord b) => a.ItemId == b.ItemId && a.Slot == b.Slot && a.Amount == b.Amount &&
+        a.Skin == b.Skin && a.Condition == b.Condition && a.MaxCondition == b.MaxCondition && (a.Ammo ?? 0) == (b.Ammo ?? 0) &&
+        (!ulong.TryParse(a.Uid, out var uid) || uid == 0 || a.Uid == b.Uid) && a.Contents.Count == b.Contents.Count &&
+        a.Contents.OrderBy(i => i.Slot).Zip(b.Contents.OrderBy(i => i.Slot)).All(pair => SameSavedItem(pair.First, pair.Second));
     public void Validate()
     {
         if (!Regex.IsMatch(RequestId, @"\A[0-9a-f]{32}\z") || !Regex.IsMatch(SteamId, @"\A[0-9]{17}\z") ||

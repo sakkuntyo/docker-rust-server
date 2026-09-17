@@ -43,6 +43,12 @@ internal static partial class Program
         ban.Close();
 
         var fixture = Path.Combine(root, "moderation-ui"); Directory.CreateDirectory(fixture);
+        var freshItem = new ItemRecord { Uid = "777", Container = "main", Slot = 1, ItemId = 1, Amount = 1 };
+        var freshInventory = new InventorySnapshot { SteamId = CombatSteamId, WipeId = request.WipeId, Source = "save", CapturedAt = "2026-09-18T01:00:00Z", Items = [item, freshItem] };
+        var snapshot = new SshServerSnapshot { Server = new ServerState { Protocol = 1, WipeId = request.WipeId, Name = "Demo" },
+            Players = [new PlayerRecord { SteamId = CombatSteamId, Name = "Demo Player", WipeId = request.WipeId }], Inventories = [freshInventory] };
+        var refreshing = new TaskCompletionSource<SshServerSnapshot>();
+        var reads = 0;
         using (var db = new Store(Path.Combine(fixture, "monitor.sqlite3")))
         {
             db.Put("last-ssh-profile", Wire.Write(profile));
@@ -50,18 +56,41 @@ internal static partial class Program
             db.SaveInventory(profile.Key, new InventorySnapshot { SteamId = CombatSteamId, WipeId = request.WipeId, Source = "save", CapturedAt = "2026-09-18T00:00:00Z", Items = [item, new ItemRecord { Slot = 1, Container = "main", ItemId = 1, Amount = 1 }] });
         }
         using var icons = PrepareRenderIcons(fixture);
-        var main = new MainWindow(fixture, itemIcons: icons);
+        var main = new MainWindow(fixture, serverReader: (_, _) => { reads++; return refreshing.Task; }, itemIcons: icons);
         ((ListBox)main.FindName("PlayerList")).SelectedIndex = 0;
         var slots = (UniformGrid)((StackPanel)main.FindName("InventoryItems")).Children.OfType<Viewbox>().First().Child;
         Check(((Border)slots.Children[0]).ContextMenu.Items.OfType<MenuItem>().Single().IsEnabled &&
-            !((Border)slots.Children[1]).ContextMenu.Items.OfType<MenuItem>().Single().IsEnabled && ((Border)slots.Children[2]).ContextMenu == null,
-            "only populated inventory slots with a verified identity expose an enabled deletion menu");
+            ((Border)slots.Children[1]).ContextMenu.Items.OfType<MenuItem>().Single().IsEnabled &&
+            ((Border)slots.Children[1]).ContextMenu.Items.OfType<MenuItem>().Single().Header.ToString()!.Contains("更新して確認") && ((Border)slots.Children[2]).ContextMenu == null,
+            "legacy inventory offers refresh-before-confirm instead of an unusable disabled deletion menu");
         content = (FrameworkElement)main.Content; content.Measure(new Size(1392, 784)); content.Arrange(new Rect(0, 0, 1392, 784)); content.UpdateLayout();
         var banButton = (Button)main.FindName("BanButton"); var giveButton = (Button)main.FindName("GiveItemButton");
         var pos = banButton.TranslatePoint(new Point(), content); var givePos = giveButton.TranslatePoint(new Point(), content);
         Check(pos.X + banButton.ActualWidth <= givePos.X && Math.Abs(pos.Y - givePos.Y) < 1 && ((SolidColorBrush)banButton.Background).Color.R > ((SolidColorBrush)banButton.Background).Color.G,
             "the red BAN button is immediately left of add-item without an extra row");
         SaveRender(content, "moderation-main.png", 1392, 784);
+        var legacyAction = new ModerationRequest { Action = "delete", SteamId = CombatSteamId, Name = "Demo Player", WipeId = request.WipeId,
+            Item = new ItemRecord { ItemId = 1, Amount = 1, Slot = 1, Container = "main" } };
+        var preparation = main.RefreshDeletionAsync(profile, legacyAction);
+        Check(main.RefreshDeletionAsync(profile, legacyAction).GetAwaiter().GetResult() == null && reads == 1,
+            "repeated legacy deletion clicks cannot start overlapping reads or mutations");
+        refreshing.SetResult(snapshot);
+        var prepared = preparation.GetAwaiter().GetResult();
+        Check(prepared?.Action.Item?.Uid == "777" && prepared?.CapturedAt == freshInventory.CapturedAt && reads == 1 && calls.Count == 2,
+            "read-only refresh supplies identity to a separate confirmation without deleting an item");
+        freshItem.Amount = 2;
+        try { legacyAction.WithFreshIdentity(freshInventory); Check(false, "changed legacy item"); }
+        catch (ArgumentException) { Check(true, "changed cached stacks require selecting the updated item again"); }
+        freshItem.Amount = 1;
+        freshInventory.WipeId = "save:1789171200:other";
+        try { legacyAction.WithFreshIdentity(freshInventory); Check(false, "changed wipe"); }
+        catch (ArgumentException) { Check(true, "refresh cannot substitute an item from another wipe"); }
+        freshInventory.WipeId = request.WipeId;
+        refreshing = new TaskCompletionSource<SshServerSnapshot>();
+        var stale = main.RefreshDeletionAsync(profile, legacyAction);
+        ((ListBox)main.FindName("PlayerList")).SelectedIndex = -1;
+        refreshing.SetResult(snapshot);
+        Check(stale.GetAwaiter().GetResult() == null, "changing player selection during refresh cancels the pending confirmation");
         main.Close();
     }
 }

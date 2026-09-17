@@ -30,6 +30,12 @@ internal static class Program
         typeof(RustMonitorAdmin).GetMethod("Execute", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(plugin, [arg]);
         return arg.Output == null ? "none" : JsonDocument.Parse(arg.Output).RootElement.GetProperty("State").GetString();
     }
+    private static JsonElement Call(RustMonitorAdmin plugin, string method, string input, bool inGame = false)
+    {
+        var arg = new ConsoleSystem.Arg { Input = input, Connection = inGame ? new object() : null };
+        typeof(RustMonitorAdmin).GetMethod(method, BindingFlags.NonPublic | BindingFlags.Instance).Invoke(plugin, [arg]);
+        return arg.Output == null ? default : JsonDocument.Parse(arg.Output).RootElement.Clone();
+    }
     private static int Main()
     {
         foreach (var sleeping in new[] { false, true })
@@ -61,6 +67,34 @@ internal static class Program
             request.Item.Contents.Add(new() { Uid = "43", ItemId = 321, Amount = 1, Slot = 0, Skin = "0" });
             Check(Run(plugin, request) == (changed ? "rejected" : "accepted") && item.Removed == !changed,
                 "nested contents are compared before deleting their containing item");
+        }
+        {
+            var (plugin, _, item) = Setup(); var request = Request();
+            item.hasCondition = false; item.condition = item.maxCondition = 100;
+            request.Item.Condition = request.Item.MaxCondition = 0;
+            var encoded = Convert.ToBase64String(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(request)));
+            Check(Call(plugin, "CheckDelete", encoded).GetProperty("State").GetString() == "ready" && item.RemoveCalls == 0,
+                "non-durability items compare against omitted saved condition fields without false rejection; check is read-only");
+            Check(Run(plugin, request) == "accepted", "items without durability can be removed despite nonzero internal defaults");
+            Check(Call(plugin, "ReadResult", request.RequestId).GetProperty("State").GetString() == "accepted" && item.RemoveCalls == 1,
+                "result lookup returns completion without replaying a mutation");
+        }
+        {
+            var (plugin, _, item) = Setup(); var request = Request();
+            var encoded = Convert.ToBase64String(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(request)));
+            var parts = Enumerable.Range(0, (encoded.Length + 99) / 100).Select(i => encoded.Substring(i * 100, Math.Min(100, encoded.Length - i * 100))).ToArray();
+            Call(plugin, "Prepare", request.RequestId + " 0 " + parts.Length + " " + parts[0]);
+            Check(Call(plugin, "Commit", request.RequestId).GetProperty("State").GetString() == "rejected" && item.RemoveCalls == 0,
+                "incomplete staged descriptions cannot delete anything");
+            for (var i = 1; i < parts.Length; i++) Call(plugin, "Prepare", request.RequestId + " " + i + " " + parts.Length + " " + parts[i]);
+            Check(item.RemoveCalls == 0, "all preparation chunks are non-mutating");
+            Check(Call(plugin, "Commit", request.RequestId).GetProperty("State").GetString() == "accepted" && item.RemoveCalls == 1,
+                "one explicit commit executes a complete staged request");
+            Call(plugin, "Commit", request.RequestId);
+            Check(item.RemoveCalls == 1, "a repeated commit returns the cached result without a second removal");
+            Check(Call(plugin, "Inspect", PlayerId.ToString(), true).ValueKind == JsonValueKind.Undefined &&
+                Call(plugin, "ReadResult", request.RequestId, true).ValueKind == JsonValueKind.Undefined,
+                "in-game callers cannot read inventories or administrative results");
         }
         {
             var (plugin, _, item) = Setup();

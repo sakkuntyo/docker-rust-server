@@ -11,7 +11,7 @@ namespace Newtonsoft.Json
 }
 namespace Oxide.Plugins
 {
-    public class RustPlugin { protected void Puts(string text) { } }
+    public class RustPlugin { protected void Puts(string text) { } protected void LogToFile(string name, string text, RustPlugin plugin) { } }
     public class InfoAttribute : Attribute { public InfoAttribute(string name, string author, string version) { } }
     public class DescriptionAttribute : Attribute { public DescriptionAttribute(string text) { } }
     public class ConsoleCommandAttribute : Attribute { public ConsoleCommandAttribute(string name) { } }
@@ -22,7 +22,7 @@ public static class ConsoleSystem
     {
         public object Connection;
         public string Input, Output;
-        public string GetString(int i, string fallback) => Input ?? fallback;
+        public string GetString(int i, string fallback) => Input?.Split(' ').ElementAtOrDefault(i) ?? fallback;
         public void ReplyWith(string value) => Output = value;
     }
 }
@@ -52,6 +52,7 @@ public class Item
     public int position, amount;
     public ulong skin;
     public float condition, maxCondition;
+    public bool hasCondition = true;
     public ItemContainer parent, contents;
     public object Held;
     public bool Removed, Denied;
