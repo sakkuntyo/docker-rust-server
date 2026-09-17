@@ -91,6 +91,52 @@ internal static partial class Program
         ((ListBox)main.FindName("PlayerList")).SelectedIndex = -1;
         refreshing.SetResult(snapshot);
         Check(stale.GetAwaiter().GetResult() == null, "changing player selection during refresh cancels the pending confirmation");
+
+        var roster = (ListBox)main.FindName("PlayerList"); roster.SelectedIndex = 0;
+        static UniformGrid MainSlots(MainWindow view) => (UniformGrid)((StackPanel)view.FindName("InventoryItems")).Children.OfType<Viewbox>().First().Child;
+        static ItemRecord? At(MainWindow view, int slot) => ((InventorySlot)((Border)MainSlots(view).Children[slot]).Tag).Item;
+        var deleting = prepared!.Value.Action;
+        main.ApplyModerationResult(profile, deleting, new ModerationResult { State = "unknown", Message = "結果不明" });
+        main.ApplyModerationResult(profile, deleting, new ModerationResult { State = "rejected", Message = "変更なし" });
+        Check(At(main, 1)?.Uid == "777", "uncertain and rejected deletions keep the item visible");
+        main.ApplyModerationResult(new SshProfile(profile.Target, "rust-other"), deleting, new ModerationResult { State = "accepted" });
+        var other = Wire.Read<ModerationRequest>(Wire.Write(deleting)); other.SteamId = "76561198000000002";
+        main.ApplyModerationResult(profile, other, new ModerationResult { State = "accepted" });
+        other = Wire.Read<ModerationRequest>(Wire.Write(deleting)); other.WipeId = "save:1789171200:other";
+        main.ApplyModerationResult(profile, other, new ModerationResult { State = "accepted" });
+        Check(At(main, 1)?.Uid == "777", "deletion results for another server, player or wipe do not remove the selected item");
+        var completions = 0;
+        var success = new ModerationWindow(profile, deleting, "Demo", send: (_, _, _) =>
+            Task.FromResult(new ModerationResult { State = "accepted", Message = "削除しました" }));
+        success.Completed += result => { completions++; main.ApplyModerationResult(profile, deleting, result); };
+        success.ExecuteAsync().GetAwaiter().GetResult();
+        success.ExecuteAsync().GetAwaiter().GetResult();
+        Check(completions == 1 && At(main, 1) == null && At(main, 0)?.Uid == item.Uid &&
+            ((Border)MainSlots(main).Children[1]).ContextMenu == null &&
+            ((DockPanel)((StackPanel)main.FindName("InventoryItems")).Children[0]).Children.OfType<TextBlock>().Last().Text == "1 個",
+            "successful deletion updates the slot and item count before confirmation closes, exactly once");
+        Check(((RustMonitor.Controls.SelectableText)main.FindName("InventoryStatus")).Text.Contains("削除成功済み"),
+            "inventory notice distinguishes confirmed deletions from the saved snapshot");
+        success.Close();
+        using (var db = new Store(Path.Combine(fixture, "monitor.sqlite3")))
+        {
+            Check(db.Inventory(profile.Key, request.WipeId, CombatSteamId)?.Items.Count == 2,
+                "display reconciliation preserves the original saved inventory and timestamp");
+            db.SaveSshSnapshot(profile, snapshot);
+        }
+        roster.SelectedIndex = -1; roster.SelectedIndex = 0;
+        Check(At(main, 1) == null, "a later sync of the same old save cannot restore the deleted item");
+        content.Measure(new Size(1392, 784)); content.Arrange(new Rect(0, 0, 1392, 784)); content.UpdateLayout();
+        SaveRender(content, "moderation-after-delete.png", 1392, 784);
         main.Close();
+        using var restoredIcons = PrepareRenderIcons(fixture);
+        var restored = new MainWindow(fixture, itemIcons: restoredIcons);
+        var restoredRoster = (ListBox)restored.FindName("PlayerList"); restoredRoster.SelectedIndex = 0;
+        Check(At(restored, 1) == null && At(restored, 0) != null, "confirmed deletion remains applied after restarting the app");
+        freshItem.Uid = "778";
+        using (var db = new Store(Path.Combine(fixture, "monitor.sqlite3"))) db.SaveInventory(profile.Key, freshInventory);
+        restoredRoster.SelectedIndex = -1; restoredRoster.SelectedIndex = 0;
+        Check(At(restored, 1)?.Uid == "778", "a new item occupying the deleted item's old slot stays visible");
+        restored.Close();
     }
 }

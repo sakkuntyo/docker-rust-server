@@ -228,7 +228,12 @@ public partial class MainWindow : Window
         InventoryStatus.Text = snapshot!.Source == "save"
             ? (server?.SaveAt == snapshot.CapturedAt ? "最終セーブ時点の所持品" : "以前のセーブの所持品") + "\n" + Time(snapshot.CapturedAt) + "\nセーブ後の変更は次の保存で反映されます。"
             : "最終取得時点の記録（現在の所持品は未確認）\n" + Time(snapshot.CapturedAt);
-        DrawInventory(snapshot.Items);
+        // Keep the saved snapshot intact. A confirmed deletion is newer evidence
+        // and must also win over subsequent reads of an older server save.
+        var visibleItems = snapshot.Items.Where(item => !WasDeleted(snapshot, item)).ToList();
+        if (visibleItems.Count != snapshot.Items.Count)
+            InventoryStatus.Text += "\n削除成功済みのアイテムは一覧から除外しています。";
+        DrawInventory(visibleItems);
     }
     private string MapPath(string key, string wipe) => Path.Combine(root, "maps", Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(key + "\n" + wipe))) + ".jpg");
     private void LoadMap()

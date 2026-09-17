@@ -17,7 +17,12 @@ public partial class MainWindow
         OpenModeration(profile, new ModerationRequest { Action = "ban", SteamId = row.SteamId, Name = row.Name }, server?.Name ?? profile.Container, "");
     }
     private static string DeletedKey(SshProfile target, ModerationRequest action) =>
-        "deleted-item:" + target.Key + ":" + action.WipeId + ":" + action.SteamId + ":" + action.Item?.Uid;
+        DeletedKey(target, action.WipeId, action.SteamId, action.Item?.Uid ?? "");
+    private static string DeletedKey(SshProfile target, string wipe, string steamId, string uid) =>
+        "deleted-item:" + target.Key + ":" + wipe + ":" + steamId + ":" + uid;
+    private bool WasDeleted(InventorySnapshot snapshot, ItemRecord item) => profile != null &&
+        ulong.TryParse(item.Uid, out var uid) && uid > 0 &&
+        store.Get(DeletedKey(profile, snapshot.WipeId, snapshot.SteamId, item.Uid)) == "true";
     private void AddDeleteMenu(Border cell, InventorySlot slot)
     {
         if (profile == null || shownInventory == null || PlayerList.SelectedItem is not PlayerRow row || slot.Item == null) return;
@@ -78,18 +83,26 @@ public partial class MainWindow
         if (refreshingDelete) return;
         if (moderationWindow != null) { moderationWindow.Activate(); return; }
         var window = new ModerationWindow(target, action, title, captured) { Owner = this };
+        window.Completed += result => ApplyModerationResult(target, action, result);
         moderationWindow = window;
-        try
+        try { window.ShowDialog(); }
+        finally { moderationWindow = null; }
+    }
+    public void ApplyModerationResult(SshProfile target, ModerationRequest action, ModerationResult result)
+    {
+        if (closed) return;
+        if (result.State == "accepted" && action.Action == "delete")
         {
-            window.ShowDialog();
-            if (closed) return;
-            if (window.Result?.State == "accepted" && action.Action == "delete")
+            try
             {
+                action.Validate();
                 store.Put(DeletedKey(target, action), "true");
                 ShowSelectedInventory();
+                result.Message = "対象のアイテム（スタック全体・内容物を含む）を削除し、一覧に反映しました。";
             }
-            if (window.Result != null) Status(action.Name + " • " + window.Result.Message);
+            catch (Exception)
+            { result.Message = "アイテムの削除は成功しましたが、一覧の更新に失敗しました。削除を再実行せず、一覧を更新してください。"; }
         }
-        finally { moderationWindow = null; }
+        Status(action.Name + " • " + result.Message);
     }
 }

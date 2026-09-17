@@ -11,6 +11,7 @@ public partial class ModerationWindow : Window
     private bool attempted, closed;
     public bool IsSending { get; private set; }
     public ModerationResult? Result { get; private set; }
+    public event Action<ModerationResult>? Completed;
 
     public ModerationWindow(SshProfile profile, ModerationRequest action, string serverName, string capturedAt = "",
         Func<SshProfile, ModerationRequest, CancellationToken, Task<ModerationResult>>? send = null)
@@ -47,6 +48,7 @@ public partial class ModerationWindow : Window
         try { Result = await sender(target, request, CancellationToken.None); }
         catch (Exception) { Result = new ModerationResult { State = "unknown", Message = "操作結果を確認できません。自動再送しません。ゲーム内の所持品またはサーバーのBAN一覧を確認してください。" }; }
         finally { IsSending = false; CloseButton.IsEnabled = true; CloseButton.Content = "閉じる"; }
+        Completed?.Invoke(Result);
         ResultText.Text = Result.Message;
     }
 }
