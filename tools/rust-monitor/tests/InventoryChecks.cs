@@ -164,7 +164,7 @@ internal static partial class Program
         Check(scroll.ActualHeight > expandedHeight + 100 && notice.Visibility == Visibility.Collapsed,
             "selecting another recorded player preserves the extra inventory space");
         toggle.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); content.UpdateLayout();
-        Check(Math.Abs(scroll.ActualHeight - expandedHeight) < 1 && ((TextBox)window.FindName("PlayerDetails")).Text.Contains("Steam ID:"),
+        Check(Math.Abs(scroll.ActualHeight - expandedHeight) < 1 && ((TextBox)window.FindName("PlayerSteamId")).Text.Contains("Steam ID:"),
             "showing information again restores the details and original inventory viewport");
         content.Measure(new Size(1392, 784)); content.Arrange(new Rect(0, 0, 1392, 784)); content.UpdateLayout();
     }

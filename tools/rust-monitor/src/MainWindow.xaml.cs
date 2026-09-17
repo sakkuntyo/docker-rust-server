@@ -15,6 +15,7 @@ public partial class MainWindow : Window
     private readonly Store store;
     private readonly string root;
     private readonly Func<SshProfile, CancellationToken, Task<SshServerSnapshot>> readServer;
+    private readonly Action<Uri> openLink;
     private readonly DispatcherTimer timer = new() { Interval = TimeSpan.FromSeconds(30) };
     private readonly SemaphoreSlim syncGate = new(1, 1);
     private CancellationTokenSource session = new();
@@ -26,9 +27,11 @@ public partial class MainWindow : Window
 
     public MainWindow(string dataRoot, Func<SshProfile, CancellationToken, Task<SshServerSnapshot>>? serverReader = null,
         Func<SshProfile, CancellationToken, Task<ChatSnapshot>>? chatReader = null,
-        Func<SshProfile, string, CancellationToken, Task<ChatSendResult>>? chatSender = null, ItemIcons? itemIcons = null)
+        Func<SshProfile, string, CancellationToken, Task<ChatSendResult>>? chatSender = null, ItemIcons? itemIcons = null,
+        Action<Uri>? linkOpener = null)
     {
         InitializeComponent();
+        openLink = linkOpener ?? (uri => System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true }));
         root = dataRoot;
         icons = itemIcons ?? new ItemIcons(Path.Combine(root, "icons"));
         readServer = serverReader ?? DockerSsh.ReadServerAsync;
@@ -188,14 +191,35 @@ public partial class MainWindow : Window
         UpdateMapLayout();
         InventoryItems.Children.Clear();
         if (PlayerList.SelectedItem is not PlayerRow row || profile == null)
-        { InventoryName.Text = "メンバーを選択"; PlayerDetails.Text = ""; ShowInventory(null); return; }
+        {
+            InventoryName.Text = "メンバーを選択"; PlayerSteamId.Text = PlayerIp.Text = PlayerDetails.Text = "";
+            SetPlayerLinks(null); ShowInventory(null); return;
+        }
         InventoryName.Text = row.Name;
-        var details = row.SteamIdLabel + "\n" + row.IpDetails + "\n初回確認 " + Time(row.Record.FirstSeen) + "\n最終オンライン確認 " + Time(row.Record.LastSeen);
+        PlayerSteamId.SetDisplayText(row.SteamIdLabel);
+        PlayerIp.SetDisplayText(row.IpText);
+        SetPlayerLinks(row);
+        var details = (row.IpObservation.Length > 0 ? row.IpObservation + "\n" : "") + "初回確認 " + Time(row.Record.FirstSeen) + "\n最終オンライン確認 " + Time(row.Record.LastSeen);
         details += row.Record.WipeId == server?.WipeId && row.Record.X != null && row.Record.Z != null && row.Record.PositionAt.Length > 0
             ? "\n" + Coordinates(row.Record) + "\n座標のセーブ " + Time(row.Record.PositionAt)
             : "\n座標：" + (row.Record.PositionReason.Length > 0 ? row.Record.PositionReason : "最新セーブに記録がありません");
         PlayerDetails.SetDisplayText(details);
         ShowInventory(store.Inventory(profile.Key, server?.WipeId ?? "", row.SteamId));
+    }
+    private void SetPlayerLinks(PlayerRow? row)
+    {
+        SteamProfileLink.NavigateUri = row?.SteamProfileUri;
+        IpInfoLink.NavigateUri = row?.IpInfoUri;
+        SteamProfileLinkHost.Visibility = SteamProfileLink.NavigateUri == null ? Visibility.Collapsed : Visibility.Visible;
+        IpInfoLinkHost.Visibility = IpInfoLink.NavigateUri == null ? Visibility.Collapsed : Visibility.Visible;
+    }
+    private void PlayerLink_Navigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
+    {
+        e.Handled = true;
+        if (sender is not System.Windows.Documents.Hyperlink link || link.NavigateUri is not { } uri) return;
+        try { openLink(uri); }
+        catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException)
+        { Status("ブラウザーを開けませんでした。Windowsの既定のブラウザー設定を確認してください。"); }
     }
     private void ShowInventory(InventorySnapshot? snapshot)
     {
@@ -289,11 +313,15 @@ public partial class MainWindow : Window
         public string Name => record.Name;
         public string SteamId => record.SteamId;
         public string SteamIdLabel => "Steam ID: " + record.SteamId;
+        public Uri? SteamProfileUri => SteamId.Length == 17 && SteamId.All(char.IsAsciiDigit)
+            ? new Uri("https://steamcommunity.com/profiles/" + SteamId) : null;
         private bool HasIp => System.Net.IPAddress.TryParse(record.RealIp, out _) && DateTimeOffset.TryParse(record.IpCheckedAt, out _);
+        public Uri? IpInfoUri => HasIp ? new Uri("https://ipinfo.io/" + Uri.EscapeDataString(System.Net.IPAddress.Parse(record.RealIp).ToString())) : null;
         public bool CurrentIp => IsOnline && record.IpVerified && DateTimeOffset.TryParse(record.IpCheckedAt, out var time) && Math.Abs((DateTimeOffset.UtcNow - time).TotalMinutes) < 3;
         public string IpText => "本IP: " + (HasIp ? record.RealIp + (CurrentIp ? "" : "（最終確認）") : "未確認");
-        public string IpDetails => IpText + (HasIp ? "\nconntrack 確認 " + Time(record.IpCheckedAt) : "") +
-            (IsOnline && !CurrentIp && record.IpReason.Length > 0 ? "\n" + record.IpReason : !HasIp && !IsOnline ? "\n接続中に確認できたIPを記録します。" : "");
+        public string IpObservation => ((HasIp ? "conntrack 確認 " + Time(record.IpCheckedAt) : "") +
+            (IsOnline && !CurrentIp && record.IpReason.Length > 0 ? "\n" + record.IpReason : !HasIp && !IsOnline ? "\n接続中に確認できたIPを記録します。" : "")).TrimStart('\n');
+        public string IpDetails => IpText + (IpObservation.Length > 0 ? "\n" + IpObservation : "");
         public bool Fresh => connected && DateTimeOffset.TryParse(record.ObservedAt, out var time) && DateTimeOffset.UtcNow - time < TimeSpan.FromMinutes(3);
         public bool IsOnline => Fresh && record.Online;
         public string State => !Fresh ? "未確認" : record.Online ? "オンライン" : "オフライン";

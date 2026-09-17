@@ -317,7 +317,7 @@ internal static partial class Program
         var profile = new SshProfile("admin@demo.invalid", "rust-demo");
         var state = new ServerState { Name = "DEMO / UI 検証用データ", WipeId = "fixture-wipe", Size = 3500, Seed = 123456, CapturedAt = "2026-09-14T01:12:00Z" };
         var roster = new[] {
-            new PlayerRecord { SteamId = "76561198000000001", Name = "Demo Player A", Online = true, WipeId = state.WipeId, X = -320, Y = 12, Z = 520, PositionAt = state.CapturedAt, FirstSeen = state.CapturedAt, LastSeen = state.CapturedAt },
+            new PlayerRecord { SteamId = "76561198000000001", Name = "Demo Player A", Online = true, WipeId = state.WipeId, X = -320, Y = 12, Z = 520, PositionAt = state.CapturedAt, FirstSeen = state.CapturedAt, LastSeen = state.CapturedAt, RealIp = "203.0.113.10", IpCheckedAt = state.CapturedAt },
             new PlayerRecord { SteamId = "76561198000000002", Name = "サンプルプレイヤー", Online = false, WipeId = state.WipeId, X = 710, Y = 0, Z = -290, PositionAt = state.CapturedAt, FirstSeen = state.CapturedAt, LastSeen = state.CapturedAt }
         };
         state.SaveAt = state.CapturedAt;
@@ -340,7 +340,8 @@ internal static partial class Program
             Directory.CreateDirectory(Path.GetDirectoryName(target)!); File.Copy(mapPath, target, true);
         }
         using var testIcons = PrepareRenderIcons(uiRoot);
-        var window = new MainWindow(uiRoot, itemIcons: testIcons);
+        var openedLinks = new List<Uri>();
+        var window = new MainWindow(uiRoot, itemIcons: testIcons, linkOpener: openedLinks.Add);
         if (mapPath == null)
         {
             var fixtureImage = BitmapSource.Create(3000, 3000, 96, 96, PixelFormats.Gray8, null, new byte[3000 * 3000], 3000);
@@ -355,9 +356,10 @@ internal static partial class Program
         using (var file = File.Create(Path.Combine(root, "ui-preview.png"))) encoder.Save(file);
         InventoryRenderChecks(window);
         SelectableTextChecks(window);
+        PlayerLinkChecks(window, openedLinks);
         Check(list.Items.Count == 2, "WPF loads persisted roster without a connection");
         Check(((TextBox)window.FindName("InventoryStatus")).Text.Contains("最終取得"), "WPF labels cached inventory as historical");
-        Check(((TextBox)window.FindName("PlayerDetails")).Text.StartsWith("Steam ID: ") && ((TextBox)window.FindName("PlayerDetails")).Text.Contains("本IP: "), "selected player details label Steam ID and show the IP immediately below it");
+        Check(((TextBox)window.FindName("PlayerSteamId")).Text.StartsWith("Steam ID: ") && ((TextBox)window.FindName("PlayerIp")).Text.StartsWith("本IP: "), "selected player details label Steam ID and show the IP immediately below it");
         var markers = (Canvas)window.FindName("MapMarkers");
         Check(markers.Children.OfType<Button>().Count() == 2, "WPF draws online and offline saved player coordinates");
         markers.Children.OfType<Button>().First(b => (string)b.Tag == roster[1].SteamId).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));

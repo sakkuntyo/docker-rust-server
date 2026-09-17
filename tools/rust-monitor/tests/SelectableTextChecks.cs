@@ -31,7 +31,7 @@ internal static partial class Program
     }
     private static void SelectableTextChecks(MainWindow window)
     {
-        var details = (SelectableText)window.FindName("PlayerDetails");
+        var details = (SelectableText)window.FindName("PlayerSteamId");
         details.Select(details.Text.IndexOf("76561198000000001", StringComparison.Ordinal), 17);
         Check(CaptureCopy(details) == "76561198000000001", "selected Steam ID copies without the surrounding labels or coordinates");
         var original = details.Text;
