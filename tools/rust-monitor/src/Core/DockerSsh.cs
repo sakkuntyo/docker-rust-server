@@ -123,6 +123,12 @@ public static class DockerSsh
         request.Validate();
         return ReadAsync<ModerationResult>(profile.Target, new { container = profile.Container, action = request }, cancellation, "moderation.py", 150);
     }
+    public static Task<InventorySnapshot> ReadInventoryAsync(SshProfile profile, string steamId, string wipe, CancellationToken cancellation = default)
+    {
+        if (!ValidContainer(profile.Container) || !Regex.IsMatch(steamId, @"\A[0-9]{17}\z") || !Regex.IsMatch(wipe, @"\Asave:[0-9]+:[A-Za-z0-9-]+\z"))
+            throw new ArgumentException("サーバー・プレイヤー・ワイプを確認してください。");
+        return ReadAsync<InventorySnapshot>(profile.Target, new { mode = "inventory", container = profile.Container, steamid = steamId, wipe }, cancellation, "moderation.py", 150);
+    }
     private static async Task<T> ReadAsync<T>(string target, object request, CancellationToken cancellation, string scriptFile = "docker_status.py", int timeoutSeconds = 90)
     {
         if (!ValidTarget(target)) throw new ArgumentException("SSH 接続先を user@hostname 形式で入力してください。");

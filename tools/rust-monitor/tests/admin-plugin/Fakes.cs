@@ -42,9 +42,9 @@ public class BasePlayer
     public void Kick(string reason) { Kicked = true; IsConnected = false; }
 }
 public class PlayerInventory { public ItemContainer containerMain = new(), containerBelt = new(), containerWear = new(); }
-public class ItemContainer { public List<Item> itemList = new(); }
+public class ItemContainer { public List<Item> itemList = new(); public int capacity = 30; }
 public struct ItemId { public ulong Value; }
-public class ItemDefinition { public int itemid; }
+public class ItemDefinition { public int itemid; public string shortname = "rifle.ak"; public Phrase displayName = new(); public class Phrase { public string english = "Assault Rifle"; } }
 public class Item
 {
     public ItemId uid;

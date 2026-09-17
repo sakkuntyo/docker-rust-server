@@ -31,7 +31,7 @@ public partial class MainWindow
         var captured = shownInventory.CapturedAt;
         var action = new ModerationRequest { Action = "delete", SteamId = row.SteamId, Name = row.Name, WipeId = shownInventory.WipeId,
             Item = Wire.Read<ItemRecord>(Wire.Write(slot.Item)) };
-        var available = slot.PositionKnown && shownInventory.Source == "save" && shownInventory.SteamId == row.SteamId;
+        var available = slot.PositionKnown && shownInventory.Source is "save" or "live" && shownInventory.SteamId == row.SteamId;
         var valid = available;
         try { action.Validate(); } catch (ArgumentException) { valid = false; }
         var deleted = store.Get(DeletedKey(target, action)) == "true";

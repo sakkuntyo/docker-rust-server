@@ -127,5 +127,29 @@ class ModerationTests(unittest.TestCase):
             self.assertNotIn('shell', run.call_args.kwargs)
             self.assertNotIn('-i', args)
 
+    def test_inventory_reads_live_data_including_empty_items(self):
+        request = dict(container='rust-demo', steamid=ACTION['SteamId'], wipe=ACTION['WipeId'])
+        for items in [[], [ACTION['Item']]]:
+            inventory = dict(SteamId=ACTION['SteamId'], WipeId=ACTION['WipeId'], Source='live', Current=True,
+                             CapturedAt='2026-09-18T01:00:00Z', Items=items)
+            reply = dict(Protocol=mod.PROTOCOL, SteamId=ACTION['SteamId'], WipeId=ACTION['WipeId'], Available=True, Inventory=inventory)
+            with patch.object(mod, 'ensure_helper') as prepare, patch.object(mod, 'run', return_value=json.dumps(reply)) as run:
+                self.assertEqual(mod.inventory_request(request, SOURCE), inventory)
+                prepare.assert_called_once()
+                run.assert_called_once_with('rust-demo', mod.RCON_SH, 'rustmonitoradmin.inventory ' + ACTION['SteamId'])
+
+    def test_inventory_invalid_targets_and_unavailable_or_wrong_responses_do_not_clear_data(self):
+        request = dict(container='rust-demo', steamid=ACTION['SteamId'], wipe=ACTION['WipeId'])
+        with patch.object(mod, 'ensure_helper') as prepare, patch.object(mod, 'run') as run:
+            self.assertIn('Error', mod.inventory_request(dict(request, steamid='bad;quit'), SOURCE))
+            prepare.assert_not_called(); run.assert_not_called()
+        inventory = dict(SteamId=ACTION['SteamId'], WipeId=ACTION['WipeId'], Source='live', Current=True, CapturedAt='2026-09-18T01:00:00Z', Items=[])
+        good = dict(Protocol=mod.PROTOCOL, SteamId=ACTION['SteamId'], WipeId=ACTION['WipeId'], Available=True, Inventory=inventory)
+        replies = [dict(good, Available=False), dict(good, SteamId='76561198000000002'), dict(good, WipeId='save:1:other'),
+                   dict(good, Inventory=dict(inventory, Source='save')), dict(good, Inventory=dict(inventory, CapturedAt='bad'))]
+        for reply in replies:
+            with patch.object(mod, 'ensure_helper'), patch.object(mod, 'run', return_value=json.dumps(reply)):
+                self.assertIn('Error', mod.inventory_request(request, SOURCE))
+
 
 if __name__ == '__main__': unittest.main()

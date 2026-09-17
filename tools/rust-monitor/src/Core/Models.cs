@@ -67,6 +67,9 @@ public sealed class PlayerPage
 
 public sealed class InventorySnapshot
 {
+    public int MainCapacity { get; set; }
+    public int BeltCapacity { get; set; }
+    public int WearCapacity { get; set; }
     public string SteamId { get; set; } = "";
     public string WipeId { get; set; } = "";
     public string CapturedAt { get; set; } = "";

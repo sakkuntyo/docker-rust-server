@@ -71,7 +71,15 @@ public sealed class Store : IDisposable
         }
         catch { Run("ROLLBACK"); throw; }
     }
-    public void SaveInventory(string server, InventorySnapshot inventory) => Run("INSERT OR REPLACE INTO inventories VALUES (?,?,?,?)", server, inventory.WipeId, inventory.SteamId, Wire.Write(inventory));
+    public void SaveInventory(string server, InventorySnapshot inventory)
+    {
+        var previous = Inventory(server, inventory.WipeId, inventory.SteamId);
+        // The periodic save reader must not roll a direct, newer observation back.
+        if (previous?.Source == "live" && inventory.Source != "live" &&
+            DateTimeOffset.TryParse(previous.CapturedAt, out var directAt) &&
+            (!DateTimeOffset.TryParse(inventory.CapturedAt, out var incomingAt) || incomingAt <= directAt)) return;
+        Run("INSERT OR REPLACE INTO inventories VALUES (?,?,?,?)", server, inventory.WipeId, inventory.SteamId, Wire.Write(inventory));
+    }
     public InventorySnapshot? Inventory(string server, string wipe, string steamid)
     {
         var json = Query("SELECT data FROM inventories WHERE server=? AND wipe=? AND steamid=?", server, wipe, steamid).FirstOrDefault();

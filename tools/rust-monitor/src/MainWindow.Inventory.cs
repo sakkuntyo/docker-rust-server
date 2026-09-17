@@ -37,7 +37,8 @@ public partial class MainWindow
     {
         foreach (var (key, label, columns) in new[] { ("main", "インベントリ", 6), ("belt", "ベルト", 6), ("wear", "装備", 8) })
         {
-            var slots = InventoryLayout.Slots(items, key);
+            var capacity = key == "main" ? shownInventory?.MainCapacity : key == "belt" ? shownInventory?.BeltCapacity : shownInventory?.WearCapacity;
+            var slots = InventoryLayout.Slots(items, key, capacity ?? 0);
             var used = slots.Count(s => s.Item != null);
             var header = new DockPanel { Margin = new Thickness(2, 10, 2, 7) };
             header.Children.Add(new TextBlock { Text = label, FontWeight = FontWeights.SemiBold, FontSize = 13 });

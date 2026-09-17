@@ -15,6 +15,7 @@ public partial class MainWindow : Window
     private readonly Store store;
     private readonly string root;
     private readonly Func<SshProfile, CancellationToken, Task<SshServerSnapshot>> readServer;
+    private readonly Func<SshProfile, string, string, CancellationToken, Task<InventorySnapshot>> readInventory;
     private readonly Action<Uri> openLink;
     private readonly DispatcherTimer timer = new() { Interval = TimeSpan.FromSeconds(30) };
     private readonly SemaphoreSlim syncGate = new(1, 1);
@@ -28,13 +29,15 @@ public partial class MainWindow : Window
     public MainWindow(string dataRoot, Func<SshProfile, CancellationToken, Task<SshServerSnapshot>>? serverReader = null,
         Func<SshProfile, CancellationToken, Task<ChatSnapshot>>? chatReader = null,
         Func<SshProfile, string, CancellationToken, Task<ChatSendResult>>? chatSender = null, ItemIcons? itemIcons = null,
-        Action<Uri>? linkOpener = null)
+        Action<Uri>? linkOpener = null,
+        Func<SshProfile, string, string, CancellationToken, Task<InventorySnapshot>>? inventoryReader = null)
     {
         InitializeComponent();
         openLink = linkOpener ?? (uri => System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true }));
         root = dataRoot;
         icons = itemIcons ?? new ItemIcons(Path.Combine(root, "icons"));
         readServer = serverReader ?? DockerSsh.ReadServerAsync;
+        readInventory = inventoryReader ?? DockerSsh.ReadInventoryAsync;
         readChat = chatReader ?? DockerSsh.ReadChatAsync;
         sendChat = chatSender ?? DockerSsh.SendChatAsync;
         store = new Store(Path.Combine(root, "monitor.sqlite3"));
@@ -228,7 +231,9 @@ public partial class MainWindow : Window
         UpdateInventoryDetailsVisibility();
         if (!inventoryAvailable)
         { InventoryStatus.Text = PlayerList.SelectedItem == null ? "メンバーを選ぶと、持ち物を表示します。" : "このワイプの所持品は未取得です。最新セーブに本人の身体がない場合もあります。"; return; }
-        InventoryStatus.Text = snapshot!.Source == "save"
+        InventoryStatus.Text = snapshot!.Source == "live"
+            ? "サーバーから直接取得した所持品\n" + Time(snapshot.CapturedAt) + "\n取得後の変化は「↻」で更新できます。"
+            : snapshot.Source == "save"
             ? (server?.SaveAt == snapshot.CapturedAt ? "最終セーブ時点の所持品" : "以前のセーブの所持品") + "\n" + Time(snapshot.CapturedAt) + "\nセーブ後の変更は次の保存で反映されます。"
             : "最終取得時点の記録（現在の所持品は未確認）\n" + Time(snapshot.CapturedAt);
         // Keep the saved snapshot intact. A confirmed deletion is newer evidence

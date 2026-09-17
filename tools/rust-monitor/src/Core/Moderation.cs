@@ -13,7 +13,7 @@ public sealed class ModerationRequest
     public ItemRecord? Item { get; set; }
     public ModerationRequest WithFreshIdentity(InventorySnapshot snapshot)
     {
-        if (Action != "delete" || Item == null || snapshot.Source != "save" || snapshot.SteamId != SteamId || snapshot.WipeId != WipeId)
+        if (Action != "delete" || Item == null || snapshot.Source is not ("save" or "live") || snapshot.SteamId != SteamId || snapshot.WipeId != WipeId)
             throw new ArgumentException("プレイヤーまたはワイプが変わりました。所持品を選び直してください。");
         var matches = snapshot.Items.Where(i => i.Container == Item.Container && i.Slot == Item.Slot).ToArray();
         if (matches.Length != 1 || !SameSavedItem(Item, matches[0]))

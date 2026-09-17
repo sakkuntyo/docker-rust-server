@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 namespace Oxide.Plugins
 {
-    [Info("RustMonitorAdmin", "Rust Monitor", "0.1.1")]
+    [Info("RustMonitorAdmin", "Rust Monitor", "0.1.2")]
     [Description("Explicit server-console-only single-item deletion and single-account bans.")]
     public class RustMonitorAdmin : RustPlugin
     {
@@ -18,7 +18,7 @@ namespace Oxide.Plugins
 
         public class ItemSpec
         {
-            public string Uid, Container, Skin;
+            public string Uid, Container, Skin, ShortName, Name;
             public int ItemId, Slot, Amount;
             public float Condition, MaxCondition;
             public int? Ammo;
@@ -34,7 +34,51 @@ namespace Oxide.Plugins
         private void Ping(ConsoleSystem.Arg arg)
         {
             if (arg.Connection != null) return;
-            arg.ReplyWith(JsonConvert.SerializeObject(new { Protocol, Version = "0.1.1" }));
+            arg.ReplyWith(JsonConvert.SerializeObject(new { Protocol, Version = "0.1.2" }));
+        }
+
+        private static string CurrentWipe() => "save:" + new DateTimeOffset(SaveRestore.SaveCreatedTime.ToUniversalTime()).ToUnixTimeSeconds() + ":" + SaveRestore.WipeId;
+
+        [ConsoleCommand("rustmonitoradmin.inventory")]
+        private void ReadInventory(ConsoleSystem.Arg arg)
+        {
+            if (arg.Connection != null) return;
+            var steamId = arg.GetString(0, "");
+            ulong id;
+            if (!Regex.IsMatch(steamId, "\\A[0-9]{17}\\z") || !ulong.TryParse(steamId, out id) || id < 70000000000000000UL) return;
+            var wipe = CurrentWipe();
+            try
+            {
+                var player = BasePlayer.FindByID(id) ?? BasePlayer.FindSleeping(id);
+                if (player == null || player.IsDead() || player.inventory == null)
+                { Reply(arg, new { Protocol, SteamId = steamId, WipeId = wipe, Available = false, Message = "現在の本人の身体が見つかりません。前回の表示を保持します。" }); return; }
+                var items = new List<ItemSpec>();
+                var budget = 2048;
+                foreach (var key in new[] { "main", "belt", "wear" })
+                {
+                    var container = key == "main" ? player.inventory.containerMain : key == "belt" ? player.inventory.containerBelt : player.inventory.containerWear;
+                    if (container == null || container.itemList.Count > 128) throw new InvalidOperationException();
+                    foreach (var item in container.itemList.Where(i => !i.IsRemoved())) items.Add(CaptureItem(item, key, 0, ref budget));
+                }
+                // Snapshot all three containers in this server tick without saving or moving anything.
+                Reply(arg, new { Protocol, SteamId = steamId, WipeId = wipe, Available = true, Inventory = new {
+                    SteamId = steamId, WipeId = wipe, Source = "live", Current = true, CapturedAt = DateTime.UtcNow.ToString("o"),
+                    MainCapacity = player.inventory.containerMain.capacity, BeltCapacity = player.inventory.containerBelt.capacity,
+                    WearCapacity = player.inventory.containerWear.capacity, Items = items } });
+            }
+            catch (Exception)
+            { Reply(arg, new { Protocol, SteamId = steamId, WipeId = wipe, Available = false, Message = "現在の所持品を取得できません。前回の表示を保持します。" }); }
+        }
+        private static ItemSpec CaptureItem(Item item, string container, int depth, ref int budget)
+        {
+            if (depth > 6 || --budget < 0 || item.info == null || (item.contents != null && item.contents.itemList.Count > 64)) throw new InvalidOperationException();
+            var result = new ItemSpec { Uid = item.uid.Value.ToString(), Container = container, ItemId = item.info.itemid,
+                ShortName = item.info.shortname, Name = item.info.displayName.english, Slot = item.position, Amount = item.amount,
+                Skin = item.skin.ToString(), Condition = item.hasCondition ? item.condition : 0f,
+                MaxCondition = item.hasCondition ? item.maxCondition : 0f, Ammo = SavedAmmo(item) };
+            if (item.contents != null)
+                foreach (var child in item.contents.itemList.Where(i => !i.IsRemoved())) result.Contents.Add(CaptureItem(child, container, depth + 1, ref budget));
+            return result;
         }
 
         [ConsoleCommand("rustmonitoradmin.result")]
@@ -160,7 +204,7 @@ namespace Oxide.Plugins
 
         private object Delete(Request request, ulong steamId, ref bool started, bool checkOnly = false)
         {
-            var wipe = "save:" + new DateTimeOffset(SaveRestore.SaveCreatedTime.ToUniversalTime()).ToUnixTimeSeconds() + ":" + SaveRestore.WipeId;
+            var wipe = CurrentWipe();
             if (request.WipeId != wipe || !ValidItem(request.Item, 0) ||
                 (request.Item.Container != "main" && request.Item.Container != "belt" && request.Item.Container != "wear"))
                 return Result(request, "rejected", "ワイプまたはアイテムの識別情報が一致しません。所持品を更新してください。");
@@ -173,7 +217,7 @@ namespace Oxide.Plugins
             // Compare live identity, owner, position, stack, durability, ammunition and children
             // in the same server tick as removal. Never delete a replacement in the old slot.
             if (item == null || item.parent != container || !Matches(item, request.Item))
-                return Result(request, "rejected", "セーブ後に対象が移動・変更されています。削除していません。次のセーブ後に更新してください。");
+                return Result(request, "rejected", "取得後に対象が移動・変更されています。削除していません。所持品の更新ボタンで再取得してください。");
             if (checkOnly) return Result(request, "ready", "現在の所持品と一致しています。照合のみで削除していません。");
             started = true;
             item.Remove();
@@ -215,13 +259,16 @@ namespace Oxide.Plugins
                 item.amount != spec.Amount || item.skin.ToString() != spec.Skin || Math.Abs((item.hasCondition ? item.condition : 0f) - spec.Condition) > .01f ||
                 Math.Abs((item.hasCondition ? item.maxCondition : 0f) - spec.MaxCondition) > .01f) return false;
             // Rust saves ammoCount as live count + 1, zero for non-ammunition items.
-            var entity = item.GetHeldEntity();
-            var ammo = entity is BaseProjectile ? ((BaseProjectile)entity).primaryMagazine.contents + 1 :
-                entity is Chainsaw ? ((Chainsaw)entity).ammo + 1 : entity is FlameThrower ? ((FlameThrower)entity).ammo + 1 : 0;
-            if (ammo != (spec.Ammo ?? 0)) return false;
+            if (SavedAmmo(item) != (spec.Ammo ?? 0)) return false;
             var contents = item.contents == null ? new List<Item>() : item.contents.itemList;
             return contents.Count == spec.Contents.Count && spec.Contents.All(expected =>
                 contents.Any(child => child.uid.Value.ToString() == expected.Uid && Matches(child, expected)));
+        }
+        private static int SavedAmmo(Item item)
+        {
+            var entity = item.GetHeldEntity();
+            return entity is BaseProjectile ? ((BaseProjectile)entity).primaryMagazine.contents + 1 :
+                entity is Chainsaw ? ((Chainsaw)entity).ammo + 1 : entity is FlameThrower ? ((FlameThrower)entity).ammo + 1 : 0;
         }
         private static object Result(Request request, string state, string message)
         { return new { Protocol, RequestId = request == null ? "" : request.RequestId, State = state, Message = message }; }

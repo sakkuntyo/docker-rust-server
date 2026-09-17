@@ -60,7 +60,7 @@
               <Button x:Name="CombatLogButton" Content="コンバットログ" Click="CombatLog_Click" DockPanel.Dock="Right" VerticalAlignment="Center" Padding="10,5" Margin="8,0,0,0" IsEnabled="False" ToolTip="選択したプレイヤーのコンバットログを別窓で開きます。1分ごとに新しい記録を追記します。"/>
               <Button x:Name="GiveItemButton" Content="+ アイテム" Click="GiveItem_Click" DockPanel.Dock="Right" VerticalAlignment="Center" Padding="8,5" Margin="8,0,0,0" IsEnabled="False" ToolTip="選択したプレイヤーへのアイテム付与メニューを開きます。"/>
               <Button x:Name="BanButton" Content="BAN" Background="#A23E3E" Click="Ban_Click" DockPanel.Dock="Right" VerticalAlignment="Center" Padding="8,5" Margin="8,0,0,0" IsEnabled="False" ToolTip="選択したプレイヤーのBAN確認画面を開きます。"/>
-              <Button x:Name="InventoryRefreshButton" Content="↻" FontSize="16" Width="28" Padding="0,2" Click="InventoryRefresh_Click" DockPanel.Dock="Right" VerticalAlignment="Center" Margin="8,0,0,0" IsEnabled="False" AutomationProperties.Name="所持品を更新" ToolTip="選択したプレイヤーの所持品を最新セーブから再取得します。"/>
+              <Button x:Name="InventoryRefreshButton" Content="↻" FontSize="16" Width="28" Padding="0,2" Click="InventoryRefresh_Click" DockPanel.Dock="Right" VerticalAlignment="Center" Margin="8,0,0,0" IsEnabled="False" AutomationProperties.Name="所持品を更新" ToolTip="選択したプレイヤーの現在の所持品を直接取得します。初回は管理用プラグインを準備します。"/>
               <ui:SelectableText x:Name="InventoryName" Text="メンバーを選択" FontSize="21" FontWeight="SemiBold" TextWrapping="NoWrap" VerticalAlignment="Center" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}"/>
             </DockPanel>
             <StackPanel x:Name="InventoryDetailsPanel">

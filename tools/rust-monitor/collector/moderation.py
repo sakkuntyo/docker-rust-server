@@ -2,12 +2,13 @@
 import base64
 import hashlib
 import json
+import datetime
 import re
 import subprocess
 import time
 
 PROTOCOL = 'rust-monitor-admin/1'
-HELPER_VERSION = '0.1.1'
+HELPER_VERSION = '0.1.2'
 RCON_SH = '''
 if [ -z "${ENV_RCON_PORT:-}" ] || [ -z "${ENV_RCON_PASSWD:-}" ]; then exit 2; fi
 exec timeout -k 1s 8s rcon -t web -T 6s -a "127.0.0.1:${ENV_RCON_PORT}" -p "$ENV_RCON_PASSWD" -- "$1"
@@ -24,11 +25,16 @@ cat > "$tmp"
 chmod 644 "$tmp"
 if [ ! -e "$dest" ]; then
   ln "$tmp" "$dest" || test -f "$dest"
-elif [ "$(sha256sum "$dest" | cut -d ' ' -f 1)" = c58cf9b48ef80a5c829908b98f0f5927b2f89c9eaaac0ba4060fcb9e83f300b8 ]; then
-  # Only the exact unmodified 0.1.0 bundled helper can be upgraded automatically.
-  backup="$dest.0.1.0.bak"
-  ln "$dest" "$backup" || test "$(sha256sum "$backup" | cut -d ' ' -f 1)" = c58cf9b48ef80a5c829908b98f0f5927b2f89c9eaaac0ba4060fcb9e83f300b8
-  if [ "$(sha256sum "$dest" | cut -d ' ' -f 1)" = c58cf9b48ef80a5c829908b98f0f5927b2f89c9eaaac0ba4060fcb9e83f300b8 ]; then
+else
+  oldhash=$(sha256sum "$dest" | cut -d ' ' -f 1)
+  backup=""
+  case "$oldhash" in
+    c58cf9b48ef80a5c829908b98f0f5927b2f89c9eaaac0ba4060fcb9e83f300b8) backup="$dest.0.1.0.bak" ;;
+    7bf026c96d82a1f6fb6ba2f97c66aff77250cb09fe713642db71c9da33ef0815) backup="$dest.0.1.1.bak" ;;
+  esac
+  if [ -n "$backup" ]; then
+    ln "$dest" "$backup" || test "$(sha256sum "$backup" | cut -d ' ' -f 1)" = "$oldhash"
+    test "$(sha256sum "$dest" | cut -d ' ' -f 1)" = "$oldhash"
     mv "$tmp" "$dest"
   fi
 fi
@@ -138,5 +144,35 @@ def moderation_request(request, source):
     return {'State': 'unknown', 'Message': '操作結果を確認できません。自動再送しません。ゲーム内の所持品またはサーバーのBAN一覧を確認してください。'}
 
 
+def inventory_request(request, source):
+    container, steamid, wipe = request.get('container'), request.get('steamid'), request.get('wipe')
+    if (not isinstance(container, str) or not re.fullmatch(r'rust-[A-Za-z0-9][A-Za-z0-9_.-]*', container) or
+            not isinstance(steamid, str) or not re.fullmatch(r'[0-9]{17}', steamid) or int(steamid) < 70000000000000000 or
+            not isinstance(wipe, str) or not re.fullmatch(r'save:[0-9]+:[A-Za-z0-9-]+', wipe)):
+        return {'Error': 'サーバー・プレイヤー・ワイプを確認してください。'}
+    try:
+        ensure_helper(container, source)
+        reply = json.loads(run(container, RCON_SH, 'rustmonitoradmin.inventory ' + steamid))
+        if not isinstance(reply, dict) or reply.get('Protocol') != PROTOCOL or reply.get('SteamId') != steamid:
+            raise ValueError('Invalid inventory response')
+        if reply.get('WipeId') != wipe:
+            return {'Error': 'ワイプが変わりました。サーバーへ接続し直してください。'}
+        if reply.get('Available') is not True:
+            return {'Error': '現在の本人の所持品を取得できません。身体がない場合もあります。前回の表示を保持します。'}
+        inventory = reply.get('Inventory')
+        if (not isinstance(inventory, dict) or inventory.get('SteamId') != steamid or inventory.get('WipeId') != wipe or
+                inventory.get('Source') != 'live' or inventory.get('Current') is not True or
+                not isinstance(inventory.get('CapturedAt'), str) or not isinstance(inventory.get('Items'), list) or
+                len(inventory['Items']) > 384 or any(not valid_item(i) or i.get('Container') not in ('main', 'belt', 'wear') for i in inventory['Items'])):
+            raise ValueError('Invalid inventory snapshot')
+        if datetime.datetime.fromisoformat(inventory['CapturedAt'].replace('Z', '+00:00')).tzinfo is None:
+            raise ValueError('Missing capture timezone')
+        return inventory
+    except (ValueError, IndexError, RuntimeError, subprocess.TimeoutExpired, OSError):
+        return {'Error': '現在の所持品を取得できません。SSH接続と管理プラグインを確認してください。前回の表示を保持します。'}
+
+
 if __name__ == '__main__':
-    print(json.dumps(moderation_request(globals().get('REQUEST', {}), globals().get('ADMIN_PLUGIN', '')), ensure_ascii=False))
+    request = globals().get('REQUEST', {})
+    handler = inventory_request if request.get('mode') == 'inventory' else moderation_request
+    print(json.dumps(handler(request, globals().get('ADMIN_PLUGIN', '')), ensure_ascii=False))

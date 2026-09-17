@@ -4,9 +4,10 @@ public sealed record InventorySlot(int Index, ItemRecord? Item, bool PositionKno
 
 public static class InventoryLayout
 {
-    public static List<InventorySlot> Slots(IEnumerable<ItemRecord> items, string container)
+    public static List<InventorySlot> Slots(IEnumerable<ItemRecord> items, string container, int observedCapacity = 0)
     {
         var minimum = container switch { "main" => 24, "belt" => 6, "wear" => 8, _ => 0 };
+        minimum = Math.Max(minimum, Math.Clamp(observedCapacity, 0, 128));
         var records = items.Where(i => i.Container == container).ToList();
         var largest = records.Where(i => i.Slot is >= 0 and < 96).Select(i => i.Slot + 1).DefaultIfEmpty(0).Max();
         var capacity = Math.Max(minimum, largest);

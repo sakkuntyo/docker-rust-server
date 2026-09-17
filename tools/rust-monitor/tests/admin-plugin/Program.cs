@@ -40,6 +40,27 @@ internal static class Program
     {
         foreach (var sleeping in new[] { false, true })
         {
+            var (plugin, player, item) = Setup(sleeping);
+            item.hasCondition = false; item.condition = item.maxCondition = 300;
+            item.contents = new() { itemList = [new Item { uid = new() { Value = 43 }, info = new() { itemid = 321 }, amount = 1, position = 0 }] };
+            var reply = Call(plugin, "ReadInventory", PlayerId.ToString());
+            var inventory = reply.GetProperty("Inventory"); var record = inventory.GetProperty("Items")[0];
+            Check(reply.GetProperty("Available").GetBoolean() && inventory.GetProperty("Source").GetString() == "live" &&
+                inventory.GetProperty("SteamId").GetString() == PlayerId.ToString() && inventory.GetProperty("MainCapacity").GetInt32() == 30 &&
+                record.GetProperty("Container").GetString() == "belt" && record.GetProperty("Uid").GetString() == "42" &&
+                record.GetProperty("Condition").GetSingle() == 0 && record.GetProperty("Ammo").GetInt32() == 31 &&
+                record.GetProperty("Contents")[0].GetProperty("Uid").GetString() == "43" && item.RemoveCalls == 0 && ServerUsers.Saves == 0,
+                "direct inventory captures complete " + (sleeping ? "sleeping" : "online") + " possessions without modifying or saving the server");
+            item.parent.itemList.Clear();
+            Check(Call(plugin, "ReadInventory", PlayerId.ToString()).GetProperty("Inventory").GetProperty("Items").GetArrayLength() == 0,
+                "empty current inventory is available and is not confused with missing player data");
+            player.Dead = true;
+            Check(!Call(plugin, "ReadInventory", PlayerId.ToString()).GetProperty("Available").GetBoolean(), "dead player inventory is unavailable rather than empty");
+            Check(Call(plugin, "ReadInventory", PlayerId.ToString(), true).ValueKind == JsonValueKind.Undefined,
+                "in-game callers cannot use the direct inventory endpoint");
+        }
+        foreach (var sleeping in new[] { false, true })
+        {
             var (plugin, player, item) = Setup(sleeping); var request = Request();
             Check(Run(plugin, request) == "accepted" && item.Removed && item.parent == null && player.inventory.containerBelt.itemList.Count == 0,
                 "matching item is removed from " + (sleeping ? "sleeping" : "online") + " player");
