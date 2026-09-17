@@ -1,7 +1,6 @@
 using System.Collections.Concurrent;
 using System.IO;
 using System.Net.Http;
-using System.Text.RegularExpressions;
 using System.Windows.Media.Imaging;
 
 namespace RustMonitor.Core;
@@ -18,8 +17,8 @@ public sealed class ItemIcons : IDisposable
     private readonly SemaphoreSlim limit = new(4);
     private readonly CancellationTokenSource shutdown = new();
     public ItemIcons(string directory, HttpClient? client = null) { this.directory = directory; this.client = client ?? Client; }
-    public static Uri? ImageUri(string shortName) => Regex.IsMatch(shortName, @"\A[a-z0-9][a-z0-9._-]{0,95}\z")
-        ? new Uri("https://files.facepunch.com/rust/item/" + shortName + "_512.png") : null;
+    public static Uri? ImageUri(string shortName) => GiveItemRequest.ValidShortName(shortName)
+        ? new Uri("https://files.facepunch.com/rust/item/" + Uri.EscapeDataString(shortName) + "_512.png") : null;
     public Task<BitmapSource?> GetAsync(string shortName)
     {
         var uri = ImageUri(shortName);

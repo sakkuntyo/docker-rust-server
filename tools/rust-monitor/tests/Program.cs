@@ -27,6 +27,14 @@ internal static partial class Program
         root = Path.GetFullPath(args[0]); Directory.CreateDirectory(root);
         try
         {
+            if (args.Length == 2 && args[1] == "--live-item-icons") { LiveItemMenuIcons(); return 0; }
+            if (args.Length == 5 && args[1] == "--live-item-menu")
+            {
+                var result = DockerSsh.ReadItemMenuAsync(new SshProfile(args[2], args[3]), args[4]).GetAwaiter().GetResult();
+                Check(result.SteamId == args[4] && result.Items.Count > 1000, "desktop SSH transport reads native item definitions without giving any items");
+                Console.WriteLine($"Items: {result.Items.Count}; categories: {result.Items.Select(i => i.Category).Distinct().Count()}; online: {result.Online}");
+                return 0;
+            }
             if (args.Length == 2 && args[1] == "--live-icons")
             {
                 LiveIconChecks();
@@ -364,6 +372,10 @@ internal static partial class Program
         var list = (ListBox)window.FindName("PlayerList"); list.SelectedIndex = 0;
         var content = (FrameworkElement)window.Content;
         content.Measure(new Size(1392, 784)); content.Arrange(new Rect(0, 0, 1392, 784)); content.UpdateLayout();
+        var addItem = (Button)window.FindName("GiveItemButton"); var combatButton = (Button)window.FindName("CombatLogButton");
+        var addPosition = addItem.TranslatePoint(new Point(), content); var combatPosition = combatButton.TranslatePoint(new Point(), content);
+        Check(addPosition.X + addItem.ActualWidth <= combatPosition.X && Math.Abs(addPosition.Y - combatPosition.Y) < 1,
+            "the add-item button sits immediately left of combat log on the existing player-name row");
         var image = new RenderTargetBitmap(1440, 832, 96, 96, PixelFormats.Pbgra32); image.Render(content);
         var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(image));
         using (var file = File.Create(Path.Combine(root, "ui-preview.png"))) encoder.Save(file);
@@ -411,6 +423,7 @@ internal static partial class Program
         HistoryChecks();
         ChatChecks();
         CombatChecks();
+        ItemGiveChecks();
         window.Close();
     }
     private static void HistoryChecks()

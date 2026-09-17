@@ -85,6 +85,7 @@
             <DockPanel Margin="0,18,0,6">
               <Button x:Name="InventoryDetailsToggle" Content="▼ 情報を隠す" Click="InventoryDetailsToggle_Click" DockPanel.Dock="Right" VerticalAlignment="Center" Padding="8,5" Margin="8,0,0,0" ToolTip="Steam ID・本IP・座標・保存日時などの表示を切り替えます。"/>
               <Button x:Name="CombatLogButton" Content="コンバットログ" Click="CombatLog_Click" DockPanel.Dock="Right" VerticalAlignment="Center" Padding="10,5" Margin="8,0,0,0" IsEnabled="False" ToolTip="選択したプレイヤーのコンバットログを別窓で開きます。1分ごとに新しい記録を追記します。"/>
+              <Button x:Name="GiveItemButton" Content="+ アイテム" Click="GiveItem_Click" DockPanel.Dock="Right" VerticalAlignment="Center" Padding="8,5" Margin="8,0,0,0" IsEnabled="False" ToolTip="選択したプレイヤーへのアイテム付与メニューを開きます。"/>
               <ui:SelectableText x:Name="InventoryName" Text="メンバーを選択" FontSize="21" FontWeight="SemiBold" TextWrapping="NoWrap" VerticalAlignment="Center" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}"/>
             </DockPanel>
             <StackPanel x:Name="InventoryDetailsPanel">

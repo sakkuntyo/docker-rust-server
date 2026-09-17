@@ -105,6 +105,18 @@ public static class DockerSsh
         message = ChatText.Validate(message);
         return ReadAsync<ChatSendResult>(profile.Target, new { mode = "say", container = profile.Container, message }, cancellation, "chat.py", 20);
     }
+    public static Task<ItemMenuSnapshot> ReadItemMenuAsync(SshProfile profile, string steamId, CancellationToken cancellation = default)
+    {
+        if (!ValidContainer(profile.Container) || !Regex.IsMatch(steamId, @"\A[0-9]{17}\z")) throw new ArgumentException("サーバーとプレイヤーを選択してください。");
+        return ReadAsync<ItemMenuSnapshot>(profile.Target, new { mode = "itemmenu", container = profile.Container, steamid = steamId }, cancellation, "items.py", 40);
+    }
+    public static Task<GiveItemResult> GiveItemAsync(SshProfile profile, GiveItemRequest request, CancellationToken cancellation = default)
+    {
+        if (!ValidContainer(profile.Container)) throw new ArgumentException("サーバーを選択してください。");
+        request.Validate();
+        return ReadAsync<GiveItemResult>(profile.Target, new { mode = "giveitem", container = profile.Container, steamid = request.SteamId,
+            itemid = request.ItemId, shortname = request.ShortName, amount = request.Amount }, cancellation, "items.py", 55);
+    }
     private static async Task<T> ReadAsync<T>(string target, object request, CancellationToken cancellation, string scriptFile = "docker_status.py", int timeoutSeconds = 90)
     {
         if (!ValidTarget(target)) throw new ArgumentException("SSH 接続先を user@hostname 形式で入力してください。");
