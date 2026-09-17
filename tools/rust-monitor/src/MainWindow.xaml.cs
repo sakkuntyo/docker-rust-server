@@ -22,7 +22,7 @@ public partial class MainWindow : Window
     private SshProfile? profile;
     private ServerState? server;
     private List<PlayerRecord> players = [];
-    private bool live, closed, bindingRoster, presenceAvailable;
+    private bool live, closed, bindingRoster, presenceAvailable, serverBusy;
     private int generation;
 
     public MainWindow(string dataRoot, Func<SshProfile, CancellationToken, Task<SshServerSnapshot>>? serverReader = null,
@@ -53,11 +53,13 @@ public partial class MainWindow : Window
     private void Status(string text) { if (!closed) StatusText.Text = text; }
     private void SetBusy(bool busy)
     {
+        serverBusy = busy;
         ConnectButton.IsEnabled = ListButton.IsEnabled = !busy;
         TargetBox.IsEnabled = ContainerBox.IsEnabled = !busy;
         ChatButton.IsEnabled = profile != null;
         RefreshButton.IsEnabled = live && !busy;
         DisconnectButton.IsEnabled = live || busy;
+        UpdateInventoryRefreshButton();
     }
     private void SetServers(DockerReport report)
     {
@@ -184,6 +186,7 @@ public partial class MainWindow : Window
         CombatLogButton.IsEnabled = profile != null && PlayerList.SelectedItem is PlayerRow;
         GiveItemButton.IsEnabled = CombatLogButton.IsEnabled;
         BanButton.IsEnabled = CombatLogButton.IsEnabled;
+        UpdateInventoryRefreshButton();
         InventoryItems.Children.Clear();
         if (PlayerList.SelectedItem is not PlayerRow row || profile == null)
         {

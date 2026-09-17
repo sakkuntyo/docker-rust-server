@@ -53,8 +53,9 @@ public partial class MainWindow
     }
     public async Task<(ModerationRequest Action, string CapturedAt)?> RefreshDeletionAsync(SshProfile target, ModerationRequest action)
     {
-        if (refreshingDelete || moderationWindow != null || closed || target != profile || PlayerList.SelectedItem is not PlayerRow row || row.SteamId != action.SteamId) return null;
+        if (refreshingDelete || refreshingInventory || moderationWindow != null || closed || target != profile || PlayerList.SelectedItem is not PlayerRow row || row.SteamId != action.SteamId) return null;
         refreshingDelete = true;
+        UpdateInventoryRefreshButton();
         var current = generation;
         bool held = false;
         Status("削除対象の識別情報をSSHで更新しています…（まだ削除しません）");
@@ -76,7 +77,7 @@ public partial class MainWindow
             return (fresh, inventory.CapturedAt);
         }
         catch (Exception ex) { if (!closed && current == generation) Status("削除していません • " + SafeError(ex)); return null; }
-        finally { if (held) syncGate.Release(); refreshingDelete = false; }
+        finally { if (held) syncGate.Release(); refreshingDelete = false; if (!closed) UpdateInventoryRefreshButton(); }
     }
     private void OpenModeration(SshProfile target, ModerationRequest action, string title, string captured)
     {

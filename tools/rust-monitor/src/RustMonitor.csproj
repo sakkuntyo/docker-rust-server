@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>RustMonitor</AssemblyName>
-    <Version>0.2.19</Version>
+    <Version>0.2.20</Version>
   </PropertyGroup>
   <ItemGroup>
     <Content Include="../collector/moderation.py" Link="collector/moderation.py" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest"/>

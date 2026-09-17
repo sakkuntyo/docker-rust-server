@@ -425,6 +425,7 @@ internal static partial class Program
         CombatChecks();
         ItemGiveChecks();
         ModerationChecks();
+        InventoryRefreshChecks();
         window.Close();
     }
     private static void HistoryChecks()
