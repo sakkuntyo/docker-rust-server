@@ -87,7 +87,6 @@ public partial class MainWindow
     private void MapArea_SizeChanged(object sender, SizeChangedEventArgs e)
     {
         UpdateMapLayout();
-        if (ChatBody != null) ChatBody.Height = Math.Clamp(MapArea.ActualHeight * .53, 150, 300);
     }
     private void MapNames_Changed(object sender, RoutedEventArgs e) => UpdateMapLayout();
     private void ZoomMap(double factor, Point? anchor = null)

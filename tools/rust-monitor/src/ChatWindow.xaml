@@ -1,0 +1,30 @@
+<Window x:Class="RustMonitor.ChatWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ui="clr-namespace:RustMonitor.Controls" Title="Rust Monitor / サーバーチャット" Width="820" Height="640" MinWidth="640" MinHeight="460" Background="#101820" FontFamily="Yu Gothic UI, Segoe UI" FontSize="13" WindowStartupLocation="CenterOwner">
+  <Grid Margin="22" Background="#101820">
+    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+    <StackPanel Margin="0,0,0,16">
+      <TextBlock Text="SERVER / CHAT" FontSize="24" FontWeight="Bold"/>
+      <ui:SelectableText x:Name="ChatDestination" FontSize="17" FontWeight="SemiBold" Margin="0,8,0,3"/>
+      <ui:SelectableText x:Name="ConnectionText" Foreground="{StaticResource Muted}" FontSize="11"/>
+    </StackPanel>
+    <DockPanel Grid.Row="1" Margin="0,0,0,12">
+      <StackPanel DockPanel.Dock="Right" Orientation="Horizontal"><Button x:Name="RefreshButton" Content="今すぐ更新" Click="Refresh_Click" Padding="12,7"/><Button x:Name="PauseButton" Content="更新停止" Click="Pause_Click" Padding="12,7"/></StackPanel>
+      <CheckBox x:Name="ChatGlobalOnly" Content="全体・サーバーのみ" IsChecked="True" Checked="ChatFilter_Changed" Unchecked="ChatFilter_Changed"/>
+    </DockPanel>
+    <Border Grid.Row="2" Background="{StaticResource Panel}" CornerRadius="7" Padding="14">
+      <Grid>
+        <ScrollViewer x:Name="ChatScroll" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled">
+          <ItemsControl x:Name="ChatMessages"><ItemsControl.ItemTemplate><DataTemplate>
+            <StackPanel Margin="0,0,0,14"><ui:SelectableText Text="{Binding Heading, Mode=OneWay}" Foreground="#AAC5D6" FontSize="11" TextWrapping="Wrap"/><ui:SelectableText Text="{Binding Message, Mode=OneWay}" TextWrapping="Wrap" Margin="0,4,0,0"/></StackPanel>
+          </DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+        </ScrollViewer>
+        <TextBlock x:Name="ChatEmpty" Text="表示できるチャットはありません" Foreground="{StaticResource Muted}" VerticalAlignment="Center" HorizontalAlignment="Center" IsHitTestVisible="False"/>
+      </Grid>
+    </Border>
+    <ui:SelectableText Grid.Row="3" x:Name="ChatStateText" Text="チャットを取得しています…" Foreground="{StaticResource Muted}" FontSize="11" Margin="0,10,0,12"/>
+    <StackPanel Grid.Row="4">
+      <TextBlock Text="SERVER として全体へ発言" Foreground="#AAC5D6" FontSize="12" Margin="0,0,0,7"/>
+      <DockPanel><Button x:Name="ChatSend" Content="送信" Click="ChatSend_Click" DockPanel.Dock="Right" Margin="10,0,0,0" IsEnabled="False"/><TextBox x:Name="ChatInput" MaxLength="256" PreviewKeyDown="ChatInput_KeyDown" TextChanged="ChatInput_Changed" ToolTip="サーバー全体へ発言します（global.say）。送信ボタンまたは Ctrl＋Enter。"/></DockPanel>
+      <ui:SelectableText x:Name="ChatSendStatus" Text="送信ボタン / Ctrl＋Enter で発言" FontSize="11" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,7,0,0"/>
+    </StackPanel>
+  </Grid>
+</Window>

@@ -104,7 +104,6 @@ internal static partial class Program
         Check(!Directory.Exists(Path.Combine(fixture, "icons")), "live icon check starts with no cached images");
         var window = new MainWindow(fixture);
         ((ListBox)window.FindName("PlayerList")).SelectedIndex = 0;
-        ((CheckBox)window.FindName("ChatVisible")).IsChecked = false;
         var panel = (StackPanel)window.FindName("InventoryItems");
         var cells = ((UniformGrid)panel.Children.OfType<Viewbox>().First().Child).Children.OfType<Border>().Take(ids.Length).ToArray();
         var images = cells.Select(c => ((Grid)c.Child).Children.OfType<Image>().Single()).ToArray();

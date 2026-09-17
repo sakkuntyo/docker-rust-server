@@ -56,6 +56,8 @@ internal static partial class Program
         var window = new ItemGiveWindow(db, profile, CombatSteamId, "Demo Player A", "DEMO / アイテムメニュー", icons,
             (_, _, _) => Task.FromResult(snapshot), (p, request, _) => { requests.Add((p, request)); return pending.Task; });
         var rows = (ListBox)window.FindName("ItemRows"); var content = (FrameworkElement)window.Content;
+        Check(window.Width == 1040 && window.Height == 700 && window.MinWidth == 1040 && window.MinHeight == 700,
+            "the item menu initially opens at its unchanged minimum window size");
         void Layout(int width = 1432) { content.Measure(new Size(width, 868)); content.Arrange(new Rect(0, 0, width, 868)); content.UpdateLayout(); }
         IEnumerable<ItemGiveWindow.ItemChoice> VisibleChoices() => rows.Items.Cast<ItemGiveWindow.ItemTileRow>().SelectMany(r => r.Items);
         void Category(string key) => ((WrapPanel)window.FindName("CategoryTabs")).Children.OfType<ToggleButton>().Single(t => (string)t.Tag == key).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
