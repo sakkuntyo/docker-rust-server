@@ -28,6 +28,7 @@ internal static partial class Program
         try
         {
             if (args.Length == 2 && args[1] == "--live-item-icons") { LiveItemMenuIcons(); return 0; }
+            if (args.Length == 3 && args[1] == "--backpack-preview") { BackpackPreview(args[2]); return 0; }
             if (args.Length == 6 && args[1] == "--live-inventory") { LiveInventoryCheck(new SshProfile(args[2], args[3]), args[4], args[5]); return 0; }
             if (args.Length == 5 && args[1] == "--live-item-menu")
             {
@@ -427,6 +428,7 @@ internal static partial class Program
         ItemGiveChecks();
         ModerationChecks();
         InventoryRefreshChecks();
+        ItemContentsChecks();
         window.Close();
     }
     private static void HistoryChecks()

@@ -9,6 +9,16 @@ public static class InventoryLayout
         var minimum = container switch { "main" => 24, "belt" => 6, "wear" => 8, _ => 0 };
         minimum = Math.Max(minimum, Math.Clamp(observedCapacity, 0, 128));
         var records = items.Where(i => i.Container == container).ToList();
+        return BuildSlots(records, minimum);
+    }
+    public static List<InventorySlot> ContentSlots(ItemRecord item) => BuildSlots(item.Contents, 0);
+    public static bool CanOpen(ItemRecord item)
+    {
+        ItemCatalog.Name(item);
+        return item.Contents.Count > 0 || item.ShortName is "largebackpack" or "smallbackpack" or "kriegbackpack";
+    }
+    private static List<InventorySlot> BuildSlots(List<ItemRecord> records, int minimum)
+    {
         var largest = records.Where(i => i.Slot is >= 0 and < 96).Select(i => i.Slot + 1).DefaultIfEmpty(0).Max();
         var capacity = Math.Max(minimum, largest);
         var slots = Enumerable.Range(0, capacity).Select(i => new InventorySlot(i, null)).ToList();

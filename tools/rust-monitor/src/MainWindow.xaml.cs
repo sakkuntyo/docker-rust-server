@@ -44,7 +44,7 @@ public partial class MainWindow : Window
         InitializeInventory();
         timer.Tick += async (_, _) => { if (live) await RefreshSafeAsync(); };
         Closing += (_, e) => { if (moderationWindow?.IsSending == true || itemWindows.Values.Any(w => w.IsSending) || chatWindows.Values.Any(w => w.IsSending)) { e.Cancel = true; Status("送信結果を確認しています。完了後に閉じてください。"); } };
-        Closed += (_, _) => { closed = true; generation++; foreach (var window in chatWindows.Values.ToArray()) window.Close(); foreach (var window in itemWindows.Values.ToArray()) window.Close(); foreach (var window in combatWindows.Values.ToArray()) window.Close(); icons.Dispose(); timer.Stop(); session.Cancel(); session.Dispose(); store.Dispose(); };
+        Closed += (_, _) => { closed = true; generation++; foreach (var window in contentsWindows.Values.ToArray()) window.Close(); foreach (var window in chatWindows.Values.ToArray()) window.Close(); foreach (var window in itemWindows.Values.ToArray()) window.Close(); foreach (var window in combatWindows.Values.ToArray()) window.Close(); icons.Dispose(); timer.Stop(); session.Cancel(); session.Dispose(); store.Dispose(); };
         TargetBox.Text = store.Get("last-ssh-target") ?? "";
         if (store.Get("ssh-list:" + TargetBox.Text) is string list) SetServers(Wire.Read<DockerReport>(list));
         else if (store.Get("docker-report:" + TargetBox.Text) is string report) SetServers(Wire.Read<DockerReport>(report));

@@ -1,0 +1,29 @@
+<Window x:Class="RustMonitor.ItemContentsWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ui="clr-namespace:RustMonitor.Controls" Title="Rust Monitor / 中身" Width="650" Height="650" MinWidth="440" MinHeight="380" Background="#101820" FontFamily="Yu Gothic UI, Segoe UI" FontSize="13" WindowStartupLocation="CenterOwner">
+  <Grid Margin="24" Background="#101820">
+    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+    <DockPanel Margin="0,0,0,14">
+      <Button x:Name="RefreshButton" DockPanel.Dock="Right" Content="↻ 更新" Click="Refresh_Click" VerticalAlignment="Top" ToolTip="このプレイヤーの現在の所持品から中身を読み直します。"/>
+      <StackPanel>
+        <ui:SelectableText x:Name="ItemHeading" FontSize="23" FontWeight="Bold" TextWrapping="Wrap"/>
+        <ui:SelectableText x:Name="PlayerHeading" Margin="0,8,0,3" FontSize="16"/>
+        <ui:SelectableText x:Name="DestinationText" Foreground="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap"/>
+      </StackPanel>
+    </DockPanel>
+    <DockPanel Grid.Row="1" Margin="0,0,0,12">
+      <ui:SelectableText x:Name="CountText" DockPanel.Dock="Right" HorizontalAlignment="Right"/>
+      <ui:SelectableText x:Name="SnapshotText" Foreground="{StaticResource Muted}" FontSize="12" TextWrapping="Wrap"/>
+    </DockPanel>
+    <Border Grid.Row="2" Background="#19232C" CornerRadius="6" Padding="12">
+      <Grid>
+        <ScrollViewer VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled">
+          <Viewbox Stretch="Uniform" VerticalAlignment="Top"><UniformGrid x:Name="ContentsGrid" Columns="6" Width="384"/></Viewbox>
+        </ScrollViewer>
+        <TextBlock x:Name="EmptyText" Text="中身は空です" Foreground="{StaticResource Muted}" VerticalAlignment="Center" HorizontalAlignment="Center" TextWrapping="Wrap"/>
+      </Grid>
+    </Border>
+    <StackPanel Grid.Row="3" Margin="0,14,0,0">
+      <ui:SelectableText x:Name="StatusText" Foreground="{StaticResource Muted}" TextWrapping="Wrap"/>
+      <TextBlock Text="アイコンにマウスを重ねると詳細を表示 • 中身があるアイテムは右クリック → 開く" Foreground="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap" Margin="0,7,0,0"/>
+    </StackPanel>
+  </Grid>
+</Window>
