@@ -81,7 +81,7 @@ public partial class MainWindow
     }
     private void OpenModeration(SshProfile target, ModerationRequest action, string title, string captured)
     {
-        if (refreshingDelete) return;
+        if (closed || refreshingDelete) return;
         if (moderationWindow != null) { moderationWindow.Activate(); return; }
         var window = new ModerationWindow(target, action, title, captured) { Owner = this };
         window.Completed += result => ApplyModerationResult(target, action, result);
@@ -98,6 +98,7 @@ public partial class MainWindow
             {
                 action.Validate();
                 store.Put(DeletedKey(target, action), "true");
+                foreach (var window in contentsWindows.Values.ToArray()) window.ApplyDeletion(target, action);
                 ShowSelectedInventory();
                 result.Message = "対象のアイテム（スタック全体・内容物を含む）を削除し、一覧に反映しました。";
             }

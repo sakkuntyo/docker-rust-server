@@ -30,7 +30,8 @@ public partial class MainWindow : Window
         Func<SshProfile, CancellationToken, Task<ChatSnapshot>>? chatReader = null,
         Func<SshProfile, string, CancellationToken, Task<ChatSendResult>>? chatSender = null, ItemIcons? itemIcons = null,
         Action<Uri>? linkOpener = null,
-        Func<SshProfile, string, string, CancellationToken, Task<InventorySnapshot>>? inventoryReader = null)
+        Func<SshProfile, string, string, CancellationToken, Task<InventorySnapshot>>? inventoryReader = null,
+        Func<SshProfile, string, CancellationToken, Task<PlayerTeam>>? teamReader = null)
     {
         InitializeComponent();
         openLink = linkOpener ?? (uri => System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true }));
@@ -38,10 +39,13 @@ public partial class MainWindow : Window
         icons = itemIcons ?? new ItemIcons(Path.Combine(root, "icons"));
         readServer = serverReader ?? DockerSsh.ReadServerAsync;
         readInventory = inventoryReader ?? DockerSsh.ReadInventoryAsync;
+        readTeam = teamReader ?? DockerSsh.ReadTeamAsync;
         readChat = chatReader ?? DockerSsh.ReadChatAsync;
         sendChat = chatSender ?? DockerSsh.SendChatAsync;
         store = new Store(Path.Combine(root, "monitor.sqlite3"));
         InitializeInventory();
+        Loaded += (_, _) => UpdateTeamSelection();
+        Closed += (_, _) => { teamCancellation?.Cancel(); teamCancellation?.Dispose(); };
         timer.Tick += async (_, _) => { if (live) await RefreshSafeAsync(); };
         Closing += (_, e) => { if (moderationWindow?.IsSending == true || itemWindows.Values.Any(w => w.IsSending) || chatWindows.Values.Any(w => w.IsSending)) { e.Cancel = true; Status("送信結果を確認しています。完了後に閉じてください。"); } };
         Closed += (_, _) => { closed = true; generation++; foreach (var window in contentsWindows.Values.ToArray()) window.Close(); foreach (var window in chatWindows.Values.ToArray()) window.Close(); foreach (var window in itemWindows.Values.ToArray()) window.Close(); foreach (var window in combatWindows.Values.ToArray()) window.Close(); icons.Dispose(); timer.Stop(); session.Cancel(); session.Dispose(); store.Dispose(); };
@@ -185,6 +189,7 @@ public partial class MainWindow : Window
     private void Player_Selected(object sender, SelectionChangedEventArgs e) { if (!bindingRoster) ShowSelectedInventory(); }
     private void ShowSelectedInventory()
     {
+        UpdateTeamSelection();
         UpdateMapLayout();
         CombatLogButton.IsEnabled = profile != null && PlayerList.SelectedItem is PlayerRow;
         GiveItemButton.IsEnabled = CombatLogButton.IsEnabled;
@@ -238,10 +243,11 @@ public partial class MainWindow : Window
             : "最終取得時点の記録（現在の所持品は未確認）\n" + Time(snapshot.CapturedAt);
         // Keep the saved snapshot intact. A confirmed deletion is newer evidence
         // and must also win over subsequent reads of an older server save.
-        var visibleItems = snapshot.Items.Where(item => !WasDeleted(snapshot, item)).ToList();
-        if (visibleItems.Count != snapshot.Items.Count)
+        var visible = Wire.Read<InventorySnapshot>(Wire.Write(snapshot));
+        if (InventoryTree.RemoveWhere(visible.Items, item => WasDeleted(snapshot, item)))
             InventoryStatus.Text += "\n削除成功済みのアイテムは一覧から除外しています。";
-        DrawInventory(visibleItems);
+        shownInventory = visible;
+        DrawInventory(visible.Items);
     }
     private string MapPath(string key, string wipe) => Path.Combine(root, "maps", Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(key + "\n" + wipe))) + ".jpg");
     private void LoadMap()

@@ -36,8 +36,49 @@ internal static class Program
         typeof(RustMonitorAdmin).GetMethod(method, BindingFlags.NonPublic | BindingFlags.Instance).Invoke(plugin, [arg]);
         return arg.Output == null ? default : JsonDocument.Parse(arg.Output).RootElement.Clone();
     }
+    private static void NestedDeletionChecks()
+    {
+        (RustMonitorAdmin Plugin, BasePlayer Player, Item Bag, Item Child, RustMonitorAdmin.Request Request) Nested()
+        {
+            var (plugin, player, item) = Setup();
+            var bag = new Item { uid = new() { Value = 100 }, info = new() { itemid = 456 }, position = 2, amount = 1,
+                parent = player.inventory.containerWear, contents = new() };
+            item.parent.itemList.Remove(item); item.parent = bag.contents; bag.contents.itemList.Add(item); bag.parent.itemList.Add(bag);
+            var action = Request(); action.Item.Container = "wear";
+            action.Parents = [new() { Uid = "100", ItemId = 456, Slot = 2 }];
+            return (plugin, player, bag, item, action);
+        }
+        {
+            var x = Nested();
+            var sibling = new Item { uid = new() { Value = 101 }, info = new() { itemid = 789 }, position = 1, parent = x.Bag.contents };
+            x.Bag.contents.itemList.Add(sibling);
+            Check(Run(x.Plugin, x.Request) == "accepted" && x.Child.Removed && !x.Bag.Removed && !sibling.Removed && x.Bag.contents.itemList.SequenceEqual(new[] { sibling }),
+                "nested delete removes only the chosen child while retaining the bag and unrelated contents");
+            Run(x.Plugin, x.Request); Check(x.Child.RemoveCalls == 1, "nested delete remains idempotent");
+        }
+        {
+            var x = Nested();
+            var inner = new Item { uid = new() { Value = 102 }, info = new() { itemid = 654 }, position = 3, amount = 1, parent = x.Bag.contents, contents = new() };
+            x.Bag.contents.itemList.Clear(); x.Bag.contents.itemList.Add(inner); x.Child.parent = inner.contents; inner.contents.itemList.Add(x.Child);
+            x.Request.Parents.Add(new() { Uid = "102", ItemId = 654, Slot = 3 });
+            Check(Run(x.Plugin, x.Request) == "accepted" && x.Child.Removed && !inner.Removed && !x.Bag.Removed, "deletion traverses multiple containers without removing ancestors");
+        }
+        foreach (var change in new Action<BasePlayer, Item, Item, RustMonitorAdmin.Request>[] {
+            (p,b,c,r) => b.uid.Value = 200, (p,b,c,r) => b.position = 3, (p,b,c,r) => b.info.itemid = 999,
+            (p,b,c,r) => { b.parent.itemList.Remove(b); b.parent = new(); b.parent.itemList.Add(b); },
+            (p,b,c,r) => { c.parent.itemList.Remove(c); c.parent = p.inventory.containerWear; c.parent.itemList.Add(c); },
+            (p,b,c,r) => c.amount++, (p,b,c,r) => c.uid.Value = 300,
+            (p,b,c,r) => r.Parents = null, (p,b,c,r) => r.Parents.Add(r.Parents[0]),
+            (p,b,c,r) => r.Parents[0].Uid = "0", (p,b,c,r) => r.Item.Container = "main" })
+        {
+            var x = Nested(); change(x.Player, x.Bag, x.Child, x.Request);
+            Check(Run(x.Plugin, x.Request) == "rejected" && x.Child.RemoveCalls == 0 && x.Bag.RemoveCalls == 0,
+                "changed parent, owner, item or invalid path rejects nested deletion before mutation");
+        }
+    }
     private static int Main()
     {
+        NestedDeletionChecks();
         foreach (var sleeping in new[] { false, true })
         {
             var (plugin, player, item) = Setup(sleeping);

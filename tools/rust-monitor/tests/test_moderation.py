@@ -38,6 +38,18 @@ class ModerationTests(unittest.TestCase):
             self.assertTrue(command.startswith('rustmonitoradmin.execute '))
             self.assertEqual(json.loads(base64.b64decode(command.split()[1])), ACTION)
 
+    def test_nested_parent_paths_are_checked_before_dispatch(self):
+        parent = dict(Uid='100', ItemId=123, Slot=7)
+        for parents in [None, [dict(parent, Uid='0')], [dict(parent, Slot=-1)], [parent, parent], [dict(parent, Uid=ACTION['Item']['Uid'])], [parent]*7]:
+            with patch.object(mod, 'ensure_helper') as helper, patch.object(mod, 'run') as run:
+                reply = mod.moderation_request(dict(container='rust-demo', action=dict(ACTION, Parents=parents)), SOURCE)
+                self.assertEqual(reply['State'], 'rejected'); helper.assert_not_called(); run.assert_not_called()
+        action = dict(ACTION, Parents=[parent])
+        response = dict(Protocol=mod.PROTOCOL, RequestId=ACTION['RequestId'], State='accepted', Message='done')
+        with patch.object(mod, 'ensure_helper'), patch.object(mod, 'run', return_value=json.dumps(response)) as run:
+            self.assertEqual(mod.moderation_request(dict(container='rust-demo', action=action), SOURCE)['State'], 'accepted')
+            self.assertEqual(json.loads(base64.b64decode(run.call_args.args[2].split()[1]))['Parents'], [parent])
+
     def test_ban_reason_is_data_not_shell_or_console_code(self):
         action = dict(ACTION, Action='ban', Reason='quotes " ; $(quit) 日本語')
         with patch.object(mod, 'ensure_helper'), patch.object(mod, 'run', return_value='{}') as run:

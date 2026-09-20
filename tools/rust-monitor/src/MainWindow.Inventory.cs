@@ -22,6 +22,7 @@ public partial class MainWindow
         inventoryDetailsVisible = !inventoryDetailsVisible;
         store.Put("inventory-details-visible", inventoryDetailsVisible ? "true" : "false");
         UpdateInventoryDetailsVisibility();
+        UpdateTeamSelection();
     }
     private void UpdateInventoryDetailsVisibility()
     {

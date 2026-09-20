@@ -129,6 +129,11 @@ public static class DockerSsh
             throw new ArgumentException("サーバー・プレイヤー・ワイプを確認してください。");
         return ReadAsync<InventorySnapshot>(profile.Target, new { mode = "inventory", container = profile.Container, steamid = steamId, wipe }, cancellation, "moderation.py", 150);
     }
+    public static Task<PlayerTeam> ReadTeamAsync(SshProfile profile, string steamId, CancellationToken cancellation = default)
+    {
+        if (!ValidContainer(profile.Container) || !Regex.IsMatch(steamId, @"\A[0-9]{17}\z")) throw new ArgumentException("サーバーとプレイヤーを選択してください。");
+        return ReadAsync<PlayerTeam>(profile.Target, new { mode = "team", container = profile.Container, steamid = steamId }, cancellation, "team.py", 25);
+    }
     private static async Task<T> ReadAsync<T>(string target, object request, CancellationToken cancellation, string scriptFile = "docker_status.py", int timeoutSeconds = 90)
     {
         if (!ValidTarget(target)) throw new ArgumentException("SSH 接続先を user@hostname 形式で入力してください。");

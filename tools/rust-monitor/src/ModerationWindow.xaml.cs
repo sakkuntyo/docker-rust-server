@@ -29,6 +29,7 @@ public partial class ModerationWindow : Window
         ReasonPanel.Visibility = ban ? Visibility.Visible : Visibility.Collapsed;
         ActionText.Text = ban ? "このサーバーで、対象のSteam IDを無期限BANします。\n接続中の場合は切断されます。" :
             request.Item?.Name + " × " + request.Item?.Amount + "\n" + ContainerLabel(request.Item?.Container) + " / スロット " + (request.Item?.Slot + 1) +
+            (request.Parents.Count == 0 ? "" : "\nバッグ内：" + string.Join(" → ", request.Parents.Select(p => p.Name + "（スロット " + (p.Slot + 1) + "）"))) +
             "\n記録時刻：" + (DateTimeOffset.TryParse(capturedAt, out var time) ? time.ToLocalTime().ToString("yyyy/MM/dd HH:mm:ss") : "未確認") +
             "\n\nこのスタック全体とアタッチメント・内容物を削除します。取得後に移動・変更されていた場合は中止します。";
         Closing += (_, e) => { if (IsSending) { e.Cancel = true; ResultText.Text = "実行結果を確認しています。完了後に閉じてください。"; } };

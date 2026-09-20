@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 namespace Oxide.Plugins
 {
-    [Info("RustMonitorAdmin", "Rust Monitor", "0.1.2")]
+    [Info("RustMonitorAdmin", "Rust Monitor", "0.1.3")]
     [Description("Explicit server-console-only single-item deletion and single-account bans.")]
     public class RustMonitorAdmin : RustPlugin
     {
@@ -24,17 +24,19 @@ namespace Oxide.Plugins
             public int? Ammo;
             public List<ItemSpec> Contents = new List<ItemSpec>();
         }
+        public class ItemParent { public string Uid; public int ItemId, Slot; }
         public class Request
         {
             public string RequestId, Action, SteamId, Name, Reason, WipeId;
             public ItemSpec Item;
+            public List<ItemParent> Parents = new List<ItemParent>();
         }
 
         [ConsoleCommand("rustmonitoradmin.ping")]
         private void Ping(ConsoleSystem.Arg arg)
         {
             if (arg.Connection != null) return;
-            arg.ReplyWith(JsonConvert.SerializeObject(new { Protocol, Version = "0.1.2" }));
+            arg.ReplyWith(JsonConvert.SerializeObject(new { Protocol, Version = "0.1.3" }));
         }
 
         private static string CurrentWipe() => "save:" + new DateTimeOffset(SaveRestore.SaveCreatedTime.ToUniversalTime()).ToUnixTimeSeconds() + ":" + SaveRestore.WipeId;
@@ -205,7 +207,10 @@ namespace Oxide.Plugins
         private object Delete(Request request, ulong steamId, ref bool started, bool checkOnly = false)
         {
             var wipe = CurrentWipe();
-            if (request.WipeId != wipe || !ValidItem(request.Item, 0) ||
+            ulong parentUid;
+            if (request.WipeId != wipe || !ValidItem(request.Item, 0) || request.Parents == null || request.Parents.Count > 6 ||
+                request.Parents.Any(p => p == null || !ulong.TryParse(p.Uid, out parentUid) || parentUid == 0 || p.ItemId == 0 || p.Slot < 0 || p.Slot > 1024) ||
+                request.Parents.Select(p => p.Uid).Concat(new[] { request.Item.Uid }).Distinct().Count() != request.Parents.Count + 1 ||
                 (request.Item.Container != "main" && request.Item.Container != "belt" && request.Item.Container != "wear"))
                 return Result(request, "rejected", "ワイプまたはアイテムの識別情報が一致しません。所持品を更新してください。");
             var player = BasePlayer.FindByID(steamId) ?? BasePlayer.FindSleeping(steamId);
@@ -213,6 +218,14 @@ namespace Oxide.Plugins
                 return Result(request, "rejected", "本人の身体が見つかりません。削除していません。");
             var container = request.Item.Container == "main" ? player.inventory.containerMain :
                 request.Item.Container == "belt" ? player.inventory.containerBelt : player.inventory.containerWear;
+            foreach (var parent in request.Parents)
+            {
+                var candidates = container == null ? new List<Item>() : container.itemList.Where(i => i.uid.Value.ToString() == parent.Uid).ToList();
+                if (candidates.Count != 1 || candidates[0].IsRemoved() || candidates[0].parent != container || candidates[0].info == null ||
+                    candidates[0].info.itemid != parent.ItemId || candidates[0].position != parent.Slot || candidates[0].contents == null)
+                    return Result(request, "rejected", "親バッグが移動・変更されています。中身を更新して選び直してください。削除していません。");
+                container = candidates[0].contents;
+            }
             var item = container == null ? null : container.itemList.FirstOrDefault(i => i.uid.Value.ToString() == request.Item.Uid);
             // Compare live identity, owner, position, stack, durability, ammunition and children
             // in the same server tick as removal. Never delete a replacement in the old slot.

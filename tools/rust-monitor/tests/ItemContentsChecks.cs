@@ -30,8 +30,15 @@ internal static partial class Program
         Check(grid.Children.Count == 8 && ((TextBox)window.FindName("CountText")).Text == "2 個", "contents window renders item count and original slots");
         var opened = "";
         window.OpenRequested += (item, _) => opened = item.Uid;
-        ((Border)grid.Children[7]).ContextMenu.Items.OfType<MenuItem>().Single().RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
-        Check(opened == "102" && ((Border)grid.Children[1]).ContextMenu == null, "nested contents use right-click Open without adding destructive actions");
+        ((Border)grid.Children[7]).ContextMenu.Items.OfType<MenuItem>().First().RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+        Check(opened == "102" && ((Border)grid.Children[1]).ContextMenu.Items.OfType<MenuItem>().Single().Header.ToString() == "削除", "nested contents offer Open and ordinary contents offer Delete");
+        ModerationRequest? deletion = null;
+        window.DeleteRequested += (request, _) => deletion = request;
+        ((Border)grid.Children[1]).ContextMenu.Items.OfType<MenuItem>().Single().RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+        Check(deletion?.Item?.Uid == "101" && deletion.Parents.Single().Uid == "100" && deletion.Item.Container == "wear" && reads == 0,
+            "right-click Delete prepares the selected child and parent chain without sending a mutation");
+        var attachment = ModerationRequest.DeleteItem(snapshot, bag.Contents[1].Contents[0], "Demo");
+        Check(attachment.Parents.Select(p => p.Uid).SequenceEqual(new[] { "100", "102" }), "nested deletion records every ancestor from the player's root container");
         var content = (FrameworkElement)window.Content; content.Measure(new Size(626, 610)); content.Arrange(new Rect(0, 0, 626, 610)); content.UpdateLayout();
         SaveRender(content, "item-contents-preview.png", 626, 610);
         var refreshing = window.RefreshAsync(); window.RefreshAsync().GetAwaiter().GetResult();
@@ -48,6 +55,11 @@ internal static partial class Program
         var wrongWipe = Wire.Read<InventorySnapshot>(Wire.Write(fresh)); wrongWipe.WipeId = "save:2:other";
         pending.SetResult(wrongWipe); refreshing.GetAwaiter().GetResult();
         Check(grid.Children.Count == 8, "contents responses for another wipe cannot replace the displayed bag");
+        pending = new TaskCompletionSource<InventorySnapshot>();
+        window.ApplyDeletion(target, deletion!);
+        pending.SetResult(fresh);
+        Check(((InventorySlot)((Border)grid.Children[1]).Tag).Item == null && ((TextBox)window.FindName("CountText")).Text == "1 個",
+            "successful child deletion immediately updates contents and stale refresh data cannot resurrect it");
         pending = new TaskCompletionSource<InventorySnapshot>(); refreshing = window.RefreshAsync();
         fresh.Items[0].Uid = "999"; pending.SetResult(fresh); refreshing.GetAwaiter().GetResult();
         Check(grid.Children.Count == 0 && ((TextBlock)window.FindName("EmptyText")).Text.Contains("ありません"), "a different backpack in the old slot never replaces the original target");
@@ -65,6 +77,9 @@ internal static partial class Program
         var wear = (UniformGrid)((StackPanel)main.FindName("InventoryItems")).Children.OfType<Viewbox>().Last().Child;
         Check(((Border)wear.Children[7]).ContextMenu.Items.OfType<MenuItem>().Select(i => i.Header.ToString()).SequenceEqual(new[] { "開く", "削除" }),
             "main inventory right-click offers Open above the existing delete action for backpacks");
+        main.ApplyModerationResult(target, deletion!, new ModerationResult { State = "accepted" });
+        wear = (UniformGrid)((StackPanel)main.FindName("InventoryItems")).Children.OfType<Viewbox>().Last().Child;
+        Check(((InventorySlot)((Border)wear.Children[7]).Tag).Item!.Contents.All(i => i.Uid != "101"), "main inventory excludes deleted children from the backpack tooltip and future contents windows");
         main.Close();
     }
     private static void BackpackPreview(string file)

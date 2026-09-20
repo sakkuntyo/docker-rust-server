@@ -17,7 +17,9 @@ public partial class ItemContentsWindow : Window
     private ItemRecord item;
     private bool closed, refreshing;
     private int generation;
+    private readonly HashSet<string> deletedItems = [];
     public event Action<ItemRecord, InventorySnapshot>? OpenRequested;
+    public event Action<ModerationRequest, string>? DeleteRequested;
     public ItemContentsWindow(SshProfile target, string playerName, string serverName, InventorySnapshot snapshot, ItemRecord item, ItemIcons icons,
         Func<SshProfile, string, string, CancellationToken, Task<InventorySnapshot>>? reader = null)
     {
@@ -43,12 +45,23 @@ public partial class ItemContentsWindow : Window
         foreach (var slot in slots)
         {
             var cell = InventoryItemView.Create(slot, icons, () => !closed && generation == current);
+            if (slot.Item is { } content)
+            {
+                var menu = new ContextMenu { Style = (Style)FindResource("HistoryMenuStyle"), MinWidth = 220 };
+                ModerationRequest? action = null;
+                try { if (slot.PositionKnown) action = ModerationRequest.DeleteItem(displayedSnapshot, content, PlayerHeading.Text); }
+                catch (ArgumentException) { }
+                var remove = new MenuItem { Header = action == null ? "削除（↻で更新が必要）" : "削除", IsEnabled = action != null,
+                    Foreground = System.Windows.Media.Brushes.LightCoral, Style = (Style)FindResource("HistoryItemStyle") };
+                remove.Click += (_, _) => { if (action != null && !closed && generation == current) DeleteRequested?.Invoke(action, displayedSnapshot.CapturedAt); };
+                menu.Items.Add(remove); cell.ContextMenu = menu;
+            }
             if (slot.Item is { } child && InventoryLayout.CanOpen(child))
             {
-                var menu = new ContextMenu { Style = (Style)FindResource("HistoryMenuStyle"), MinWidth = 180 };
+                var menu = cell.ContextMenu;
                 var open = new MenuItem { Header = "開く", Style = (Style)FindResource("HistoryItemStyle") };
                 open.Click += (_, _) => OpenRequested?.Invoke(child, displayedSnapshot);
-                menu.Items.Add(open); cell.ContextMenu = menu;
+                menu.Items.Insert(0, open);
             }
             ContentsGrid.Children.Add(cell);
         }
@@ -59,6 +72,16 @@ public partial class ItemContentsWindow : Window
         SnapshotText.Text = (snapshot.Source == "live" ? "直接取得 " : "セーブの記録 ") + time;
     }
     private async void Refresh_Click(object sender, RoutedEventArgs e) => await RefreshAsync();
+    public void ApplyDeletion(SshProfile profile, ModerationRequest action)
+    {
+        if (closed || profile != target || action.SteamId != steamId || action.WipeId != wipe || action.Item == null) return;
+        deletedItems.Add(action.Item.Uid);
+        InventoryTree.RemoveWhere(snapshot.Items, i => deletedItems.Contains(i.Uid));
+        InventoryTree.RemoveWhere(item.Contents, i => deletedItems.Contains(i.Uid));
+        Draw(!Descendants(snapshot.Items, 0).Any(i => i.Uid == itemUid));
+        StatusText.Text = "削除を反映しました。現在の中身を再取得します…";
+        _ = RefreshAsync();
+    }
     public async Task RefreshAsync()
     {
         if (closed || refreshing || !ulong.TryParse(itemUid, out var uid) || uid == 0) return;
@@ -69,6 +92,8 @@ public partial class ItemContentsWindow : Window
             if (closed) return;
             if (fresh.Source != "live" || fresh.SteamId != steamId || fresh.WipeId != wipe || !DateTimeOffset.TryParse(fresh.CapturedAt, out _))
                 throw new InvalidDataException("プレイヤーまたはワイプが一致しません。");
+            fresh = Wire.Read<InventorySnapshot>(Wire.Write(fresh));
+            InventoryTree.RemoveWhere(fresh.Items, i => deletedItems.Contains(i.Uid));
             var matches = Descendants(fresh.Items, 0).Where(i => i.Uid == itemUid).ToArray();
             if (matches.Length > 1) throw new InvalidDataException("アイテムを特定できません。");
             snapshot = Wire.Read<InventorySnapshot>(Wire.Write(fresh));

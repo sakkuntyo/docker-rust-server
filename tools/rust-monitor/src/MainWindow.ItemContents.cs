@@ -26,6 +26,7 @@ public partial class MainWindow
         var window = new ItemContentsWindow(target, player, title, snapshot, item, icons, readInventory) { Owner = this };
         contentsWindows.Add(key, window); window.Closed += (_, _) => contentsWindows.Remove(key);
         window.OpenRequested += (child, current) => OpenItemContents(target, player, title, current, child);
+        window.DeleteRequested += (action, captured) => OpenModeration(target, action, title, captured);
         window.Show();
     }
 }

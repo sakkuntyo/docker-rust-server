@@ -23,7 +23,7 @@
     </Border>
     <StackPanel Grid.Row="3" Margin="0,14,0,0">
       <ui:SelectableText x:Name="StatusText" Foreground="{StaticResource Muted}" TextWrapping="Wrap"/>
-      <TextBlock Text="アイコンにマウスを重ねると詳細を表示 • 中身があるアイテムは右クリック → 開く" Foreground="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap" Margin="0,7,0,0"/>
+      <TextBlock Text="右クリック → 削除で確認画面へ • 中身があるアイテムは右クリック → 開く" Foreground="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap" Margin="0,7,0,0"/>
     </StackPanel>
   </Grid>
 </Window>

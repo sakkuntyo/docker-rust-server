@@ -8,7 +8,7 @@ import subprocess
 import time
 
 PROTOCOL = 'rust-monitor-admin/1'
-HELPER_VERSION = '0.1.2'
+HELPER_VERSION = '0.1.3'
 RCON_SH = '''
 if [ -z "${ENV_RCON_PORT:-}" ] || [ -z "${ENV_RCON_PASSWD:-}" ]; then exit 2; fi
 exec timeout -k 1s 8s rcon -t web -T 6s -a "127.0.0.1:${ENV_RCON_PORT}" -p "$ENV_RCON_PASSWD" -- "$1"
@@ -31,6 +31,7 @@ else
   case "$oldhash" in
     c58cf9b48ef80a5c829908b98f0f5927b2f89c9eaaac0ba4060fcb9e83f300b8) backup="$dest.0.1.0.bak" ;;
     7bf026c96d82a1f6fb6ba2f97c66aff77250cb09fe713642db71c9da33ef0815) backup="$dest.0.1.1.bak" ;;
+    cec87e671c9825e035f39b76a785b8a723da5499b0b56d888e3b6585d29d2467) backup="$dest.0.1.2.bak" ;;
   esac
   if [ -n "$backup" ]; then
     ln "$dest" "$backup" || test "$(sha256sum "$backup" | cut -d ' ' -f 1)" = "$oldhash"
@@ -102,8 +103,14 @@ def moderation_request(request, source):
             int(action['SteamId']) < 70000000000000000):
         return rejected
     if action['Action'] == 'delete':
+        parents = action.get('Parents', [])
         if (not isinstance(action.get('WipeId'), str) or not re.fullmatch(r'save:[0-9]+:[A-Za-z0-9-]+', action['WipeId']) or
-                not valid_item(action.get('Item')) or action['Item'].get('Container') not in ('main', 'belt', 'wear')):
+                not valid_item(action.get('Item')) or action['Item'].get('Container') not in ('main', 'belt', 'wear') or
+                not isinstance(parents, list) or len(parents) > 6 or any(not isinstance(p, dict) or
+                    not isinstance(p.get('Uid'), str) or not re.fullmatch(r'[0-9]{1,20}', p['Uid']) or not 0 < int(p['Uid']) < 2**64 or
+                    type(p.get('ItemId')) is not int or not -2**31 <= p['ItemId'] < 2**31 or p['ItemId'] == 0 or
+                    type(p.get('Slot')) is not int or not 0 <= p['Slot'] <= 1024 for p in parents) or
+                len({p['Uid'] for p in parents} | {action['Item']['Uid']}) != len(parents) + 1):
             return rejected
     else:
         for key, limit in [('Name', 256), ('Reason', 200)]:

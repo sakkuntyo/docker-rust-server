@@ -29,6 +29,14 @@ internal static partial class Program
         {
             if (args.Length == 2 && args[1] == "--live-item-icons") { LiveItemMenuIcons(); return 0; }
             if (args.Length == 3 && args[1] == "--backpack-preview") { BackpackPreview(args[2]); return 0; }
+            if (args.Length == 5 && args[1] == "--live-team")
+            {
+                var team = DockerSsh.ReadTeamAsync(new SshProfile(args[2], args[3]), args[4]).GetAwaiter().GetResult();
+                team.Validate(args[4]);
+                Check(team.State == "members", "native team endpoint returns the selected player's party");
+                Console.WriteLine($"Members: {team.Members.Count}, leaders: {team.Members.Count(m => m.Leader)}, online: {team.Members.Count(m => m.Online)}");
+                return 0;
+            }
             if (args.Length == 6 && args[1] == "--live-inventory") { LiveInventoryCheck(new SshProfile(args[2], args[3]), args[4], args[5]); return 0; }
             if (args.Length == 5 && args[1] == "--live-item-menu")
             {
@@ -429,6 +437,7 @@ internal static partial class Program
         ModerationChecks();
         InventoryRefreshChecks();
         ItemContentsChecks();
+        TeamChecks();
         window.Close();
     }
     private static void HistoryChecks()
