@@ -8,6 +8,8 @@ public sealed class TeamMember
     public string Name { get; set; } = "";
     public bool Online { get; set; }
     public bool Leader { get; set; }
+    [System.Text.Json.Serialization.JsonIgnore]
+    public string Label => (Leader ? "★ " : "") + (string.IsNullOrWhiteSpace(Name) ? "名前未確認" : Name.Replace('\r', ' ').Replace('\n', ' ')) + (Leader ? "（リーダー）" : "");
 }
 
 public sealed class PlayerTeam
@@ -26,6 +28,5 @@ public sealed class PlayerTeam
     }
     public string Heading => State == "members" ? $"パーティ（ゲーム内チーム） • {Members.Count} 人" : State == "none" ? "パーティ：所属なし" : "パーティ：サーバー上にプレイヤーの記録がありません";
     public string MemberText => string.Join("\n", Members.OrderByDescending(m => m.Leader).Select(m =>
-        (m.Leader ? "★ " : "") + (string.IsNullOrWhiteSpace(m.Name) ? "名前未確認" : m.Name.Replace('\r', ' ').Replace('\n', ' ')) +
-        (m.Leader ? "（リーダー）" : "") + " • " + (m.Online ? "オンライン" : "オフライン") + "\nSteam ID: " + m.SteamId));
+        m.Label + " • " + (m.Online ? "オンライン" : "オフライン") + "\nSteam ID: " + m.SteamId));
 }

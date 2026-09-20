@@ -84,7 +84,17 @@
                     <ui:SelectableText x:Name="TeamHeading" Text="パーティ：未確認" FontWeight="SemiBold" FontSize="12" TextWrapping="Wrap" VerticalAlignment="Center"/>
                   </DockPanel>
                   <ScrollViewer x:Name="TeamMembersScroll" MaxHeight="130" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled" Margin="0,5,0,0">
-                    <ui:SelectableText x:Name="TeamMembers" FontSize="11" Foreground="{StaticResource Muted}" TextWrapping="Wrap"/>
+                    <RichTextBox x:Name="TeamMembers" FontSize="11" Foreground="{StaticResource Muted}" Background="Transparent"
+                                 IsReadOnly="True" IsUndoEnabled="False" BorderThickness="0" Padding="0" FocusVisualStyle="{x:Null}"
+                                 SelectionBrush="#537F9A" SelectionOpacity="0.8" IsInactiveSelectionHighlightEnabled="True"
+                                 HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden" PreviewMouseWheel="TeamMembers_MouseWheel">
+                      <RichTextBox.ContextMenu>
+                        <ContextMenu Style="{StaticResource HistoryMenuStyle}" MinWidth="140">
+                          <MenuItem Header="コピー" Command="ApplicationCommands.Copy" Style="{StaticResource HistoryItemStyle}" CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                          <MenuItem Header="すべて選択" Command="ApplicationCommands.SelectAll" Style="{StaticResource HistoryItemStyle}" CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                        </ContextMenu>
+                      </RichTextBox.ContextMenu>
+                    </RichTextBox>
                   </ScrollViewer>
                   <ui:SelectableText x:Name="TeamStatus" FontSize="10" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,4,0,0"/>
                 </StackPanel>
