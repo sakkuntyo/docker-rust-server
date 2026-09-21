@@ -10,11 +10,11 @@
         <Button x:Name="DisconnectButton" Content="更新停止" Click="Disconnect_Click" IsEnabled="False"/>
       </StackPanel>
     </DockPanel>
-    <Border Grid.Row="1" Background="{StaticResource Panel}" CornerRadius="8" Padding="16" Margin="0,0,0,18">
+    <Border Grid.Row="1" Background="{StaticResource Panel}" CornerRadius="8" Padding="16,6" Margin="0,0,0,10">
       <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="1.5*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-        <StackPanel Margin="0,0,12,0"><TextBlock Text="SSH 接続先（user@hostname）" Foreground="{StaticResource Muted}" Margin="0,0,0,6"/><TextBox x:Name="TargetBox" ToolTip="Docker ホストの SSH 接続先。Windows OpenSSH の鍵認証を使います。"/></StackPanel>
+        <StackPanel Margin="0,0,12,0"><TextBlock Text="SSH 接続先（user@hostname）" Foreground="{StaticResource Muted}" Margin="0,0,0,4"/><TextBox x:Name="TargetBox" ToolTip="Docker ホストの SSH 接続先。Windows OpenSSH の鍵認証を使います。"/></StackPanel>
         <Button Grid.Column="1" x:Name="ListButton" Content="一覧取得" Click="List_Click" VerticalAlignment="Bottom" Margin="0,0,16,0"/>
-        <StackPanel Grid.Column="2" Margin="0,0,16,0"><TextBlock Text="サーバー / Docker コンテナ" Foreground="{StaticResource Muted}" Margin="0,0,0,6"/><ComboBox x:Name="ContainerBox" Padding="8,7" FontSize="13" MinHeight="34"><ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding DisplayName}" Foreground="#101820" TextTrimming="CharacterEllipsis"/></DataTemplate></ComboBox.ItemTemplate></ComboBox></StackPanel>
+        <StackPanel Grid.Column="2" Margin="0,0,16,0"><TextBlock Text="サーバー / Docker コンテナ" Foreground="{StaticResource Muted}" Margin="0,0,0,4"/><ComboBox x:Name="ContainerBox" Padding="8,7" FontSize="13" MinHeight="34"><ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding DisplayName}" Foreground="#101820" TextTrimming="CharacterEllipsis"/></DataTemplate></ComboBox.ItemTemplate></ComboBox></StackPanel>
         <Button Grid.Column="3" x:Name="ConnectButton" Content="SSH で接続" Background="#BB633D" Click="Connect_Click" VerticalAlignment="Bottom"/>
       </Grid>
     </Border>

@@ -1,4 +1,4 @@
-# Rust Monitor 0.2.26（Windows / SSH）
+# Rust Monitor 0.2.27（Windows / SSH）
 
 SSH と docker exec で Rust サーバーのマップ、接続中・過去に接続したメンバー、本人のインベントリ・ベルト・装備を表示する Windows アプリです。収集プラグインの追加は不要です。
 
