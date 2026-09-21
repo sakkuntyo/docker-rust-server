@@ -2,7 +2,7 @@
   <Grid Margin="24" Background="#101820">
     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
     <DockPanel Margin="0,0,0,22">
-      <StackPanel DockPanel.Dock="Left"><TextBlock Text="RUST / MONITOR" FontSize="25" FontWeight="Bold"/><TextBlock Text="サーバーの今と、プレイヤーの記録。" Foreground="{StaticResource Muted}" Margin="0,4,0,0"/></StackPanel>
+      <TextBlock DockPanel.Dock="Left" Text="RUST / MONITOR" FontSize="25" FontWeight="Bold" VerticalAlignment="Center"/>
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
         <Button x:Name="DockerButton" Content="Docker サーバー一覧" Click="Docker_Click"/>
         <Button x:Name="HistoryButton" Content="接続履歴" Click="Profiles_Click" ToolTip="以前接続したサーバーを選んで再接続します。"/>
