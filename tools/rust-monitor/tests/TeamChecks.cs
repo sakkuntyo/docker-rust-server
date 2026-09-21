@@ -36,7 +36,14 @@ internal static partial class Program
         SaveRender(content, "party-preview.png", 1550, 920);
         pending = new(); first = main.RefreshTeamAsync(); pending.SetException(new IOException("Example connection failure")); first.GetAwaiter().GetResult();
         Check(((TextBox)main.FindName("TeamStatus")).Text.Contains("前回") && TeamText(main).Contains(other), "party failure keeps previous members and labels the stale record");
-        pending = new(); first = main.RefreshTeamAsync(); list.SelectedIndex = 1; pending.SetResult(team); first.GetAwaiter().GetResult();
+        ((TextBox)main.FindName("SearchBox")).Text = "A leader";
+        var document = ((RichTextBox)main.FindName("TeamMembers")).Document;
+        var link = document.Blocks.OfType<System.Windows.Documents.Paragraph>().Single().Inlines.OfType<System.Windows.Documents.Hyperlink>().Single(l => (string)l.Tag == other);
+        pending = new(); first = main.RefreshTeamAsync();
+        link.RaiseEvent(new RoutedEventArgs(System.Windows.Documents.Hyperlink.ClickEvent));
+        Check(((MainWindow.PlayerRow)list.SelectedItem).SteamId == other && ((TextBox)main.FindName("SearchBox")).Text == "" && ((TextBox)main.FindName("InventoryName")).Text == "B member",
+            "clicking a party Steam ID reveals a filtered-out member and updates the selected player's details");
+        pending.SetResult(team); first.GetAwaiter().GetResult();
         Check(TeamText(main) == "", "late party result cannot appear under another selected player");
         pending = new(); first = main.RefreshTeamAsync(); pending.SetResult(new PlayerTeam { SteamId = other, State = "none", CheckedAt = team.CheckedAt }); first.GetAwaiter().GetResult();
         Check(((TextBox)main.FindName("TeamHeading")).Text.Contains("所属なし"), "no party is displayed separately from a lookup failure");

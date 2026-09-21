@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -47,9 +48,11 @@ public partial class MainWindow
     private void DrawTeamMembers()
     {
         var text = displayedTeam?.MemberText ?? "";
+        var sourceKey = teamKey;
+        var renderKey = sourceKey + "\n" + text;
         // Keep the current selection when a refresh leaves the member list unchanged.
-        if (TeamMembers.Tag is string previous && previous == text) return;
-        TeamMembers.Tag = text;
+        if (TeamMembers.Tag is string previous && previous == renderKey) return;
+        TeamMembers.Tag = renderKey;
         var paragraph = new Paragraph { Margin = new Thickness(0) };
         foreach (var member in (displayedTeam?.Members ?? []).OrderByDescending(m => m.Leader))
         {
@@ -61,10 +64,40 @@ public partial class MainWindow
                 FontWeight = member.Online ? FontWeights.SemiBold : FontWeights.Normal
             });
             paragraph.Inlines.Add(new LineBreak());
-            paragraph.Inlines.Add(new Run("Steam ID: " + member.SteamId));
+            paragraph.Inlines.Add(new Run("Steam ID: "));
+            var link = new Hyperlink(new Run(member.SteamId)) { Style = (Style)FindResource("PlayerLinkStyle"),
+                ToolTip = "左のメンバー一覧でこのプレイヤーを選択します。", Tag = member.SteamId };
+            link.Click += (_, e) => { e.Handled = true; SelectTeamMember(sourceKey, member.SteamId); };
+            var copyMenu = new ContextMenu { Style = (Style)FindResource("HistoryMenuStyle"), MinWidth = 160 };
+            var copy = new MenuItem { Header = "Steam ID をコピー", Style = (Style)FindResource("HistoryItemStyle") };
+            copy.Click += (_, _) =>
+            {
+                try { Clipboard.SetText(member.SteamId); }
+                catch (System.Runtime.InteropServices.ExternalException) { Status("コピーできませんでした。もう一度お試しください。"); }
+            };
+            copyMenu.Items.Add(copy); link.ContextMenu = copyMenu;
+            paragraph.Inlines.Add(link);
         }
         TeamMembers.Document = new FlowDocument(paragraph) { PagePadding = new Thickness(0),
             FontFamily = TeamMembers.FontFamily, FontSize = TeamMembers.FontSize, Foreground = TeamMembers.Foreground };
+    }
+    private void SelectTeamMember(string sourceKey, string steamId)
+    {
+        if (closed || teamKey != sourceKey || SelectedTeamKey != sourceKey) return;
+        if (!players.Any(p => p.SteamId == steamId))
+        { Status("このメンバーは一覧にまだ取得されていません。「今すぐ更新」で再取得してください。"); return; }
+        var row = PlayerList.Items.Cast<PlayerRow>().FirstOrDefault(p => p.SteamId == steamId);
+        if (row == null)
+        {
+            bindingRoster = true;
+            try { SearchBox.Clear(); OnlineOnly.IsChecked = false; }
+            finally { bindingRoster = false; }
+            BindRoster();
+            row = PlayerList.Items.Cast<PlayerRow>().FirstOrDefault(p => p.SteamId == steamId);
+        }
+        if (row == null) return;
+        PlayerList.SelectedItem = row;
+        PlayerList.ScrollIntoView(row);
     }
     private void TeamMembers_MouseWheel(object sender, MouseWheelEventArgs e)
     {

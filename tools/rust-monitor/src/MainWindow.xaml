@@ -85,7 +85,7 @@
                   </DockPanel>
                   <ScrollViewer x:Name="TeamMembersScroll" MaxHeight="130" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled" Margin="0,5,0,0">
                     <RichTextBox x:Name="TeamMembers" FontSize="11" Foreground="{StaticResource Muted}" Background="Transparent"
-                                 IsReadOnly="True" IsUndoEnabled="False" BorderThickness="0" Padding="0" FocusVisualStyle="{x:Null}"
+                                 IsReadOnly="True" IsDocumentEnabled="True" IsUndoEnabled="False" BorderThickness="0" Padding="0" FocusVisualStyle="{x:Null}"
                                  SelectionBrush="#537F9A" SelectionOpacity="0.8" IsInactiveSelectionHighlightEnabled="True"
                                  HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden" PreviewMouseWheel="TeamMembers_MouseWheel">
                       <RichTextBox.ContextMenu>
